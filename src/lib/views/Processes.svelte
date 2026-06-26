@@ -212,9 +212,7 @@
 
   <div class={cn("glass", "p-5")}>
     <div class={cn("flex", "items-center", "justify-between", "mb-3")}>
-      <h3 class={cn("text-sm", "font-semibold", "text-white")}>
-        Process List
-      </h3>
+      <h3 class={cn("text-sm", "font-semibold", "text-white")}>Process List</h3>
       {#if loading}
         <span
           class={cn(
@@ -238,7 +236,8 @@
         </span>
       {:else}
         <span class={cn("text-xs", "font-mono", "text-muted")}>
-          {sorted.length} {sorted.length === 1 ? "process" : "processes"}
+          {sorted.length}
+          {sorted.length === 1 ? "process" : "processes"}
         </span>
       {/if}
     </div>
@@ -274,7 +273,7 @@
                   "border-t",
                   "border-border",
                   "transition-colors",
-                  "hover:bg-white/[0.02]",
+                  "hover:bg-white/2",
                 )}
               >
                 <td class={cn(td, "font-mono", "text-accent")}>{p.PID}</td>
@@ -284,14 +283,7 @@
                 <td class={cn(td, "font-mono", "text-muted")}>{p.VSZ}</td>
                 <td class={cn(td, "font-mono")}>{p["%CPU"]}</td>
                 <td class={cn(td, "font-mono")}>{p["%MEM"]}</td>
-                <td
-                  class={cn(
-                    td,
-                    "max-w-xs",
-                    "truncate",
-                  )}
-                  title={p.COMMAND}
-                >
+                <td class={cn(td, "max-w-xs", "truncate")} title={p.COMMAND}>
                   {p.COMMAND}
                 </td>
                 <td class={cn(td)}>

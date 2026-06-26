@@ -3,21 +3,18 @@
   import { slide } from "svelte/transition";
   import { batchCall } from "../api/ubus";
   import {
-    Clock,
     Zap,
     Globe,
     HardDrive,
     ArrowUpDown,
     Settings,
-    Hexagon,
     Network,
     Radio,
     PlusSquare,
     ChevronRight,
-    ArrowUp,
   } from "@lucide/svelte";
-  import StatCard from "../components/StatCard.svelte";
-  import BandwidthChart from "../components/BandwidthChart.svelte";
+  import StatCard from "../components/StatCard/index.svelte";
+  import BandwidthChart from "../components/BandwidthChart/index.svelte";
   import { cn } from "../helpers/classname";
 
   let sysInfo = $state<any>({});
@@ -167,7 +164,7 @@
     hidden = { ...hidden, [k]: !hidden[k] };
   };
   const secClass =
-    "w-full flex items-center gap-2 text-left p-1 -m-1 rounded-lg hover:bg-white/5 transition-colors cursor-pointer";
+    "w-full flex items-center gap-2 text-left p-1 rounded-lg hover:bg-white/5 transition-colors cursor-pointer";
 </script>
 
 <div class={cn("p-6", "space-y-4", "animate-fade-in")}>
@@ -255,23 +252,28 @@
   {#if board.hostname}
     <div class={cn("glass", "animate-slide-up")}>
       <button class={cn("p-5", secClass)} onclick={() => toggle("sys")}>
-        <span
+        <div
           class={cn(
+            "flex",
             "text-xs",
+            "gap-x-2",
+            "flex-row",
             "uppercase",
             "text-muted",
             "font-medium",
+            "items-center",
             "tracking-wider",
           )}
         >
-          <Settings size={14} class={cn("text-muted")} /> System
-        </span>
+          <Settings size={16} class={cn("text-muted")} />
+          <p>System</p>
+        </div>
         <span class={cn("flex-1")}></span>
         <span
           class={cn("text-xs", "font-mono", "transition-transform")}
           style="color: var(--text-muted); transform: rotate({hidden.sys
             ? 0
-            : 90}deg)"><ChevronRight size={14} class={cn("text-muted")} /></span
+            : 90}deg)"><ChevronRight size={16} class={cn("text-muted")} /></span
         >
       </button>
       {#if !hidden.sys}
@@ -402,23 +404,28 @@
   <!-- Memory + Storage -->
   <div class={cn("glass", "animate-slide-up")}>
     <button class={cn("p-5", secClass)} onclick={() => toggle("mem")}>
-      <span
+      <div
         class={cn(
+          "flex",
           "text-xs",
+          "gap-x-2",
+          "flex-row",
           "uppercase",
           "text-muted",
           "font-medium",
+          "items-center",
           "tracking-wider",
         )}
       >
-        <HardDrive size={14} class={cn("text-muted")} /> Memory & Storage
-      </span>
+        <HardDrive size={16} class={cn("text-muted")} />
+        <p>Memory & Storage</p>
+      </div>
       <span class={cn("flex-1")}></span>
       <span
         class={cn("text-xs", "font-mono", "transition-transform")}
         style="color: var(--text-muted); transform: rotate({hidden.mem
           ? 0
-          : 90}deg)"><ChevronRight size={14} class={cn("text-muted")} /></span
+          : 90}deg)"><ChevronRight size={16} class={cn("text-muted")} /></span
       >
     </button>
     {#if !hidden.mem}
@@ -513,17 +520,22 @@
   {#if Object.keys(devices).length > 0}
     <div class={cn("glass", "animate-slide-up")}>
       <button class={cn(secClass, "p-5")} onclick={() => toggle("ports")}>
-        <span
+        <div
           class={cn(
+            "flex",
             "text-xs",
+            "gap-x-2",
+            "flex-row",
             "uppercase",
             "text-muted",
             "font-medium",
+            "items-center",
             "tracking-wider",
           )}
         >
-          <Globe size={14} class={cn("text-muted")} /> Port Status
-        </span>
+          <Globe size={16} class={cn("text-muted")} />
+          <p>Port Status</p>
+        </div>
         <span class={cn("flex-1")}></span>
         <span
           class={cn("text-xs", "font-mono", "transition-transform")}
@@ -531,7 +543,7 @@
             ? 0
             : 90}deg)"
         >
-          <ChevronRight size={14} class={cn("text-muted")} />
+          <ChevronRight size={16} class={cn("text-muted")} />
         </span>
       </button>
       {#if !hidden.ports}
@@ -631,15 +643,22 @@
   {#if wanIp !== "—"}
     <div class={cn("glass", "animate-slide-up")}>
       <button class={cn(secClass, "p-5")} onclick={() => toggle("net")}>
-        <span
+        <div
           class={cn(
+            "flex",
             "text-xs",
+            "gap-x-2",
+            "flex-row",
             "uppercase",
             "text-muted",
             "font-medium",
+            "items-center",
             "tracking-wider",
-          )}><Network size={14} class={cn("text-muted")} /> Network</span
+          )}
         >
+          <Network size={16} class={cn("text-muted")} />
+          <p>Network</p>
+        </div>
         <span class={cn("flex-1")}></span>
         <span
           class={cn("text-xs", "font-mono", "transition-transform")}
@@ -647,7 +666,7 @@
             ? 0
             : 90}deg)"
         >
-          <ChevronRight size={14} class={cn("text-muted")} />
+          <ChevronRight size={16} class={cn("text-muted")} />
         </span>
       </button>
       {#if !hidden.net}
@@ -757,17 +776,22 @@
   <!-- DHCP Leases -->
   <div class={cn("glass", "animate-slide-up")}>
     <button class={cn(secClass, "p-5")} onclick={() => toggle("dhcp")}>
-      <span
+      <div
         class={cn(
+          "flex",
           "text-xs",
+          "gap-x-2",
+          "flex-row",
           "uppercase",
           "text-muted",
           "font-medium",
+          "items-center",
           "tracking-wider",
         )}
       >
-        <Radio size={14} class={cn("text-muted")} /> DHCP Leases
-      </span>
+        <Radio size={16} class={cn("text-muted")} />
+        <p>DHCP Leases</p>
+      </div>
       <span class={cn("flex-1")}></span>
       <span
         class={cn(
@@ -786,7 +810,7 @@
           ? 0
           : 90}deg)"
       >
-        <ChevronRight size={14} class={cn("text-muted")} />
+        <ChevronRight size={16} class={cn("text-muted")} />
       </span>
     </button>
     {#if !hidden.dhcp}
@@ -902,15 +926,22 @@
   {#if ddnsStatus.length > 0}
     <div class={cn("glass", "animate-slide-up")}>
       <button class={cn(secClass, "p-5")} onclick={() => toggle("ddns")}>
-        <span
+        <div
           class={cn(
+            "flex",
             "text-xs",
+            "gap-x-2",
+            "flex-row",
             "uppercase",
             "text-muted",
             "font-medium",
+            "items-center",
             "tracking-wider",
-          )}><Radio size={14} class={cn("text-muted")} /> Dynamic DNS</span
+          )}
         >
+          <Radio size={16} class={cn("text-muted")} />
+          <p>Dynamic DNS</p>
+        </div>
         <span class={cn("flex-1")}></span>
         <span
           class={cn("text-xs", "font-mono", "transition-transform")}
@@ -918,7 +949,7 @@
             ? 0
             : 90}deg)"
         >
-          <ChevronRight size={14} class={cn("text-muted")} />
+          <ChevronRight size={16} class={cn("text-muted")} />
         </span>
       </button>
       {#if !hidden.ddns}
@@ -981,15 +1012,22 @@
   {#if upnpStatus?.rules}
     <div class={cn("glass", "animate-slide-up")}>
       <button class={cn(secClass, "p-5")} onclick={() => toggle("upnp")}>
-        <span
+        <div
           class={cn(
+            "flex",
             "text-xs",
+            "gap-x-2",
+            "flex-row",
             "uppercase",
             "text-muted",
             "font-medium",
+            "items-center",
             "tracking-wider",
-          )}><PlusSquare size={14} class={cn("text-muted")} /> UPnP Port Maps</span
+          )}
         >
+          <PlusSquare size={16} class={cn("text-muted")} />
+          <p>UPnP Port Maps</p>
+        </div>
         <span class={cn("flex-1")}></span>
         <span
           class={cn(
@@ -1010,7 +1048,7 @@
             ? 0
             : 90}deg)"
         >
-          <ChevronRight size={14} class={cn("text-muted")} />
+          <ChevronRight size={16} class={cn("text-muted")} />
         </span>
       </button>
       {#if !hidden.upnp}

@@ -1,11 +1,7 @@
 <script lang="ts">
-  import { cn } from "../helpers/classname";
-
-  interface Series {
-    label: string;
-    color: string;
-    data: number[];
-  }
+  import { cn } from "../../helpers/classname";
+  import { C } from "./constants";
+  import type { Series } from "./types";
 
   let {
     series,
@@ -25,12 +21,6 @@
 
   let canvas: HTMLCanvasElement | undefined = $state();
   let raf = $state(0);
-
-  const C = {
-    muted: "#7d8590",
-    text: "#e6edf3",
-    grid: "rgba(48,54,61,0.8)",
-  };
 
   const drawGrid = (
     ctx: CanvasRenderingContext2D,
@@ -97,7 +87,8 @@
     return Math.ceil(maxVal / scale) * scale || scale;
   };
 
-  let bw = 0, bh = 0;
+  let bw = 0,
+    bh = 0;
   const draw = () => {
     const c = canvas;
     if (!c) return;
@@ -112,7 +103,8 @@
     if (w !== bw || h !== bh) {
       c.width = w * dpr;
       c.height = h * dpr;
-      bw = w; bh = h;
+      bw = w;
+      bh = h;
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
@@ -158,21 +150,12 @@
 
 <div class={cn("glass", "p-5")}>
   <div class={cn("w-full", "rounded-lg", "overflow-hidden")}>
-    <canvas
-      bind:this={canvas}
-      class={cn("w-full")}
-      style="height:{height}px"
+    <canvas bind:this={canvas} class={cn("w-full")} style="height:{height}px"
     ></canvas>
   </div>
 
   <div
-    class={cn(
-      "mt-3",
-      "grid",
-      "gap-2",
-      "text-xs",
-      "font-mono",
-    )}
+    class={cn("mt-3", "grid", "gap-2", "text-xs", "font-mono")}
     style="grid-template-columns: repeat({series.length}, 1fr)"
   >
     {#each series as s}
@@ -182,12 +165,16 @@
             class={cn("w-2", "h-2", "rounded-full", "inline-block")}
             style="background:{s.color}"
           ></span>
-          <span class={cn("text-muted", "font-sans", "font-medium")}>{s.label}</span>
+          <span class={cn("text-muted", "font-sans", "font-medium")}
+            >{s.label}</span
+          >
         </div>
         <div class={cn("flex", "gap-3", "text-fg")}>
           <div>
             <span class={cn("text-muted")}>Cur </span>
-            <span class={cn("font-semibold")}>{formatValue(current(s.data))}</span>
+            <span class={cn("font-semibold")}
+              >{formatValue(current(s.data))}</span
+            >
           </div>
           <div>
             <span class={cn("text-muted")}>Avg </span>

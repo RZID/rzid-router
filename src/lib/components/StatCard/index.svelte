@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Component } from "svelte";
-  import { cn } from "../helpers/classname";
+  import { cn } from "../../helpers/classname";
 
   let {
     label,

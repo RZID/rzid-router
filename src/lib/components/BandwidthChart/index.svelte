@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { cn } from "../helpers/classname";
+  import { cn } from "../../helpers/classname";
 
   let { rxRate = "0 B/s", txRate = "0 B/s" } = $props<{
     rxRate?: string;
@@ -15,8 +15,10 @@
       "text-muted",
       "font-medium",
       "tracking-wider",
-    )}>BANDWIDTH — WAN</span
+    )}
   >
+    BANDWIDTH — WAN
+  </span>
   <div class={cn("flex", "gap-6", "mt-3")}>
     <div class={cn("flex-1")}>
       <span class={cn("text-xs", "text-muted")}>Download</span>

@@ -1,12 +1,8 @@
 <script lang="ts">
-  import { cn } from "../helpers/classname";
+  import { cn } from "../../helpers/classname";
+  import { avColors } from "./constants";
+  import type { Lease } from "./types";
 
-  interface Lease {
-    hostname: string;
-    ipaddr: string;
-    macaddr: string;
-    leasetime: number;
-  }
   let { leases = [] } = $props<{ leases?: Lease[] }>();
 
   const formatTime = (s: number) => {
@@ -15,13 +11,6 @@
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   };
   const getInitials = (h: string) => h?.slice(0, 2).toUpperCase() || "??";
-  const avColors = [
-    "text-accent bg-accent/15",
-    "text-info bg-info/15",
-    "text-warn bg-warn/15",
-    "text-purple-400 bg-purple-400/15",
-    "text-pink-400 bg-pink-400/15",
-  ];
 </script>
 
 <div class={cn("glass", "p-5", "animate-slide-up")}>

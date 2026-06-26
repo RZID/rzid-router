@@ -1,15 +1,8 @@
 <script lang="ts">
-  import { logout } from "../api/ubus";
-  import { cn } from "../helpers/classname";
-  import {
-    LayoutDashboard,
-    Settings,
-    Network,
-    Layers,
-    LogOut,
-    ChevronRight,
-    Router,
-  } from "@lucide/svelte";
+  import { logout } from "../../api/ubus";
+  import { cn } from "../../helpers/classname";
+  import { LogOut, ChevronRight, Router } from "@lucide/svelte";
+  import { nav } from "./constants";
 
   let {
     active = "dashboard",
@@ -20,59 +13,6 @@
     onnavigate?: (id: string) => void;
     onlogout?: () => void;
   }>();
-
-  const nav: {
-    label: string;
-    icon: typeof LayoutDashboard;
-    children: { id: string; label: string }[];
-  }[] = [
-    {
-      label: "Status",
-      icon: LayoutDashboard,
-      children: [
-        { id: "dashboard", label: "Overview" },
-        { id: "routes", label: "Routing" },
-        { id: "firewall-status", label: "Firewall" },
-        { id: "syslog", label: "System Log" },
-        { id: "processes", label: "Processes" },
-        { id: "realtime", label: "Realtime Graphs" },
-      ],
-    },
-    {
-      label: "System",
-      icon: Settings,
-      children: [
-        { id: "system", label: "System" },
-        { id: "admin", label: "Administration" },
-        { id: "software", label: "Software" },
-        { id: "startup", label: "Startup" },
-        { id: "crontab", label: "Scheduled Tasks" },
-        { id: "flash", label: "Backup / Flash" },
-      ],
-    },
-    {
-      label: "Network",
-      icon: Network,
-      children: [
-        { id: "network", label: "Interfaces" },
-        { id: "network-routes", label: "Routing" },
-        { id: "dhcp", label: "DHCP" },
-        { id: "dns", label: "DNS" },
-        { id: "diagnostics", label: "Diagnostics" },
-      ],
-    },
-    {
-      label: "Services",
-      icon: Layers,
-      children: [
-        { id: "services", label: "Services" },
-        { id: "ddns", label: "Dynamic DNS" },
-        { id: "adguard", label: "AdGuard Home" },
-        { id: "banip", label: "banIP" },
-        { id: "upnp", label: "UPnP" },
-      ],
-    },
-  ];
 
   let expanded = $state<Record<string, boolean>>({ Status: true });
   const handleLogout = () => {
@@ -132,6 +72,7 @@
             "text-xs",
             "text-left",
             "uppercase",
+            "text-muted",
             "rounded-lg",
             "font-medium",
             "duration-150",
@@ -140,7 +81,6 @@
             "tracking-wider",
             "transition-colors",
             "hover:bg-white/5",
-            "text-muted",
           )}
           onclick={() =>
             (expanded = { ...expanded, [cat.label]: !expanded[cat.label] })}
@@ -173,9 +113,18 @@
                   "cursor-pointer",
                   "hover:bg-white/5",
                   active === item.id
-                    ? cn("bg-accent/10 text-accent border border-accent/20")
+                    ? cn(
+                        "border",
+                        "text-accent",
+                        "bg-accent/10",
+                        "border-accent/20",
+                      )
                     : cn(
-                        "bg-transparent text-muted border border-transparent hover:text-fg",
+                        "border",
+                        "text-muted",
+                        "hover:text-fg",
+                        "bg-transparent",
+                        "border-transparent",
                       ),
                 )}
                 onclick={() => onnavigate?.(item.id)}
@@ -189,7 +138,7 @@
     {/each}
   </nav>
 
-  <div class={cn("p-3 border-t border-border")}>
+  <div class={cn("p-3", "border-t", "border-border")}>
     <button
       class={cn(
         "flex",
@@ -199,12 +148,12 @@
         "py-2.5",
         "text-sm",
         "rounded-lg",
+        "text-muted",
         "duration-150",
         "items-center",
         "cursor-pointer",
         "transition-colors",
         "hover:bg-white/5",
-        "text-muted",
         "hover:text-danger",
       )}
       onclick={handleLogout}

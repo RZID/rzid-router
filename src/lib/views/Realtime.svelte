@@ -2,13 +2,15 @@
   import { onMount, onDestroy } from "svelte";
   import { Globe, Zap, Radio } from "@lucide/svelte";
   import { cn } from "../helpers/classname";
-  import { call, getRealtimeStats, fetchConntrackMetrics, getConntrackList } from "../api/ubus";
-  import RealtimeGraph from "../components/RealtimeGraph.svelte";
+  import {
+    call,
+    getRealtimeStats,
+    fetchConntrackMetrics,
+    getConntrackList,
+  } from "../api/ubus";
+  import RealtimeGraph from "../components/RealtimeGraph/index.svelte";
 
-  let {
-    sub: _sub = "bandwidth",
-    onsubchange,
-  } = $props<{
+  let { sub: _sub = "bandwidth", onsubchange } = $props<{
     sub?: string;
     onsubchange?: (s: string) => void;
   }>();
@@ -33,13 +35,17 @@
 
   // ---- Load ----
   let loadData = $state<{ l1: number[]; l5: number[]; l15: number[] }>({
-    l1: [], l5: [], l15: [],
+    l1: [],
+    l5: [],
+    l15: [],
   });
   let loadLastTs = $state(0);
 
   // ---- Connections ----
   let ctData = $state<{ udp: number[]; tcp: number[]; other: number[] }>({
-    udp: [], tcp: [], other: [],
+    udp: [],
+    tcp: [],
+    other: [],
   });
   let ctList = $state<any[]>([]);
   let ctSearch = $state("");
@@ -63,7 +69,11 @@
 
   // ---- Data refresh ----
   const discoverInterfaces = async () => {
-    const devs = await call<Record<string, any>>("luci-rpc", "getNetworkDevices", {});
+    const devs = await call<Record<string, any>>(
+      "luci-rpc",
+      "getNetworkDevices",
+      {},
+    );
     if (!devs || typeof devs !== "object") return;
     const ifaces = Object.keys(devs).filter(
       (k) => k !== "lo" && !k.startsWith("ifb") && devs[k]?.stats,
@@ -127,8 +137,10 @@
   };
 
   const refresh = async () => {
-    if (tab === "bandwidth") { await discoverInterfaces(); await refreshBandwidth(); }
-    else if (tab === "load") await refreshLoad();
+    if (tab === "bandwidth") {
+      await discoverInterfaces();
+      await refreshBandwidth();
+    } else if (tab === "load") await refreshLoad();
     else if (tab === "connections") await refreshConnections();
   };
 
@@ -170,9 +182,13 @@
   };
 </script>
 
-<div class={cn("p-6", "flex", "flex-col", "h-screen", "gap-4", "animate-fade-in")}>
+<div
+  class={cn("p-6", "flex", "flex-col", "h-screen", "gap-4", "animate-fade-in")}
+>
   <div class={cn("flex-shrink-0")}>
-    <h1 class={cn("text-lg", "font-semibold", "text-white")}>Realtime Graphs</h1>
+    <h1 class={cn("text-lg", "font-semibold", "text-white")}>
+      Realtime Graphs
+    </h1>
     <p class={cn("text-sm", "mt-0.5", "text-muted")}>
       Bandwidth, load, connections
     </p>
@@ -181,23 +197,42 @@
   <!-- Tab bar -->
   <div
     class={cn(
-      "flex", "gap-1", "p-0.5", "w-fit", "border", "rounded-lg",
-      "bg-surface-2", "border-border", "flex-shrink-0",
+      "flex",
+      "gap-1",
+      "p-0.5",
+      "w-fit",
+      "border",
+      "rounded-lg",
+      "bg-surface-2",
+      "border-border",
+      "flex-shrink-0",
     )}
   >
-    {#each [
-      { id: "bandwidth" as const, label: "Bandwidth", icon: Globe },
-      { id: "load" as const, label: "Load", icon: Zap },
-      { id: "connections" as const, label: "Connections", icon: Radio },
-    ] as t}
+    {#each [{ id: "bandwidth" as const, label: "Bandwidth", icon: Globe }, { id: "load" as const, label: "Load", icon: Zap }, { id: "connections" as const, label: "Connections", icon: Radio }] as t}
       {@const TabIcon = t.icon}
       <button
         class={cn(
-          "px-3", "py-1.5", "text-xs", "rounded-md", "font-medium",
-          "transition-all", "flex", "items-center", "gap-1.5", "cursor-pointer",
+          "px-3",
+          "py-1.5",
+          "text-xs",
+          "rounded-md",
+          "font-medium",
+          "transition-all",
+          "flex",
+          "items-center",
+          "gap-1.5",
+          "cursor-pointer",
         )}
-        style="background:{tab === t.id ? 'var(--accent)' : 'transparent'};color:{tab === t.id ? '#0d1117' : 'var(--text-muted)'}"
-        onclick={() => { tab = t.id; onsubchange?.(t.id); refresh(); }}
+        style="background:{tab === t.id
+          ? 'var(--accent)'
+          : 'transparent'};color:{tab === t.id
+          ? '#0d1117'
+          : 'var(--text-muted)'}"
+        onclick={() => {
+          tab = t.id;
+          onsubchange?.(t.id);
+          refresh();
+        }}
       >
         <TabIcon size={14} />
         {t.label}
@@ -207,141 +242,204 @@
 
   <!-- Content -->
   <div class={cn("flex-1", "min-h-0")}>
-  <!-- Bandwidth -->
-  {#if tab === "bandwidth"}
-    <div class={cn("flex", "flex-col", "h-full", "gap-4")}>
-      <div class={cn("flex", "flex-wrap", "gap-1", "items-center")}>
-        {#each bwInterfaces as iface}
-          <button
-            class={cn(
-              "px-2.5", "py-1", "text-xs", "rounded-md", "font-medium",
-              "transition-all", "cursor-pointer", "border",
-            )}
-            style="background:{bwActiveTab === iface ? 'var(--accent)' : 'var(--surface)'};color:{bwActiveTab === iface ? '#0d1117' : 'var(--text-muted)'};border-color:{bwActiveTab === iface ? 'var(--accent)' : 'var(--border)'}"
-            onclick={() => switchIface(iface)}
-          >
-            {iface}
-          </button>
-        {/each}
-      </div>
-
-      {#if bwActiveTab && bwData[bwActiveTab]}
-        <RealtimeGraph
-          series={[
-            { label: "Inbound", color: "#58a6ff", data: bwData[bwActiveTab].rx },
-            { label: "Outbound", color: "#00d4aa", data: bwData[bwActiveTab].tx },
-          ]}
-          formatValue={fmtBits}
-          noData={bwData[bwActiveTab].rx.length === 0}
-          noDataMsg="Collecting data…"
-        />
-      {:else}
-        <RealtimeGraph series={[]} formatValue={fmtBits} noData noDataMsg="No interfaces" />
-      {/if}
-    </div>
-  {/if}
-
-  <!-- Load -->
-  {#if tab === "load"}
-    <RealtimeGraph
-      series={[
-        { label: "1 Minute", color: "#ff4d4f", data: loadData.l1 },
-        { label: "5 Minute", color: "#f0883e", data: loadData.l5 },
-        { label: "15 Minute", color: "#f0c83e", data: loadData.l15 },
-      ]}
-      formatValue={fmtLoad}
-      noData={loadData.l1.length === 0}
-      noDataMsg="Collecting data…"
-    />
-  {/if}
-
-  <!-- Connections -->
-  {#if tab === "connections"}
-    <div class={cn("flex", "flex-col", "h-full", "gap-4")}>
-      <RealtimeGraph
-        series={[
-          { label: "UDP", color: "#58a6ff", data: ctData.udp },
-          { label: "TCP", color: "#00d4aa", data: ctData.tcp },
-          { label: "Other", color: "#ff4d4f", data: ctData.other },
-        ]}
-        formatValue={fmtInt}
-        height={160}
-        noData={ctData.udp.length === 0 && ctData.tcp.length === 0}
-        noDataMsg="Connection tracking unavailable"
-      />
-
-      <!-- Connections table -->
-      <div class={cn("glass", "p-5", "flex", "flex-col", "flex-1", "min-h-0")}>
-        <div class={cn("flex", "items-center", "justify-between", "flex-shrink-0", "mb-3")}>
-          <h3 class={cn("text-sm", "font-semibold", "text-white")}>
-            Active Connections
-            <span class={cn("text-muted", "font-normal", "ml-1")}>
-              ({ctList.length})
-            </span>
-          </h3>
-          <input
-            type="text"
-            placeholder="Filter connections…"
-            class={cn(
-              "px-2", "py-1", "text-xs", "rounded-md", "outline-none",
-              "bg-surface", "border", "border-border", "text-fg",
-              "w-48", "placeholder:text-muted",
-            )}
-            bind:value={ctSearch}
-          />
+    <!-- Bandwidth -->
+    {#if tab === "bandwidth"}
+      <div class={cn("flex", "flex-col", "h-full", "gap-4")}>
+        <div class={cn("flex", "flex-wrap", "gap-1", "items-center")}>
+          {#each bwInterfaces as iface}
+            <button
+              class={cn(
+                "px-2.5",
+                "py-1",
+                "text-xs",
+                "rounded-md",
+                "font-medium",
+                "transition-all",
+                "cursor-pointer",
+                "border",
+              )}
+              style="background:{bwActiveTab === iface
+                ? 'var(--accent)'
+                : 'var(--surface)'};color:{bwActiveTab === iface
+                ? '#0d1117'
+                : 'var(--text-muted)'};border-color:{bwActiveTab === iface
+                ? 'var(--accent)'
+                : 'var(--border)'}"
+              onclick={() => switchIface(iface)}
+            >
+              {iface}
+            </button>
+          {/each}
         </div>
 
-        {#if ctFiltered.length > 0}
-          <div class={cn("flex-1", "min-h-0", "overflow-y-auto")}>
-            <table class={cn("w-full", "text-xs", "font-mono")}>
-              <thead>
-                <tr class={cn("text-muted", "uppercase", "text-xs", "tracking-wider")}>
-                  <th class={cn("text-left", "p-1.5")}>Network</th>
-                  <th class={cn("text-left", "p-1.5")}>Protocol</th>
-                  <th class={cn("text-left", "p-1.5")}>Source</th>
-                  <th class={cn("text-left", "p-1.5")}>Destination</th>
-                  <th class={cn("text-right", "p-1.5")}>Transfer</th>
-                </tr>
-              </thead>
-              <tbody>
-                {#each ctFiltered.slice(0, 500) as c}
-                  <tr class={cn("border-t", "border-border", "hover:bg-surface-2/50")}>
-                    <td class={cn("p-1.5", "text-muted")}>{c.layer3?.toUpperCase?.() || "-"}</td>
-                    <td class={cn("p-1.5")}>
-                      <span
-                        class={cn("font-semibold")}
-                        style="color:{protoColor[c.layer4?.toLowerCase()] || 'var(--text-muted)'}"
-                      >
-                        {c.layer4?.toUpperCase?.() || "-"}
-                      </span>
-                    </td>
-                    <td class={cn("p-1.5")}>{joinAddr(c.src || "?", c.sport || 0)}</td>
-                    <td class={cn("p-1.5")}>{joinAddr(c.dst || "?", c.dport || 0)}</td>
-                    <td class={cn("p-1.5", "text-right")}>
-                      {fmtBytes(c.bytes || 0)}
-                      <span class={cn("text-muted")}>
-                        {" "}({c.packets || 0} pkts)
-                      </span>
-                    </td>
-                  </tr>
-                {/each}
-              </tbody>
-            </table>
-            {#if ctFiltered.length > 500}
-              <p class={cn("text-xs", "text-muted", "text-center", "mt-2")}>
-                Showing 500 of {ctFiltered.length} connections
-              </p>
-            {/if}
-          </div>
+        {#if bwActiveTab && bwData[bwActiveTab]}
+          <RealtimeGraph
+            series={[
+              {
+                label: "Inbound",
+                color: "#58a6ff",
+                data: bwData[bwActiveTab].rx,
+              },
+              {
+                label: "Outbound",
+                color: "#00d4aa",
+                data: bwData[bwActiveTab].tx,
+              },
+            ]}
+            formatValue={fmtBits}
+            noData={bwData[bwActiveTab].rx.length === 0}
+            noDataMsg="Collecting data…"
+          />
         {:else}
-          <div class={cn("flex-1", "flex", "items-center", "justify-center")}>
-            <p class={cn("text-xs", "text-muted")}>
-              {ctSearch ? "No matching connections" : "Collecting data…"}
-            </p>
-          </div>
+          <RealtimeGraph
+            series={[]}
+            formatValue={fmtBits}
+            noData
+            noDataMsg="No interfaces"
+          />
         {/if}
       </div>
-    </div>
-  {/if}
+    {/if}
+
+    <!-- Load -->
+    {#if tab === "load"}
+      <RealtimeGraph
+        series={[
+          { label: "1 Minute", color: "#ff4d4f", data: loadData.l1 },
+          { label: "5 Minute", color: "#f0883e", data: loadData.l5 },
+          { label: "15 Minute", color: "#f0c83e", data: loadData.l15 },
+        ]}
+        formatValue={fmtLoad}
+        noData={loadData.l1.length === 0}
+        noDataMsg="Collecting data…"
+      />
+    {/if}
+
+    <!-- Connections -->
+    {#if tab === "connections"}
+      <div class={cn("flex", "flex-col", "h-full", "gap-4")}>
+        <RealtimeGraph
+          series={[
+            { label: "UDP", color: "#58a6ff", data: ctData.udp },
+            { label: "TCP", color: "#00d4aa", data: ctData.tcp },
+            { label: "Other", color: "#ff4d4f", data: ctData.other },
+          ]}
+          formatValue={fmtInt}
+          height={160}
+          noData={ctData.udp.length === 0 && ctData.tcp.length === 0}
+          noDataMsg="Connection tracking unavailable"
+        />
+
+        <!-- Connections table -->
+        <div
+          class={cn("glass", "p-5", "flex", "flex-col", "flex-1", "min-h-0")}
+        >
+          <div
+            class={cn(
+              "flex",
+              "items-center",
+              "justify-between",
+              "flex-shrink-0",
+              "mb-3",
+            )}
+          >
+            <h3 class={cn("text-sm", "font-semibold", "text-white")}>
+              Active Connections
+              <span class={cn("text-muted", "font-normal", "ml-1")}>
+                ({ctList.length})
+              </span>
+            </h3>
+            <input
+              type="text"
+              placeholder="Filter connections…"
+              class={cn(
+                "px-2",
+                "py-1",
+                "text-xs",
+                "rounded-md",
+                "outline-none",
+                "bg-surface",
+                "border",
+                "border-border",
+                "text-fg",
+                "w-48",
+                "placeholder:text-muted",
+              )}
+              bind:value={ctSearch}
+            />
+          </div>
+
+          {#if ctFiltered.length > 0}
+            <div class={cn("flex-1", "min-h-0", "overflow-y-auto")}>
+              <table class={cn("w-full", "text-xs", "font-mono")}>
+                <thead>
+                  <tr
+                    class={cn(
+                      "text-muted",
+                      "uppercase",
+                      "text-xs",
+                      "tracking-wider",
+                    )}
+                  >
+                    <th class={cn("text-left", "p-1.5")}>Network</th>
+                    <th class={cn("text-left", "p-1.5")}>Protocol</th>
+                    <th class={cn("text-left", "p-1.5")}>Source</th>
+                    <th class={cn("text-left", "p-1.5")}>Destination</th>
+                    <th class={cn("text-right", "p-1.5")}>Transfer</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {#each ctFiltered.slice(0, 500) as c}
+                    <tr
+                      class={cn(
+                        "border-t",
+                        "border-border",
+                        "hover:bg-surface-2/50",
+                      )}
+                    >
+                      <td class={cn("p-1.5", "text-muted")}
+                        >{c.layer3?.toUpperCase?.() || "-"}</td
+                      >
+                      <td class={cn("p-1.5")}>
+                        <span
+                          class={cn("font-semibold")}
+                          style="color:{protoColor[c.layer4?.toLowerCase()] ||
+                            'var(--text-muted)'}"
+                        >
+                          {c.layer4?.toUpperCase?.() || "-"}
+                        </span>
+                      </td>
+                      <td class={cn("p-1.5")}
+                        >{joinAddr(c.src || "?", c.sport || 0)}</td
+                      >
+                      <td class={cn("p-1.5")}
+                        >{joinAddr(c.dst || "?", c.dport || 0)}</td
+                      >
+                      <td class={cn("p-1.5", "text-right")}>
+                        {fmtBytes(c.bytes || 0)}
+                        <span class={cn("text-muted")}>
+                          {" "}({c.packets || 0} pkts)
+                        </span>
+                      </td>
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+              {#if ctFiltered.length > 500}
+                <p class={cn("text-xs", "text-muted", "text-center", "mt-2")}>
+                  Showing 500 of {ctFiltered.length} connections
+                </p>
+              {/if}
+            </div>
+          {:else}
+            <div class={cn("flex-1", "flex", "items-center", "justify-center")}>
+              <p class={cn("text-xs", "text-muted")}>
+                {ctSearch ? "No matching connections" : "Collecting data…"}
+              </p>
+            </div>
+          {/if}
+        </div>
+      </div>
+    {/if}
   </div>
 </div>

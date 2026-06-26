@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ChevronRight } from "@lucide/svelte";
-  import { cn } from "../helpers/classname";
+  import { cn } from "../../helpers/classname";
 
   let {
     title,
@@ -49,8 +49,8 @@
         "text-xs",
         "font-mono",
         "rounded-full",
-        "bg-accent/10",
         "text-accent",
+        "bg-accent/10",
       )}
     >
       {badge}

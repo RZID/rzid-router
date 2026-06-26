@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { login } from "../api/ubus";
-  import { cn } from "../helpers/classname";
+  import { login } from "../../api/ubus";
+  import { cn } from "../../helpers/classname";
 
   let { onauthenticated } = $props<{ onauthenticated?: () => void }>();
   let password = $state(""),
