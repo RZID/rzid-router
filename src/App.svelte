@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import Login from "./lib/components/Login.svelte";
-  import Sidebar from "./lib/components/Sidebar.svelte";
+  import Login from "./lib/components/Login/index.svelte";
+  import Sidebar from "./lib/components/Sidebar/index.svelte";
   import Dashboard from "./lib/views/Dashboard.svelte";
   import Services from "./lib/views/Services.svelte";
   import Routes from "./lib/views/Routes.svelte";

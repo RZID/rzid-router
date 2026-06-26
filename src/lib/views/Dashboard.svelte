@@ -217,7 +217,7 @@
       label="Memory"
       value="{memPct}%"
       sub="{fmtBytes(memUsed)} / {fmtBytes(memTotal)}"
-      icon={HardDrive}
+      Icon={HardDrive}
       color={memPct > 80
         ? "var(--danger)"
         : memPct > 60
@@ -228,14 +228,14 @@
       label="Load"
       value={load1}
       sub={`${load5} / ${load15}`}
-      icon={Zap}
+      Icon={Zap}
       color={parseFloat(load1) > 1 ? "var(--warn)" : "var(--accent)"}
     />
     <StatCard
       label="WAN"
       value={wanIp}
       sub={wanProto}
-      icon={Globe}
+      Icon={Globe}
       color="var(--info)"
       pulse={wanIp !== "—"}
     />
@@ -243,7 +243,7 @@
       label="Bandwidth"
       value={bwRate.rxRate}
       sub={`TX ${bwRate.txRate}`}
-      icon={ArrowUpDown}
+      Icon={ArrowUpDown}
       color="var(--accent)"
     />
   </div>

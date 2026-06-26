@@ -185,7 +185,7 @@
 <div
   class={cn("p-6", "flex", "flex-col", "h-screen", "gap-4", "animate-fade-in")}
 >
-  <div class={cn("flex-shrink-0")}>
+  <div class={cn("shrink-0")}>
     <h1 class={cn("text-lg", "font-semibold", "text-white")}>
       Realtime Graphs
     </h1>
@@ -202,10 +202,10 @@
       "p-0.5",
       "w-fit",
       "border",
+      "shrink-0",
       "rounded-lg",
       "bg-surface-2",
       "border-border",
-      "flex-shrink-0",
     )}
   >
     {#each [{ id: "bandwidth" as const, label: "Bandwidth", icon: Globe }, { id: "load" as const, label: "Load", icon: Zap }, { id: "connections" as const, label: "Connections", icon: Radio }] as t}
@@ -213,14 +213,14 @@
       <button
         class={cn(
           "px-3",
+          "flex",
           "py-1.5",
           "text-xs",
+          "gap-1.5",
           "rounded-md",
           "font-medium",
-          "transition-all",
-          "flex",
           "items-center",
-          "gap-1.5",
+          "transition-all",
           "cursor-pointer",
         )}
         style="background:{tab === t.id
@@ -249,14 +249,14 @@
           {#each bwInterfaces as iface}
             <button
               class={cn(
-                "px-2.5",
                 "py-1",
+                "px-2.5",
+                "border",
                 "text-xs",
                 "rounded-md",
                 "font-medium",
                 "transition-all",
                 "cursor-pointer",
-                "border",
               )}
               style="background:{bwActiveTab === iface
                 ? 'var(--accent)'
@@ -336,11 +336,11 @@
         >
           <div
             class={cn(
+              "mb-3",
               "flex",
+              "shrink-0",
               "items-center",
               "justify-between",
-              "flex-shrink-0",
-              "mb-3",
             )}
           >
             <h3 class={cn("text-sm", "font-semibold", "text-white")}>
@@ -353,16 +353,16 @@
               type="text"
               placeholder="Filter connections…"
               class={cn(
+                "w-48",
                 "px-2",
                 "py-1",
+                "border",
                 "text-xs",
+                "text-fg",
                 "rounded-md",
                 "outline-none",
                 "bg-surface",
-                "border",
                 "border-border",
-                "text-fg",
-                "w-48",
                 "placeholder:text-muted",
               )}
               bind:value={ctSearch}
@@ -375,9 +375,9 @@
                 <thead>
                   <tr
                     class={cn(
-                      "text-muted",
-                      "uppercase",
                       "text-xs",
+                      "uppercase",
+                      "text-muted",
                       "tracking-wider",
                     )}
                   >

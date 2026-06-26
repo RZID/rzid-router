@@ -7,14 +7,14 @@
     value,
     sub = "",
     color = "var(--accent)",
-    icon,
+    Icon,
     pulse = false,
   }: {
     label: string;
     value: string;
     sub?: string;
     color?: string;
-    icon?: Component;
+    Icon?: Component;
     pulse?: boolean;
   } = $props();
 
@@ -43,7 +43,7 @@
         "tracking-wider",
       )}>{label}</span
     >
-    {#if icon}
+    {#if Icon}
       <span
         class={cn(
           "opacity-60",
@@ -51,7 +51,7 @@
           "group-hover:opacity-100",
         )}
       >
-        <svelte:component this={icon} size={16} class={cn("text-muted")} />
+        <Icon size={16} class={cn("text-muted")} />
       </span>
     {/if}
   </div>
