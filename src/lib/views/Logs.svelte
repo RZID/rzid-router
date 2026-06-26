@@ -17,6 +17,16 @@
   import { cn } from "../helpers/classname";
 
   let tab = $state<"syslog" | "dmesg">("syslog");
+  let prevTab = $state("syslog");
+  let tabDir = $state("left");
+
+  const switchTab = (t: "syslog" | "dmesg") => {
+    if (t === tab) return;
+    tabDir = t === "syslog" ? "right" : "left";
+    prevTab = t;
+    tab = t;
+    refresh();
+  };
   let logText = $state("");
   let loading = $state(true);
   let error = $state("");
@@ -143,10 +153,7 @@
           : 'transparent'};color:{tab === 'syslog'
           ? '#0d1117'
           : 'var(--text-muted)'}"
-        onclick={() => {
-          tab = "syslog";
-          refresh();
-        }}
+        onclick={() => switchTab("syslog")}
       >
         System Log
       </button>
@@ -165,10 +172,7 @@
           : 'transparent'};color:{tab === 'dmesg'
           ? '#0d1117'
           : 'var(--text-muted)'}"
-        onclick={() => {
-          tab = "dmesg";
-          refresh();
-        }}
+        onclick={() => switchTab("dmesg")}
       >
         Kernel Log
       </button>
@@ -176,6 +180,7 @@
   </div>
 
   <!-- Main panel -->
+  {#key tab}
   <div
     class={cn(
       "flex",
@@ -185,7 +190,7 @@
       "min-h-0",
       "flex-col",
       "overflow-hidden",
-      "animate-slide-up",
+      tabDir === "left" ? "animate-slide-left" : "animate-slide-right",
     )}
   >
     <!-- Filters -->
@@ -949,4 +954,5 @@
       </div>
     </div>
   </div>
+  {/key}
 </div>

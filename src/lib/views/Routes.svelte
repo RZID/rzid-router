@@ -11,6 +11,14 @@
     ip6rules = $state<any[]>([]);
   let networks = $state<any[]>([]);
   let tab = $state<"ipv4" | "ipv6">("ipv4");
+  let prevTab = $state("ipv4");
+  let tabDir = $state("left");
+
+  const switchTab = (t: "ipv4" | "ipv6") => {
+    tabDir = t === "ipv4" ? "right" : "left";
+    prevTab = t;
+    tab = t;
+  };
   let interval: ReturnType<typeof setInterval>;
 
   const exec = (cmd: string, args: string[]) => ({
@@ -122,13 +130,14 @@
         "rounded-md",
         "font-medium",
         "transition-all",
+        "cursor-pointer",
       )}
       style="background:{tab === 'ipv4'
         ? 'var(--accent)'
         : 'transparent'};color:{tab === 'ipv4'
         ? '#0d1117'
         : 'var(--text-muted)'}"
-      onclick={() => (tab = "ipv4")}
+      onclick={() => switchTab("ipv4")}
     >
       IPv4 Routing
     </button>
@@ -140,19 +149,21 @@
         "rounded-md",
         "font-medium",
         "transition-all",
+        "cursor-pointer",
       )}
       style="background:{tab === 'ipv6'
         ? 'var(--accent)'
         : 'transparent'};color:{tab === 'ipv6'
         ? '#0d1117'
         : 'var(--text-muted)'}"
-      onclick={() => (tab = "ipv6")}
+      onclick={() => switchTab("ipv6")}
     >
       IPv6 Routing
     </button>
   </div>
 
-  <div class={cn("space-y-6")}>
+  {#key tab}
+  <div class={cn("space-y-6", tabDir === "left" ? "animate-slide-left" : "animate-slide-right")}>
     <!-- Neighbours -->
     <div class={cn("glass", "p-5", "animate-slide-up")}>
       <h3 class={cn("text-sm", "font-semibold", "text-white", "mb-3")}>
@@ -347,4 +358,5 @@
         </p>{/if}
     </div>
   </div>
+  {/key}
 </div>

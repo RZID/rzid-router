@@ -16,10 +16,19 @@
   }>();
 
   let tab = $state<"bandwidth" | "load" | "connections">("bandwidth");
+  let prevTab = $state("bandwidth");
+  let tabDir = $state("left");
   let interval: ReturnType<typeof setInterval>;
 
   $effect(() => {
     if (_sub === "bandwidth" || _sub === "load" || _sub === "connections") {
+      const order = ["bandwidth", "load", "connections"];
+      const oldIdx = order.indexOf(prevTab);
+      const newIdx = order.indexOf(_sub);
+      if (newIdx !== -1 && oldIdx !== -1 && newIdx !== oldIdx) {
+        tabDir = newIdx > oldIdx ? "left" : "right";
+      }
+      prevTab = _sub;
       tab = _sub;
     }
   });
@@ -229,7 +238,10 @@
           ? '#0d1117'
           : 'var(--text-muted)'}"
         onclick={() => {
+          const order = ["bandwidth", "load", "connections"];
+          tabDir = order.indexOf(t.id) > order.indexOf(tab) ? "left" : "right";
           tab = t.id;
+          prevTab = t.id;
           onsubchange?.(t.id);
           refresh();
         }}
@@ -241,7 +253,8 @@
   </div>
 
   <!-- Content -->
-  <div class={cn("flex-1", "min-h-0")}>
+  {#key tab}
+  <div class={cn("flex-1", "min-h-0", tabDir === "left" ? "animate-slide-left" : "animate-slide-right")}>
     <!-- Bandwidth -->
     {#if tab === "bandwidth"}
       <div class={cn("flex", "flex-col", "h-full", "gap-4")}>
@@ -442,4 +455,5 @@
       </div>
     {/if}
   </div>
+  {/key}
 </div>
