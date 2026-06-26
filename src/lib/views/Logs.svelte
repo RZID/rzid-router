@@ -14,6 +14,8 @@
     type SystemLogFilters,
     type DmesgFilters,
   } from "../logs";
+  import Select from "../components/Select/index.svelte";
+  import Input from "../components/Input/index.svelte";
   import { cn } from "../helpers/classname";
 
   let tab = $state<"syslog" | "dmesg">("syslog");
@@ -268,29 +270,12 @@
               id="facility-select"
               class={cn("flex", "items-center", "gap-2")}
             >
-              <select
-                class={cn(
-                  "flex-1",
-                  "px-2.5",
-                  "py-1.5",
-                  "border",
-                  "min-w-0",
-                  "text-xs",
-                  "text-fg",
-                  "rounded-md",
-                  "outline-none",
-                  "focus:ring-1",
-                  "bg-surface",
-                  "border-border",
-                  "focus:ring-(--accent)",
-                )}
+              <Select
+                options={LOG_FACILITIES}
                 bind:value={sysFilters.facility}
                 onchange={applyFilters}
-              >
-                {#each LOG_FACILITIES as opt}
-                  <option value={opt.value}>{opt.label}</option>
-                {/each}
-              </select>
+                class="flex-1"
+              />
               <button
                 type="button"
                 class={cn(
@@ -349,29 +334,12 @@
               class={cn("flex", "items-center", "gap-2")}
               id="severity-select"
             >
-              <select
-                class={cn(
-                  "flex-1",
-                  "px-2.5",
-                  "py-1.5",
-                  "border",
-                  "min-w-0",
-                  "text-xs",
-                  "text-fg",
-                  "rounded-md",
-                  "outline-none",
-                  "focus:ring-1",
-                  "bg-surface",
-                  "border-border",
-                  "focus:ring-(--accent)",
-                )}
+              <Select
+                options={LOG_SEVERITIES}
                 bind:value={sysFilters.severity}
                 onchange={applyFilters}
-              >
-                {#each LOG_SEVERITIES as opt}
-                  <option value={opt.value}>{opt.label}</option>
-                {/each}
-              </select>
+                class="flex-1"
+              />
               <button
                 type="button"
                 class={cn(
@@ -429,26 +397,12 @@
               Search
             </label>
             <div id="search-select" class={cn("flex", "items-center", "gap-2")}>
-              <input
-                class={cn(
-                  "py-1.5",
-                  "flex-1",
-                  "px-2.5",
-                  "border",
-                  "min-w-0",
-                  "text-xs",
-                  "text-fg",
-                  "font-mono",
-                  "rounded-md",
-                  "outline-none",
-                  "focus:ring-1",
-                  "bg-surface",
-                  "border-border",
-                  "focus:ring-(--accent)",
-                )}
+              <Input
                 bind:value={sysFilters.text}
                 oninput={applyFilters}
                 placeholder="Filter text…"
+                mono
+                class="flex-1"
               />
               <button
                 type="button"
@@ -504,27 +458,12 @@
             >
               Max rows
             </label>
-            <input
-              id="max-rows-select"
+            <Input
               type="number"
-              min="1"
-              class={cn(
-                "w-full",
-                "px-2.5",
-                "border",
-                "py-1.5",
-                "text-xs",
-                "text-fg",
-                "font-mono",
-                "rounded-md",
-                "bg-surface",
-                "outline-none",
-                "focus:ring-1",
-                "border-border",
-                "focus:ring-(--accent)",
-              )}
               bind:value={sysFilters.maxRows}
               onchange={applyFilters}
+              mono
+              class="w-full"
             />
           </div>
         </div>
@@ -566,56 +505,24 @@
               id="time-range-select"
               class={cn("flex", "flex-wrap", "items-center", "gap-2")}
             >
-              <input
+              <Input
                 type="number"
-                min="0"
-                step="0.1"
-                class={cn(
-                  "flex-1",
-                  "px-2.5",
-                  "py-1.5",
-                  "border",
-                  "text-xs",
-                  "text-fg",
-                  "min-w-24",
-                  "font-mono",
-                  "rounded-md",
-                  "outline-none",
-                  "bg-surface",
-                  "focus:ring-1",
-                  "border-border",
-                  "focus:ring-(--accent)",
-                )}
                 bind:value={dmesgFilters.fromTime}
                 oninput={applyFilters}
                 placeholder="From"
+                mono
+                class="flex-1 min-w-24"
               />
               <span class={cn("text-xs", "text-muted")}
                 ><ArrowRight size={14} class={cn("text-muted")} /></span
               >
-              <input
+              <Input
                 type="number"
-                min="0"
-                step="0.1"
-                class={cn(
-                  "flex-1",
-                  "px-2.5",
-                  "py-1.5",
-                  "border",
-                  "text-xs",
-                  "text-fg",
-                  "min-w-24",
-                  "font-mono",
-                  "rounded-md",
-                  "outline-none",
-                  "focus:ring-1",
-                  "bg-surface",
-                  "border-border",
-                  "focus:ring-(--accent)",
-                )}
                 bind:value={dmesgFilters.toTime}
                 oninput={applyFilters}
                 placeholder="To"
+                mono
+                class="flex-1 min-w-24"
               />
               <button
                 type="button"
@@ -675,29 +582,12 @@
               id="severity-select"
               class={cn("flex", "items-center", "gap-2")}
             >
-              <select
-                class={cn(
-                  "flex-1",
-                  "px-2.5",
-                  "py-1.5",
-                  "border",
-                  "min-w-0",
-                  "text-xs",
-                  "text-fg",
-                  "rounded-md",
-                  "outline-none",
-                  "bg-surface",
-                  "focus:ring-1",
-                  "border-border",
-                  "focus:ring-(--accent)",
-                )}
+              <Select
+                options={DMESG_SEVERITIES}
                 bind:value={dmesgFilters.minSeverity}
                 onchange={applyFilters}
-              >
-                {#each DMESG_SEVERITIES as opt}
-                  <option value={opt.value}>{opt.label}</option>
-                {/each}
-              </select>
+                class="flex-1"
+              />
               <button
                 type="button"
                 class={cn(
@@ -754,27 +644,12 @@
               Search
             </label>
             <div class={cn("flex", "items-center", "gap-2")}>
-              <input
-                id="search-input"
-                class={cn(
-                  "flex-1",
-                  "px-2.5",
-                  "py-1.5",
-                  "border",
-                  "min-w-0",
-                  "text-xs",
-                  "text-fg",
-                  "font-mono",
-                  "rounded-md",
-                  "outline-none",
-                  "focus:ring-1",
-                  "bg-surface",
-                  "border-border",
-                  "focus:ring-(--accent)",
-                )}
+              <Input
                 bind:value={dmesgFilters.text}
                 oninput={applyFilters}
                 placeholder="Filter text…"
+                mono
+                class="flex-1"
               />
               <button
                 type="button"

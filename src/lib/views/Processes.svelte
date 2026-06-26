@@ -157,6 +157,9 @@
             "bg-transparent",
             "outline-none",
             "placeholder:text-muted",
+            "transition-all",
+            "duration-150",
+            "focus:border-(--accent)",
           )}
           bind:value={filterText}
           placeholder="Filter…"

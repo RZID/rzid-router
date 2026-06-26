@@ -9,6 +9,7 @@
   import Logs from "./lib/views/Logs.svelte";
   import Processes from "./lib/views/Processes.svelte";
   import Realtime from "./lib/views/Realtime.svelte";
+  import System from "./lib/views/System.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
@@ -48,7 +49,6 @@
     adguard: { title: "AdGuard Home", sub: "DNS filtering & blocklists" },
     banip: { title: "banIP", sub: "IP threat blocking" },
     upnp: { title: "UPnP", sub: "Port mapping & IGD" },
-    system: { title: "System", sub: "System settings" },
     admin: { title: "Administration", sub: "Password, SSH, HTTP" },
     software: { title: "Software", sub: "Package management" },
     startup: { title: "Startup", sub: "Init scripts & services" },
@@ -105,6 +105,8 @@
         <Realtime sub={currentSub} onsubchange={handleSubChange} />
       {:else if currentView === "syslog"}
         <Logs />
+      {:else if currentView === "system"}
+        <System />
       {:else if placeholders[currentView]}
         <Placeholder
           title={placeholders[currentView].title}

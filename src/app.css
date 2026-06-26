@@ -22,6 +22,7 @@
   --animate-slide-up: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   --animate-slide-left: slideLeft 0.3s ease-out;
   --animate-slide-right: slideRight 0.3s ease-out;
+  --animate-dropdown-open: dropdownOpen 0.15s ease-out;
 }
 
 @keyframes fadeIn {
@@ -42,6 +43,11 @@
 @keyframes slideRight {
   from { opacity: 0; transform: translateX(-20px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes dropdownOpen {
+  from { opacity: 0; transform: translateY(-4px) scaleY(0.97); }
+  to { opacity: 1; transform: translateY(0) scaleY(1); }
 }
 
 :root {

@@ -115,6 +115,55 @@ export const uciSet = async (
   return call("uci", "commit", { config });
 };
 
+export const uciSetSection = async (
+  config: string,
+  section: string,
+  values: Record<string, any>,
+) => {
+  return call("uci", "set", { config, section, values });
+};
+
+export const uciCommit = async (config: string) => {
+  return call("uci", "commit", { config });
+};
+
+export const uciAdd = async (config: string, type: string, name?: string) => {
+  const p: Record<string, any> = { config, type };
+  if (name) p.name = name;
+  return call("uci", "add", p);
+};
+
+export const rcList = async (name: string) => {
+  return call<Record<string, any>>("rc", "list", { name });
+};
+
+export const rcInit = async (name: string, action: string) => {
+  return call("rc", "init", { name, action });
+};
+
+export const getTimezones = async () => {
+  const res = await call<Record<string, { tzstring: string }>>(
+    "luci", "getTimezones", {},
+  );
+  if (res && typeof res === "object" && Object.keys(res).length > 0) return res;
+
+  const old = await call<{ result?: Record<string, { tzstring: string }> }>(
+    "luci", "timezone", {},
+  );
+  if (old?.result) return old.result;
+
+  return null;
+};
+
+export const getUnixtime = async () => {
+  const res = await call<{ result: number }>("luci", "getUnixtime", {});
+  return res?.result ?? null;
+};
+
+export const getSystemFeatures = async () => {
+  return call<Record<string, any>>("luci", "getFeatures", {});
+};
+
 export const serviceRestart = async (name: string) => {
   return call("file", "exec", {
     command: `/etc/init.d/${name}`,

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { Globe, Zap, Radio } from "@lucide/svelte";
+  import Input from "../components/Input/index.svelte";
   import { cn } from "../helpers/classname";
   import {
     call,
@@ -362,23 +363,10 @@
                 ({ctList.length})
               </span>
             </h3>
-            <input
-              type="text"
-              placeholder="Filter connections…"
-              class={cn(
-                "w-48",
-                "px-2",
-                "py-1",
-                "border",
-                "text-xs",
-                "text-fg",
-                "rounded-md",
-                "outline-none",
-                "bg-surface",
-                "border-border",
-                "placeholder:text-muted",
-              )}
+            <Input
               bind:value={ctSearch}
+              placeholder="Filter connections…"
+              class="w-48"
             />
           </div>
 

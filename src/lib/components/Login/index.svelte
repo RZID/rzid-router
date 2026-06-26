@@ -1,4 +1,6 @@
 <script lang="ts">
+  import Input from "../Input/index.svelte";
+
   import { login } from "../../api/ubus";
   import { cn } from "../../helpers/classname";
 
@@ -63,25 +65,20 @@
         >
           PASSWORD
         </label>
-        <input
+        <Input
           type="password"
-          id="password"
           bind:value={password}
           placeholder="root password"
+          mono
           class={cn(
             "px-4",
             "py-3",
-            "w-full",
             "text-sm",
-            "text-fg",
-            "font-mono",
             "rounded-lg",
-            "outline-none",
-            "transition-all",
             "bg-surface-2",
             error
-              ? cn("border", "border-danger")
-              : cn("border", "border-border"),
+              ? "border-danger"
+              : "border-border",
           )}
           disabled={loading}
         />
