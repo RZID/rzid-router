@@ -16,6 +16,7 @@
   import StatCard from "../components/StatCard/index.svelte";
   import BandwidthChart from "../components/BandwidthChart/index.svelte";
   import { cn } from "../helpers/classname";
+  import { t as _t, getLocale, onLocaleChange } from "../i18n";
 
   let sysInfo = $state<any>({});
   let board = $state<any>({});
@@ -46,6 +47,10 @@
     wanMac = $state("—");
   let wanDns: string[] = $state([]);
   let localTime = $state("—");
+
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
+  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
 
   const fmtUptime = (s: number) => {
     const d = Math.floor(s / 86400),
@@ -131,7 +136,7 @@
       const cfg = ddnsCfg?.values || {};
       ddnsStatus = Object.entries(ddns).map(([k, v]: any) => {
         const c = cfg[k] || {};
-        const ipv = c.use_ipv6 === "1" || k.includes("ipv6") ? "IPv6" : "IPv4";
+        const ipv = c.use_ipv6 === "1" || k.includes("ipv6") ? trans("IPv6") : trans("IPv4");
         return {
           ...v,
           _name: k,
@@ -172,7 +177,7 @@
     <div class={cn("flex", "items-center", "gap-4")}>
       <div>
         <h1 class={cn("text-lg", "font-semibold", "text-white")}>
-          {board.hostname || "Dashboard"}
+          {board.hostname || trans("Dashboard")}
         </h1>
         <p class={cn("text-xs", "mt-0.5", "font-mono", "text-accent-dim")}>
           {board.release?.version || ""}
@@ -202,19 +207,19 @@
             "animate-pulse",
           )}
         ></div>
-        <span class={cn("text-accent")}>LIVE</span>
+        <span class={cn("text-accent")}>{trans("LIVE")}</span>
       </div>
     </div>
     <div class={cn("text-right", "text-xs", "text-muted")}>
       <span class={cn("font-mono block")}>{localTime}</span>
-      <span>up {uptime}</span>
+      <span>{trans("up")} {uptime}</span>
     </div>
   </div>
 
   <!-- Stat cards -->
   <div class={cn("grid", "grid-cols-2", "gap-3", "lg:grid-cols-4")}>
     <StatCard
-      label="Memory"
+      label={trans("Memory")}
       value="{memPct}%"
       sub="{fmtBytes(memUsed)} / {fmtBytes(memTotal)}"
       Icon={HardDrive}
@@ -225,14 +230,14 @@
           : "var(--accent)"}
     />
     <StatCard
-      label="Load"
+      label={trans("Load")}
       value={load1}
       sub={`${load5} / ${load15}`}
       Icon={Zap}
       color={parseFloat(load1) > 1 ? "var(--warn)" : "var(--accent)"}
     />
     <StatCard
-      label="WAN"
+      label={trans("WAN")}
       value={wanIp}
       sub={wanProto}
       Icon={Globe}
@@ -240,9 +245,9 @@
       pulse={wanIp !== "—"}
     />
     <StatCard
-      label="Bandwidth"
+      label={trans("Bandwidth")}
       value={bwRate.rxRate}
-      sub={`TX ${bwRate.txRate}`}
+      sub={`${trans("TX")} ${bwRate.txRate}`}
       Icon={ArrowUpDown}
       color="var(--accent)"
     />
@@ -266,7 +271,7 @@
           )}
         >
           <Settings size={16} class={cn("text-muted")} />
-          <p>System</p>
+          <p>{trans("System")}</p>
         </div>
         <span class={cn("flex-1")}></span>
         <span
@@ -294,7 +299,7 @@
                   "tracking-wider",
                 )}
               >
-                Hostname
+                {trans("Hostname")}
               </dt>
               <dd class={cn("font-semibold")}>{board.hostname}</dd>
             </div>
@@ -308,7 +313,7 @@
                   "tracking-wider",
                 )}
               >
-                Model
+                {trans("Model")}
               </dt>
               <dd class={cn("font-medium", "text-xs")}>{board.model}</dd>
             </div>
@@ -322,7 +327,7 @@
                   "tracking-wider",
                 )}
               >
-                Architecture
+                {trans("Architecture")}
               </dt>
               <dd class={cn("font-medium", "text-xs")}>{board.system}</dd>
             </div>
@@ -336,7 +341,7 @@
                     "tracking-wider",
                   )}
                 >
-                  Target
+                  {trans("Target")}
                 </dt>
                 <dd class={cn("font-medium", "text-xs")}>
                   {board.release.target}
@@ -352,7 +357,7 @@
                   "tracking-wider",
                 )}
               >
-                Firmware
+                {trans("Firmware")}
               </dt>
               <dd class={cn("font-semibold", "text-accent")}>
                 {board.release?.version}
@@ -368,7 +373,7 @@
                   "tracking-wider",
                 )}
               >
-                Kernel
+                {trans("Kernel")}
               </dt>
               <dd class={cn("font-medium")}>{board.kernel}</dd>
             </div>
@@ -382,7 +387,7 @@
                   "tracking-wider",
                 )}
               >
-                Load Average
+                {trans("Load Average")}
               </dt>
               <dd
                 class={cn("font-mono", "text-xs")}
@@ -418,7 +423,7 @@
         )}
       >
         <HardDrive size={16} class={cn("text-muted")} />
-        <p>Memory & Storage</p>
+        <p>{trans("Memory & Storage")}</p>
       </div>
       <span class={cn("flex-1")}></span>
       <span
@@ -435,7 +440,7 @@
       >
         <div class={cn("mb-4")}>
           <div class={cn("flex", "justify-between", "text-xs", "mb-1")}>
-            <span class={cn("text-muted")}>RAM</span>
+            <span class={cn("text-muted")}>{trans("RAM")}</span>
             <span class={cn("font-mono", "text-muted")}>
               {fmtBytes(memUsed)} / {fmtBytes(memTotal)}
             </span>
@@ -467,14 +472,14 @@
               "text-muted",
             )}
           >
-            <span>Free {fmtBytes(sysInfo.memory?.free || 0)}</span>
-            <span>Buf {fmtBytes(memBuffered)}</span>
-            <span>Cache {fmtBytes(memCached)}</span>
+            <span>{trans("Free")} {fmtBytes(sysInfo.memory?.free || 0)}</span>
+            <span>{trans("Buf")} {fmtBytes(memBuffered)}</span>
+            <span>{trans("Cache")} {fmtBytes(memCached)}</span>
           </div>
         </div>
         {#if sysInfo.root || sysInfo.tmp}
           <div class={cn("space-y-3", "text-xs", "mt-4")}>
-            {#each [{ k: "Disk space", v: sysInfo.root }, { k: "Temp space", v: sysInfo.tmp }] as { k, v }}
+            {#each [{ k: trans("Disk space"), v: sysInfo.root }, { k: trans("Temp space"), v: sysInfo.tmp }] as { k, v }}
               {#if v}
                 <div>
                   <div class={cn("flex", "justify-between", "mb-1")}>
@@ -533,8 +538,8 @@
             "tracking-wider",
           )}
         >
-          <Globe size={16} class={cn("text-muted")} />
-          <p>Port Status</p>
+        <Globe size={16} class={cn("text-muted")} />
+        <p>{trans("Port Status")}</p>
         </div>
         <span class={cn("flex-1")}></span>
         <span
@@ -599,35 +604,35 @@
                   )}
                 >
                   <div>
-                    RX
+                    {trans("RX")}
                     <span class={cn("block", "text-fg")}>
                       {fmtBytes(dev.stats.rx_bytes)}
                     </span>
                     <span class={cn("block", "text-muted")}>
-                      {fmtPkts(dev.stats.rx_packets)} pkts
+                      {fmtPkts(dev.stats.rx_packets)} {trans("pkts")}
                     </span>
                   </div>
                   <div>
-                    TX
+                    {trans("TX")}
                     <span class={cn("block", "text-fg")}>
                       {fmtBytes(dev.stats.tx_bytes)}
                     </span>
                     <span class={cn("block", "text-muted")}>
-                      {fmtPkts(dev.stats.tx_packets)} pkts
+                      {fmtPkts(dev.stats.tx_packets)} {trans("pkts")}
                     </span>
                   </div>
                   <div>
-                    Errors
+                    {trans("Errors")}
                     <span class={cn("block", "text-fg")}>
-                      RX {dev.stats.rx_errors}
-                      TX {dev.stats.tx_errors}
+                      {trans("RX")} {dev.stats.rx_errors}
+                      {trans("TX")} {dev.stats.tx_errors}
                     </span>
                   </div>
                   <div>
-                    Drop
+                    {trans("Drop")}
                     <span class={cn("block", "text-fg")}>
-                      RX {dev.stats.rx_dropped}
-                      TX {dev.stats.tx_dropped}
+                      {trans("RX")} {dev.stats.rx_dropped}
+                      {trans("TX")} {dev.stats.tx_dropped}
                     </span>
                   </div>
                 </div>
@@ -656,8 +661,8 @@
             "tracking-wider",
           )}
         >
-          <Network size={16} class={cn("text-muted")} />
-          <p>Network</p>
+        <Network size={16} class={cn("text-muted")} />
+        <p>{trans("Network")}</p>
         </div>
         <span class={cn("flex-1")}></span>
         <span
@@ -687,7 +692,7 @@
                   "tracking-wider",
                 )}
               >
-                Protocol
+                {trans("Protocol")}
               </dt>
               <dd class={cn("font-semibold")}>{wanProto.toUpperCase()}</dd>
             </div>
@@ -701,7 +706,7 @@
                   "tracking-wider",
                 )}
               >
-                Address
+                {trans("Address")}
               </dt>
               <dd class={cn("font-mono", "text-xs", "text-accent")}>
                 {wanIp}
@@ -717,7 +722,7 @@
                   "tracking-wider",
                 )}
               >
-                Gateway
+                {trans("Gateway")}
               </dt>
               <dd class={cn("font-mono", "text-xs")}>{wanGw}</dd>
             </div>
@@ -732,7 +737,7 @@
                     "tracking-wider",
                   )}
                 >
-                  DNS
+                  {trans("DNS")}
                 </dt>
                 <dd class={cn("font-mono", "text-xs")}>{dns}</dd>
               </div>
@@ -747,7 +752,7 @@
                   "tracking-wider",
                 )}
               >
-                Device
+                {trans("Device")}
               </dt>
               <dd class={cn("font-medium")}>{wanDevice}</dd>
             </div>
@@ -761,7 +766,7 @@
                   "tracking-wider",
                 )}
               >
-                MAC
+                {trans("MAC")}
               </dt>
               <dd class={cn("font-mono", "text-xs")}>{wanMac}</dd>
             </div>
@@ -790,7 +795,7 @@
         )}
       >
         <Radio size={16} class={cn("text-muted")} />
-        <p>DHCP Leases</p>
+        <p>{trans("DHCP Leases")}</p>
       </div>
       <span class={cn("flex-1")}></span>
       <span
@@ -828,17 +833,17 @@
               "text-muted",
               "font-medium",
               "tracking-wider",
-            )}>Active DHCPv4 Leases</span
+            )}            >{trans("Active DHCPv4 Leases")}</span
           >
           <div class={cn("overflow-x-auto")}>
             <table class={cn("w-full text-xs")}>
               <thead>
                 <tr class={cn("text-left", "text-muted")}>
-                  <th class={cn("pb-2", "pr-3", "font-medium")}> Hostname </th>
-                  <th class={cn("pb-2", "pr-3", "font-medium")}> IPv4 </th>
-                  <th class={cn("pb-2", "pr-3", "font-medium")}> MAC </th>
+                  <th class={cn("pb-2", "pr-3", "font-medium")}>{trans("Hostname")}</th>
+                  <th class={cn("pb-2", "pr-3", "font-medium")}>{trans("IPv4")}</th>
+                  <th class={cn("pb-2", "pr-3", "font-medium")}>{trans("MAC")}</th>
                   <th class={cn("pb-2", "pr-3", "font-medium")}>
-                    Remaining
+                    {trans("Remaining")}
                   </th></tr
                 ></thead
               >
@@ -876,19 +881,19 @@
               "tracking-wider",
             )}
           >
-            Active DHCPv6 Leases
+            {trans("Active DHCPv6 Leases")}
           </span>
           <div class={cn("overflow-x-auto")}>
             <table class={cn("w-full text-xs")}>
               <thead
                 ><tr class={cn("text-left", "text-muted")}>
-                  <th class={cn("pb-2", "pr-3", "font-medium")}> Hostname </th>
-                  <th class={cn("pb-2", "pr-3", "font-medium")}> IPv6 </th><th
+                  <th class={cn("pb-2", "pr-3", "font-medium")}>{trans("Hostname")}</th>
+                  <th class={cn("pb-2", "pr-3", "font-medium")}>{trans("IPv6")}</th><th
                     class={cn("pb-2", "pr-3", "font-medium")}
                   >
-                    DUID
+                    {trans("DUID")}
                   </th>
-                  <th class={cn("pb-2", "pr-3", "font-medium")}>Remaining</th>
+                  <th class={cn("pb-2", "pr-3", "font-medium")}>{trans("Remaining")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -915,7 +920,7 @@
           </div>
         {:else if !dhcpLeases.dhcp_leases?.length}
           <p class={cn("text-sm", "text-center", "py-6", "text-muted")}>
-            No active leases
+            {trans("No active leases")}
           </p>
         {/if}
       </div>
@@ -940,7 +945,7 @@
           )}
         >
           <Radio size={16} class={cn("text-muted")} />
-          <p>Dynamic DNS</p>
+          <p>{trans("Dynamic DNS")}</p>
         </div>
         <span class={cn("flex-1")}></span>
         <span
@@ -962,16 +967,16 @@
               <thead>
                 <tr class={cn("text-left", "text-muted")}>
                   <th class={cn("pb-2", "pr-3", "font-medium")}>
-                    Configuration
+                    {trans("Configuration")}
                   </th>
-                  <th class={cn("pb-2", "pr-3", "font-medium")}>Next Update</th>
+                  <th class={cn("pb-2", "pr-3", "font-medium")}>{trans("Next Update")}</th>
                   <th class={cn("pb-2", "pr-3", "font-medium")}>
-                    Lookup Hostname
+                    {trans("Lookup Hostname")}
                   </th>
                   <th class={cn("pb-2", "pr-3", "font-medium")}>
-                    Registered IP
+                    {trans("Registered IP")}
                   </th>
-                  <th class={cn("pb-2", "pr-3", "font-medium")}>Network</th>
+                  <th class={cn("pb-2", "pr-3", "font-medium")}>{trans("Network")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -986,7 +991,7 @@
                           : 'rgba(255,77,79,0.1)'};color:{s.pid
                           ? 'var(--accent)'
                           : 'var(--danger)'}"
-                        >{s.pid ? "Running" : s.next_update || "Stopped"}</span
+                        >{s.pid ? trans("Running") : s.next_update || trans("Stopped")}</span
                       ></td
                     >
                     <td class={cn("py-2", "pr-3", "font-mono", "text-muted")}
@@ -1026,7 +1031,7 @@
           )}
         >
           <PlusSquare size={16} class={cn("text-muted")} />
-          <p>UPnP Port Maps</p>
+          <p>{trans("UPnP Port Maps")}</p>
         </div>
         <span class={cn("flex-1")}></span>
         <span
@@ -1061,14 +1066,14 @@
               <table class={cn("w-full", "text-xs")}>
                 <thead
                   ><tr class={cn("text-left", "text-muted")}
-                    ><th class={cn("pb-2", "pr-3", "font-medium")}>Client</th
-                    ><th class={cn("pb-2", "pr-3", "font-medium")}>Address</th>
-                    <th class={cn("pb-2", "pr-3", "font-medium")}>Port</th>
+                    ><th class={cn("pb-2", "pr-3", "font-medium")}>{trans("Client")}</th
+                    ><th class={cn("pb-2", "pr-3", "font-medium")}>{trans("Address")}</th>
+                    <th class={cn("pb-2", "pr-3", "font-medium")}>{trans("Port")}</th>
                     <th class={cn("pb-2", "pr-3", "font-medium")}>
-                      External
+                      {trans("External")}
                     </th>
-                    <th class={cn("pb-2", "pr-3", "font-medium")}>Proto</th>
-                    <th class={cn("pb-2", "pr-3", "font-medium")}>Expires</th>
+                    <th class={cn("pb-2", "pr-3", "font-medium")}>{trans("Proto")}</th>
+                    <th class={cn("pb-2", "pr-3", "font-medium")}>{trans("Expires")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1101,7 +1106,7 @@
             </div>
           {:else}
             <p class={cn("text-sm", "text-center", "py-6", "text-muted")}>
-              No active port maps
+              {trans("No active port maps")}
             </p>
           {/if}
         </div>

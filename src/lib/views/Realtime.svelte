@@ -11,10 +11,16 @@
   } from "../api/ubus";
   import RealtimeGraph from "../components/RealtimeGraph/index.svelte";
 
+  import { t as _t, getLocale, onLocaleChange } from "../i18n";
+
   let { sub: _sub = "bandwidth", onsubchange } = $props<{
     sub?: string;
     onsubchange?: (s: string) => void;
   }>();
+
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
+  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
 
   let tab = $state<"bandwidth" | "load" | "connections">("bandwidth");
   let prevTab = $state("bandwidth");
@@ -302,7 +308,7 @@
             ]}
             formatValue={fmtBits}
             noData={bwData[bwActiveTab].rx.length === 0}
-            noDataMsg="Collecting data…"
+noDataMsg={trans("Collecting data...")}
           />
         {:else}
           <RealtimeGraph

@@ -2,6 +2,10 @@
   import { cn } from "../../helpers/classname";
   import { C } from "./constants";
   import type { Series } from "./types";
+  import { t as _t, getLocale, onLocaleChange } from "../../i18n";
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
+  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
 
   let {
     series,
@@ -9,7 +13,7 @@
     height = 256,
     maxPoints = 120,
     noData = false,
-    noDataMsg = "Collecting data…",
+    noDataMsg = trans("Collecting data..."),
   }: {
     series: Series[];
     formatValue: (v: number) => string;
@@ -171,17 +175,17 @@
         </div>
         <div class={cn("flex", "gap-3", "text-fg")}>
           <div>
-            <span class={cn("text-muted")}>Cur </span>
+            <span class={cn("text-muted")}>{trans("Cur")} </span>
             <span class={cn("font-semibold")}
               >{formatValue(current(s.data))}</span
             >
           </div>
           <div>
-            <span class={cn("text-muted")}>Avg </span>
+            <span class={cn("text-muted")}>{trans("Avg")} </span>
             <span>{formatValue(avg(s.data))}</span>
           </div>
           <div>
-            <span class={cn("text-muted")}>Peak </span>
+            <span class={cn("text-muted")}>{trans("Peak")} </span>
             <span>{formatValue(peak(s.data))}</span>
           </div>
         </div>

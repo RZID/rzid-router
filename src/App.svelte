@@ -13,6 +13,11 @@
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
+  import { t as _t, getLocale, onLocaleChange } from "./lib/i18n";
+
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
+  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
 
   let authenticated = $state(!!localStorage.getItem("owrt_session"));
   let currentView = $state("dashboard");
@@ -109,11 +114,11 @@
         <System />
       {:else if placeholders[currentView]}
         <Placeholder
-          title={placeholders[currentView].title}
-          sub={placeholders[currentView].sub}
+          title={trans(placeholders[currentView].title)}
+          sub={trans(placeholders[currentView].sub)}
         />
       {:else}
-        <Placeholder title="Not Found" sub="This page is not available" />
+        <Placeholder title={trans("Not Found")} sub={trans("This page is not available")} />
       {/if}
     </main>
   </div>

@@ -3,8 +3,12 @@
 
   import { login } from "../../api/ubus";
   import { cn } from "../../helpers/classname";
+  import { t as _t, getLocale, onLocaleChange } from "../../i18n";
 
   let { onauthenticated } = $props<{ onauthenticated?: () => void }>();
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
+  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
   let password = $state(""),
     error = $state(false),
     loading = $state(false);
@@ -53,8 +57,8 @@
           />
         </svg>
       </div>
-      <h1 class={cn("text-xl", "font-semibold", "text-white")}>RZID Router</h1>
-      <p class={cn("text-sm", "mt-1", "text-muted")}>OpenWrt Dashboard</p>
+      <h1 class={cn("text-xl", "font-semibold", "text-white")}>{trans("RZID Router")}</h1>
+      <p class={cn("text-sm", "mt-1", "text-muted")}>{trans("OpenWrt Dashboard")}</p>
     </div>
 
     <form onsubmit={handleLogin} class={cn("space-y-4")}>
@@ -63,12 +67,12 @@
           for="password"
           class={cn("block", "text-xs", "font-medium", "mb-2", "text-muted")}
         >
-          PASSWORD
+          {trans("PASSWORD")}
         </label>
         <Input
           type="password"
           bind:value={password}
-          placeholder="root password"
+          placeholder={trans("root password")}
           mono
           class={cn(
             "px-4",
@@ -83,7 +87,7 @@
           disabled={loading}
         />
         {#if error}<p class={cn("text-xs", "mt-2", "text-danger")}>
-            Invalid password
+            {trans("Invalid password")}
           </p>{/if}
       </div>
 
@@ -103,7 +107,7 @@
             : cn("bg-accent", "text-surface", "cursor-pointer"),
         )}
       >
-        {loading ? "Signing in…" : "Sign in"}
+        {trans(loading ? "Signing in..." : "Sign in")}
       </button>
     </form>
   </div>

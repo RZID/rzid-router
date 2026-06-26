@@ -1,17 +1,41 @@
 <script lang="ts">
   import { serviceRestart } from "../api/ubus";
   import { cn } from "../helpers/classname";
+  import { t as _t, getLocale, onLocaleChange } from "../i18n";
 
-  const services = [
-    { name: "dnsmasq", label: "DNS / DHCP", desc: "dnsmasq" },
-    { name: "adguardhome", label: "AdGuard Home", desc: "DNS filtering" },
-    { name: "firewall", label: "Firewall", desc: "nftables/fw4" },
-    { name: "sqm", label: "SQM QoS", desc: "Bufferbloat control" },
-    { name: "banip", label: "banIP", desc: "IP threat blocking" },
-    { name: "miniupnpd", label: "UPnP", desc: "Port mapping" },
-    { name: "vnstat2", label: "vnStat", desc: "Bandwidth tracking" },
-    { name: "collectd", label: "Collectd", desc: "Statistics" },
-  ];
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => {
+    locale;
+    return (k: string) => _t(k);
+  });
+  $effect(() =>
+    onLocaleChange(() => {
+      locale = getLocale();
+    }),
+  );
+
+  let services = $derived([
+    { name: "dnsmasq", label: trans("DNS / DHCP"), desc: trans("dnsmasq") },
+    {
+      name: "adguardhome",
+      label: trans("AdGuard Home"),
+      desc: trans("DNS filtering"),
+    },
+    { name: "firewall", label: trans("Firewall"), desc: trans("nftables/fw4") },
+    {
+      name: "sqm",
+      label: trans("SQM QoS"),
+      desc: trans("Bufferbloat control"),
+    },
+    { name: "banip", label: trans("banIP"), desc: trans("IP threat blocking") },
+    { name: "miniupnpd", label: trans("UPnP"), desc: trans("Port mapping") },
+    {
+      name: "vnstat2",
+      label: trans("vnStat"),
+      desc: trans("Bandwidth tracking"),
+    },
+    { name: "collectd", label: trans("Collectd"), desc: trans("Statistics") },
+  ]);
 
   let restarting = $state<Record<string, boolean>>({});
   let feedback = $state<Record<string, string>>({});
@@ -30,8 +54,12 @@
 
 <div class={cn("p-6", "space-y-6", "animate-fade-in")}>
   <div>
-    <h1 class={cn("text-lg", "font-semibold", "text-white")}>Services</h1>
-    <p class={cn("text-sm", "mt-0.5", "text-muted")}>Manage running services</p>
+    <h1 class={cn("text-lg", "font-semibold", "text-white")}>
+      {trans("Services")}
+    </h1>
+    <p class={cn("text-sm", "mt-0.5", "text-muted")}>
+      {trans("Manage running services")}
+    </p>
   </div>
   <div class={cn("space-y-2")}>
     {#each services as svc}

@@ -3,6 +3,7 @@
   import { cn } from "../../helpers/classname";
   import { LogOut, ChevronRight, Router } from "@lucide/svelte";
   import { nav } from "./constants";
+  import { t as _t, getLocale, onLocaleChange } from "../../i18n";
 
   let {
     active = "dashboard",
@@ -14,6 +15,9 @@
     onlogout?: () => void;
   }>();
 
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
+  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
   let expanded = $state<Record<string, boolean>>({ Status: true });
   const handleLogout = () => {
     logout();
@@ -52,9 +56,9 @@
       </div>
       <div>
         <p class={cn("text-sm", "font-semibold", "text-white", "leading-none")}>
-          RZID
+          {trans("RZID")}
         </p>
-        <p class={cn("text-xs", "mt-0.5", "text-muted")}>OpenWrt 25.12</p>
+        <p class={cn("text-xs", "mt-0.5", "text-muted")}>{trans("OpenWrt 25.12")}</p>
       </div>
     </div>
   </div>
@@ -86,7 +90,7 @@
             (expanded = { ...expanded, [cat.label]: !expanded[cat.label] })}
         >
           <cat.icon size={14} />
-          <span class={cn("flex-1")}>{cat.label}</span>
+          <span class={cn("flex-1")}>{trans(cat.label)}</span>
           <span
             class={cn("transition-transform")}
             style="transform:rotate({expanded[cat.label] ? 90 : 0}deg)"
@@ -129,7 +133,7 @@
                 )}
                 onclick={() => onnavigate?.(item.id)}
               >
-                <span class={cn("font-medium", "text-xs")}>{item.label}</span>
+                <span class={cn("font-medium", "text-xs")}>{trans(item.label)}</span>
               </button>
             {/each}
           </div>
@@ -159,7 +163,7 @@
       onclick={handleLogout}
     >
       <LogOut size={14} />
-      <span class={cn("font-medium")}>Sign out</span>
+      <span class={cn("font-medium")}>{trans("Sign out")}</span>
     </button>
   </div>
 </aside>

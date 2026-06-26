@@ -1,38 +1,45 @@
-export function parsePath(path: string): { view: string; sub?: string; redirect?: string } {
-  const map: Record<string, { view: string; sub?: string; redirect?: string }> = {
-    "/": { view: "dashboard" },
-    "/status/overview": { view: "dashboard" },
-    "/status/routing": { view: "routes" },
-    "/status/firewall": { view: "firewall-status" },
-    "/status/syslog": { view: "syslog" },
-    "/status/processes": { view: "processes" },
-    "/status/realtime": { view: "realtime", sub: "bandwidth", redirect: "/status/realtime/bandwidth" },
-    "/status/realtime/bandwidth": { view: "realtime", sub: "bandwidth" },
-    "/status/realtime/load": { view: "realtime", sub: "load" },
-    "/status/realtime/connections": { view: "realtime", sub: "connections" },
-    "/network": { view: "network" },
-    "/network/interfaces": { view: "network" },
-    "/network/routing": { view: "network-routes" },
-    "/network/dhcp": { view: "dhcp" },
-    "/network/dns": { view: "dns" },
-    "/network/diagnostics": { view: "diagnostics" },
-    "/services": { view: "services" },
-    "/services/ddns": { view: "ddns" },
-    "/services/adguard": { view: "adguard" },
-    "/services/banip": { view: "banip" },
-    "/services/upnp": { view: "upnp" },
-    "/system": { view: "system" },
-    "/system/system": { view: "system" },
-    "/system/admin": { view: "admin" },
-    "/system/software": { view: "software" },
-    "/system/startup": { view: "startup" },
-    "/system/crontab": { view: "crontab" },
-    "/system/flash": { view: "flash" },
-  };
+export const parsePath = (
+  path: string,
+): { view: string; sub?: string; redirect?: string } => {
+  const map: Record<string, { view: string; sub?: string; redirect?: string }> =
+    {
+      "/": { view: "dashboard" },
+      "/status/overview": { view: "dashboard" },
+      "/status/routing": { view: "routes" },
+      "/status/firewall": { view: "firewall-status" },
+      "/status/syslog": { view: "syslog" },
+      "/status/processes": { view: "processes" },
+      "/status/realtime": {
+        view: "realtime",
+        sub: "bandwidth",
+        redirect: "/status/realtime/bandwidth",
+      },
+      "/status/realtime/bandwidth": { view: "realtime", sub: "bandwidth" },
+      "/status/realtime/load": { view: "realtime", sub: "load" },
+      "/status/realtime/connections": { view: "realtime", sub: "connections" },
+      "/network": { view: "network" },
+      "/network/interfaces": { view: "network" },
+      "/network/routing": { view: "network-routes" },
+      "/network/dhcp": { view: "dhcp" },
+      "/network/dns": { view: "dns" },
+      "/network/diagnostics": { view: "diagnostics" },
+      "/services": { view: "services" },
+      "/services/ddns": { view: "ddns" },
+      "/services/adguard": { view: "adguard" },
+      "/services/banip": { view: "banip" },
+      "/services/upnp": { view: "upnp" },
+      "/system": { view: "system" },
+      "/system/system": { view: "system" },
+      "/system/admin": { view: "admin" },
+      "/system/software": { view: "software" },
+      "/system/startup": { view: "startup" },
+      "/system/crontab": { view: "crontab" },
+      "/system/flash": { view: "flash" },
+    };
   return map[path] || { view: "dashboard" };
-}
+};
 
-export function buildPath(view: string, sub?: string): string {
+export const buildPath = (view: string, sub?: string): string => {
   const map: Record<string, string> = {
     dashboard: "/status/overview",
     routes: "/status/routing",
@@ -58,4 +65,4 @@ export function buildPath(view: string, sub?: string): string {
     flash: "/system/flash",
   };
   return map[view] || "/";
-}
+};

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte";
+  import { onMount } from "svelte";
   import Select from "../components/Select/index.svelte";
   import Input from "../components/Input/index.svelte";
   import Textarea from "../components/Textarea/index.svelte";
@@ -15,6 +15,8 @@
     getUnixtime,
     getSystemFeatures,
   } from "../api/ubus";
+  import { t as _t, getLocale, setLocale, onLocaleChange } from "../i18n";
+  import { getTheme, setTheme, onThemeChange } from "../theme";
 
   const FALLBACK_TIMEZONES: Record<string, { tzstring: string }> = {
     UTC: { tzstring: "UTC" },
@@ -39,11 +41,21 @@
     "Pacific/Auckland": { tzstring: "NZST-12NZDT,M9.5.0,M4.1.0/3" },
   };
 
-  let lang = $state("auto");
-  let mediaurlbase = $state("");
+  let locale = $state(getLocale());
+  let theme = $state(getTheme());
   let tablefilters = $state(false);
-  let langOptions = $state<{ value: string; label: string }[]>([{ value: "auto", label: "auto" }, { value: "en", label: "English" }]);
-  let themeOptions = $state<{ value: string; label: string }[]>([]);
+  let langOptions = $state([
+    { value: "id", label: "Indonesian" },
+    { value: "en", label: "English" },
+    { value: "jaksel", label: "Jaksel" },
+    { value: "bogorian", label: "Bogorian" },
+  ]);
+  let themeOptions = $state([
+    { value: "", label: "Default" },
+    { value: "/luci-static/bootstrap", label: "Bootstrap" },
+    { value: "/luci-static/material", label: "Material" },
+    { value: "/luci-static/openwrt2020", label: "OpenWrt 2020" },
+  ]);
 
   const defaultNTPServers = [
     "0.openwrt.pool.ntp.org",
@@ -94,6 +106,11 @@
       .sort()
       .map((k) => ({ value: k, label: k })),
   );
+
+  let trans = $derived.by(() => {
+    locale;
+    return (key: string) => _t(key);
+  });
 
   const formatLocaltime = (epoch: number) => {
     if (!epoch || isNaN(epoch)) return "Loading…";
@@ -166,17 +183,18 @@
         await rcInit("sysntpd", "restart");
       }
 
+      setLocale(locale);
+      setTheme(theme);
+
       await uciSetSection("luci", "main", {
-        lang,
-        mediaurlbase,
         tablefilters: tablefilters ? "1" : "0",
       });
 
       await uciCommit("system");
       await uciCommit("luci");
-      saveFeedback = "Saved";
+      saveFeedback = trans("Saved");
     } catch {
-      saveFeedback = "Save failed";
+      saveFeedback = trans("Save failed");
     }
 
     saving = false;
@@ -207,98 +225,76 @@
     setTimeout(fetchData, 2000);
   };
 
-  onMount(async () => {
-    const [sysConfig, luciConfig, tzData, ut, features] = await Promise.all([
-      uciGet("system"),
-      uciGet("luci"),
-      getTimezones(),
-      getUnixtime(),
-      getSystemFeatures(),
-    ]);
+  onMount(() => {
+    (async () => {
+      const [sysConfig, tzData, ut, features] = await Promise.all([
+        uciGet("system"),
+        getTimezones(),
+        getUnixtime(),
+        getSystemFeatures(),
+      ]);
 
-    if (tzData) timezoneMap = { ...FALLBACK_TIMEZONES, ...tzData };
-    if (ut && typeof ut === "number") unixtime = ut;
-    ntpdAvailable = features?.sysntpd === true;
+      if (tzData) timezoneMap = { ...FALLBACK_TIMEZONES, ...tzData };
+      if (ut && typeof ut === "number") unixtime = ut;
+      ntpdAvailable = features?.sysntpd === true;
 
-    const sysSections = Object.values(sysConfig?.values || {}) as any[];
-    if (sysSections.length) {
-      const sys = sysSections.find((s: any) => s[".type"] === "system");
-      const ntp = sysSections.find((s: any) => s[".type"] === "timeserver");
+      const sysSections = Object.values(sysConfig?.values || {}) as any[];
+      if (sysSections.length) {
+        const sys = sysSections.find((s: any) => s[".type"] === "system");
+        const ntp = sysSections.find((s: any) => s[".type"] === "timeserver");
 
-      if (sys) {
-        systemSection = sys[".name"];
-        hostname = sys.hostname || "";
-        description = sys.description || "";
-        notes = sys.notes || "";
-        zonename = sys.zonename || "UTC";
-        clockTimestyle = sys.clock_timestyle === "1";
-        clockHourcycle = sys.clock_hourcycle || "";
-        logSize = sys.log_size || "";
-        logIp = sys.log_ip || "";
-        logPort = sys.log_port || "";
-        logProto = sys.log_proto || "udp";
-        logFile = sys.log_file || "";
-        conloglevel = sys.conloglevel || "7";
-        cronloglevel = sys.cronloglevel || "7";
+        if (sys) {
+          systemSection = sys[".name"];
+          hostname = sys.hostname || "";
+          description = sys.description || "";
+          notes = sys.notes || "";
+          zonename = sys.zonename || "UTC";
+          clockTimestyle = sys.clock_timestyle === "1";
+          clockHourcycle = sys.clock_hourcycle || "";
+          logSize = sys.log_size || "";
+          logIp = sys.log_ip || "";
+          logPort = sys.log_port || "";
+          logProto = sys.log_proto || "udp";
+          logFile = sys.log_file || "";
+          conloglevel = sys.conloglevel || "7";
+          cronloglevel = sys.cronloglevel || "7";
+        }
+
+        if (ntp) {
+          ntpSection = ntp[".name"];
+          ntpEnabled = ntp.enabled !== "0";
+          ntpEnableServer = ntp.enable_server === "1";
+          ntpInterface = ntp.interface || "";
+          ntpUseDhcp = ntp.use_dhcp !== "0";
+          ntpServers = Array.isArray(ntp.server) ? [...ntp.server] :
+            ntp.server && typeof ntp.server === "object" ? Object.values(ntp.server) :
+            ntp.server ? [ntp.server] : [];
+        }
       }
 
-      if (ntp) {
-        ntpSection = ntp[".name"];
-        ntpEnabled = ntp.enabled !== "0";
-        ntpEnableServer = ntp.enable_server === "1";
-        ntpInterface = ntp.interface || "";
-        ntpUseDhcp = ntp.use_dhcp !== "0";
-        ntpServers = Array.isArray(ntp.server) ? [...ntp.server] :
-          ntp.server && typeof ntp.server === "object" ? Object.values(ntp.server) :
-          ntp.server ? [ntp.server] : [];
-      }
-    }
-
-    const luciSections = Object.values(luciConfig?.values || {}) as any[];
-    if (luciSections.length) {
+      const luciConfig = await uciGet("luci");
+      const luciSections = Object.values(luciConfig?.values || {}) as any[];
       const main = luciSections.find((s: any) => s[".type"] === "main");
-      const langs = luciSections.find((s: any) => s[".type"] === "languages");
-      const themes = luciSections.find((s: any) => s[".type"] === "themes");
+      if (main) tablefilters = main.tablefilters === "1";
+    })();
 
-      if (main) {
-        lang = main.lang || "auto";
-        mediaurlbase = main.mediaurlbase || "";
-        tablefilters = main.tablefilters === "1";
-      }
-
-      if (langs) {
-        const entries = Object.entries(langs)
-          .filter(([k]) => !k.startsWith("."))
-          .map(([k, v]) => ({ value: k, label: v as string }))
-          .sort((a, b) => a.label.localeCompare(b.label));
-        langOptions = [
-          { value: "auto", label: "auto" },
-          { value: "en", label: "English" },
-          ...entries,
-        ];
-      }
-
-      if (themes) {
-        themeOptions = Object.entries(themes)
-          .filter(([k]) => !k.startsWith("."))
-          .map(([k, v]) => ({ value: v as string, label: k }))
-          .sort((a, b) => a.label.localeCompare(b.label));
-      }
-    }
+    const unsubLocale = onLocaleChange(() => { locale = getLocale(); });
+    const unsubTheme = onThemeChange(() => { theme = getTheme(); });
 
     pollTimer = setInterval(fetchData, 5000);
+
+    return () => { clearInterval(pollTimer); unsubLocale(); unsubTheme(); };
   });
 
-  onDestroy(() => clearInterval(pollTimer));
 </script>
 
 <div class={cn("p-6", "flex", "flex-col", "h-screen", "gap-4", "animate-fade-in")}>
   <!-- Header -->
   <div class={cn("shrink-0", "flex", "items-start", "justify-between", "gap-4")}>
     <div>
-      <h1 class={cn("text-lg", "font-semibold", "text-white")}>System</h1>
+      <h1 class={cn("text-lg", "font-semibold", "text-white")}>{trans("System")}</h1>
       <p class={cn("text-sm", "mt-0.5", "text-muted")}>
-        Hostname, timezone, logging, NTP
+        {trans("Hostname, timezone, logging, NTP")}
       </p>
     </div>
 
@@ -330,7 +326,7 @@
             : cn("border", "text-accent", "bg-accent/10", "border-accent/20"),
         )}
       >
-        {saving ? "Saving…" : "Save & Apply"}
+        {saving ? trans("Saving...") : trans("Save & Apply")}
       </button>
     </div>
   </div>
@@ -350,10 +346,10 @@
     )}
   >
     {#each [
-      { id: "general" as const, label: "General Settings" },
-      { id: "logging" as const, label: "Logging" },
-      { id: "timesync" as const, label: "Time Synchronization" },
-      { id: "languageandstyle" as const, label: "Language and Style" },
+      { id: "general" as const, label: trans("General Settings") },
+      { id: "logging" as const, label: trans("Logging") },
+      { id: "timesync" as const, label: trans("Time Synchronization") },
+      { id: "languageandstyle" as const, label: trans("Language and Style") },
     ] as t}
       <button
         class={cn(
@@ -400,7 +396,7 @@
                 "mb-1.5",
               )}
             >
-              Local Time
+              {trans("Local Time")}
             </span>
             <div class={cn("flex", "items-center", "gap-3")}>
               <Input
@@ -426,7 +422,7 @@
                   "border-accent/20",
                 )}
               >
-                Sync with browser
+                {trans("Sync with browser")}
               </button>
               {#if ntpdAvailable}
                 <button
@@ -446,7 +442,7 @@
                     "border-accent/20",
                   )}
                 >
-                  Sync with NTP
+                  {trans("Sync with NTP")}
                 </button>
               {/if}
             </div>
@@ -455,9 +451,9 @@
           <!-- Hostname -->
           <div class={cn("glass", "p-5", "animate-slide-up")}>
             <Input
-              label="Hostname"
+              label={trans("Hostname")}
               bind:value={hostname}
-              placeholder="OpenWrt"
+              placeholder={trans("OpenWrt")}
               class="max-w-sm"
             />
           </div>
@@ -465,33 +461,33 @@
           <!-- Description -->
           <div class={cn("glass", "p-5", "animate-slide-up")}>
             <Input
-              label="Description"
+              label={trans("Description")}
               bind:value={description}
-              placeholder="Optional device description"
+              placeholder={trans("Optional device description")}
               class="max-w-sm"
             />
             <p class={cn("text-[10px]", "text-muted", "mt-1")}>
-              An optional, short description for this device
+              {trans("An optional, short description for this device")}
             </p>
           </div>
 
           <!-- Notes -->
           <div class={cn("glass", "p-5", "animate-slide-up")}>
             <Textarea
-              label="Notes"
+              label={trans("Notes")}
               bind:value={notes}
-              placeholder="Optional free-form notes"
+              placeholder={trans("Optional free-form notes")}
               class="max-w-lg"
             />
             <p class={cn("text-[10px]", "text-muted", "mt-1")}>
-              Optional, free-form notes about this device
+              {trans("Optional, free-form notes about this device")}
             </p>
           </div>
 
           <!-- Timezone -->
           <div class={cn("glass", "p-5", "animate-slide-up")}>
             <Select
-              label="Timezone"
+              label={trans("Timezone")}
               options={tzOptions}
               bind:value={zonename}
             />
@@ -500,16 +496,16 @@
           <!-- Time Format -->
           <div class={cn("glass", "p-5", "animate-slide-up")}>
             <Toggle
-              label="Full TimeZone Name"
-              description="Unchecked means the timezone offset (E.g. GMT+1) is displayed"
+              label={trans("Full TimeZone Name")}
+              description={trans("Unchecked means the timezone offset (E.g. GMT+1) is displayed")}
               bind:checked={clockTimestyle}
             />
             <Select
-              label="Time Format"
+              label={trans("Time Format")}
               options={[
-                { value: "", label: "Default" },
-                { value: "h12", label: "12-Hour Clock" },
-                { value: "h23", label: "24-Hour Clock" },
+                { value: "", label: trans("Default") },
+                { value: "h12", label: trans("12-Hour Clock") },
+                { value: "h23", label: trans("24-Hour Clock") },
               ]}
               bind:value={clockHourcycle}
             />
@@ -521,7 +517,7 @@
           <!-- Log buffer size -->
           <div class={cn("glass", "p-5", "animate-slide-up")}>
             <Input
-              label="System log buffer size (kiB)"
+              label={trans("System log buffer size (kiB)")}
               type="number"
               bind:value={logSize}
               placeholder="128"
@@ -542,7 +538,7 @@
                 "mb-1.5",
               )}
             >
-              External system log server
+              {trans("External system log server")}
             </span>
             <div class={cn("flex", "flex-wrap", "items-center", "gap-2")}>
               <Input
@@ -571,7 +567,7 @@
           <!-- Log file -->
           <div class={cn("glass", "p-5", "animate-slide-up")}>
             <Input
-              label="Write system log to file"
+              label={trans("Write system log to file")}
               bind:value={logFile}
               placeholder="/tmp/system.log"
               class="max-w-sm"
@@ -582,32 +578,32 @@
           <!-- Log output level -->
           <div class={cn("glass", "p-5", "animate-slide-up")}>
             <Select
-              label="Log output level"
+              label={trans("Log output level")}
               options={[
-                { value: "8", label: "Debug" },
-                { value: "7", label: "Info" },
-                { value: "6", label: "Notice" },
-                { value: "5", label: "Warning" },
-                { value: "4", label: "Error" },
-                { value: "3", label: "Critical" },
-                { value: "2", label: "Alert" },
-                { value: "1", label: "Emergency" },
+                { value: "8", label: trans("Debug") },
+                { value: "7", label: trans("Info") },
+                { value: "6", label: trans("Notice") },
+                { value: "5", label: trans("Warning") },
+                { value: "4", label: trans("Error") },
+                { value: "3", label: trans("Critical") },
+                { value: "2", label: trans("Alert") },
+                { value: "1", label: trans("Emergency") },
               ]}
               bind:value={conloglevel}
             />
             <p class={cn("text-[10px]", "text-muted", "mt-1")}>
-              Only affects dmesg kernel log
+              {trans("Only affects dmesg kernel log")}
             </p>
           </div>
 
           <!-- Cron log level -->
           <div class={cn("glass", "p-5", "animate-slide-up")}>
             <Select
-              label="Cron Log Level"
+              label={trans("Cron Log Level")}
               options={[
-                { value: "7", label: "Normal" },
-                { value: "9", label: "Disabled" },
-                { value: "5", label: "Debug" },
+                { value: "7", label: trans("Normal") },
+                { value: "9", label: trans("Disabled") },
+                { value: "5", label: trans("Debug") },
               ]}
               bind:value={cronloglevel}
             />
@@ -618,25 +614,27 @@
         <div class={cn("space-y-4")}>
           <div class={cn("glass", "p-5", "animate-slide-up")}>
             <Select
-              label="Language"
+              label={trans("Language")}
               options={langOptions}
-              bind:value={lang}
+              bind:value={locale}
+              onchange={() => setLocale(locale)}
             />
           </div>
 
           <div class={cn("glass", "p-5", "animate-slide-up")}>
             <Select
-              label="Design"
+              label={trans("Design")}
               options={themeOptions}
-              bind:value={mediaurlbase}
-              placeholder="Default"
+              bind:value={theme}
+              onchange={() => setTheme(theme)}
+              placeholder={trans("Default")}
             />
           </div>
 
           <div class={cn("glass", "p-5", "animate-slide-up")}>
             <Toggle
-              label="Table Filters"
-              description="Enable column filter inputs in overview tables"
+              label={trans("Table Filters")}
+              description={trans("Enable column filter inputs in overview tables")}
               bind:checked={tablefilters}
             />
           </div>
@@ -654,25 +652,25 @@
                 "text-muted",
               )}
             >
-              NTP daemon is not available on this system
+              {trans("NTP daemon is not available on this system")}
             </div>
           {:else}
             <div class={cn("glass", "p-5", "animate-slide-up")}>
-            <Toggle label="Enable NTP client" bind:checked={ntpEnabled} />
+            <Toggle label={trans("Enable NTP client")} bind:checked={ntpEnabled} />
             </div>
 
             {#if ntpEnabled}
               <div class={cn("glass", "p-5", "animate-slide-up")}>
                 <Toggle
-                  label="Provide NTP server"
+                  label={trans("Provide NTP server")}
                   bind:checked={ntpEnableServer}
                 />
 
                 {#if ntpEnableServer}
                   <Input
-                    label="Bind NTP server to interface"
+                    label={trans("Bind NTP server to interface")}
                     bind:value={ntpInterface}
-                    placeholder="All interfaces"
+                    placeholder={trans("All interfaces")}
                     class="max-w-sm"
                   />
                 {/if}
@@ -680,7 +678,7 @@
 
               <div class={cn("glass", "p-5", "animate-slide-up")}>
                 <Toggle
-                  label="Use DHCP advertised servers"
+                  label={trans("Use DHCP advertised servers")}
                   bind:checked={ntpUseDhcp}
                 />
               </div>
@@ -697,10 +695,10 @@
                     "mb-1.5",
                   )}
                 >
-                  NTP server candidates
+                  {trans("NTP server candidates")}
                 </span>
                 <p class={cn("text-[10px]", "text-muted", "mb-3")}>
-                  List of upstream NTP server candidates with which to synchronize
+                  {trans("List of upstream NTP server candidates with which to synchronize")}
                 </p>
                 <div class={cn("space-y-2")}>
                   {#each ntpServers as _, i}
@@ -728,7 +726,7 @@
                           "border-danger/20",
                         )}
                       >
-                        Remove
+                        {trans("Remove")}
                       </button>
                     </div>
                   {/each}
@@ -751,7 +749,7 @@
                     "border-accent/20",
                   )}
                 >
-                  Add server
+                  {trans("Add server")}
                 </button>
               </div>
             {/if}

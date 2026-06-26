@@ -1,6 +1,11 @@
 <script lang="ts">
   import { cn } from "../helpers/classname";
-  let { title, sub = "Coming soon" } = $props<{
+  import { t as _t, getLocale, onLocaleChange } from "../i18n";
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
+  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
+
+  let { title, sub = trans("Coming soon") } = $props<{
     title: string;
     sub?: string;
   }>();
@@ -21,6 +26,6 @@
       "animate-slide-up",
     )}
   >
-    <p class={cn("text-sm", "text-muted")}>Under construction</p>
+    <p class={cn("text-sm", "text-muted")}>{trans("Under construction")}</p>
   </div>
 </div>

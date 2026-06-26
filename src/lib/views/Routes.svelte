@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from "svelte";
   import { batchCall } from "../api/ubus";
   import { cn } from "../helpers/classname";
+  import { t as _t, getLocale, onLocaleChange } from "../i18n";
 
   let ip4neigh = $state<any[]>([]),
     ip4routes = $state<any[]>([]),
@@ -13,6 +14,10 @@
   let tab = $state<"ipv4" | "ipv6">("ipv4");
   let prevTab = $state("ipv4");
   let tabDir = $state("left");
+
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
+  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
 
   const switchTab = (t: "ipv4" | "ipv6") => {
     tabDir = t === "ipv4" ? "right" : "left";
@@ -104,9 +109,9 @@
 </script>
 
 <div class={cn("p-6", "animate-fade-in")}>
-  <h1 class={cn("text-lg", "font-semibold", "text-white")}>Routing</h1>
+  <h1 class={cn("text-lg", "font-semibold", "text-white")}>{trans("Routing")}</h1>
   <p class={cn("text-sm", "mt-0.5", "mb-4", "text-muted")}>
-    The following rules are currently active on this system.
+    {trans("The following rules are currently active on this system.")}
   </p>
 
   <div
@@ -139,7 +144,7 @@
         : 'var(--text-muted)'}"
       onclick={() => switchTab("ipv4")}
     >
-      IPv4 Routing
+      {trans("IPv4 Routing")}
     </button>
     <button
       class={cn(
@@ -158,7 +163,7 @@
         : 'var(--text-muted)'}"
       onclick={() => switchTab("ipv6")}
     >
-      IPv6 Routing
+      {trans("IPv6 Routing")}
     </button>
   </div>
 
@@ -167,17 +172,17 @@
     <!-- Neighbours -->
     <div class={cn("glass", "p-5", "animate-slide-up")}>
       <h3 class={cn("text-sm", "font-semibold", "text-white", "mb-3")}>
-        {tab === "ipv4" ? "IPv4" : "IPv6"} Neighbours
+        {tab === "ipv4" ? trans("IPv4") : trans("IPv6")} {trans("Neighbours")}
       </h3>
       {#if n().length}
         <div class={cn("overflow-x-auto")}>
           <table class={cn("w-full")}>
             <thead>
               <tr class={cn("text-muted")}>
-                <th class={th}>Entry</th>
-                <th class={th}>IP address</th>
-                <th class={th}>MAC address</th>
-                <th class={th}>Interface</th>
+                <th class={th}>{trans("Entry")}</th>
+                <th class={th}>{trans("IP address")}</th>
+                <th class={th}>{trans("MAC address")}</th>
+                <th class={th}>{trans("Interface")}</th>
               </tr>
             </thead>
             <tbody>
@@ -195,27 +200,27 @@
           </table>
         </div>
       {:else}<p class={cn("text-xs", "text-center", "py-4", "text-muted")}>
-          No entries available
+          {trans("No entries available")}
         </p>{/if}
     </div>
 
     <!-- Routes -->
     <div class={cn("glass", "p-5", "animate-slide-up")}>
       <h3 class={cn("text-sm", "font-semibold", "text-white", "mb-3")}>
-        Active {tab === "ipv4" ? "IPv4" : "IPv6"} Routes
+        {trans("Active")} {tab === "ipv4" ? trans("IPv4") : trans("IPv6")} {trans("Routes")}
       </h3>
       {#if rts().length}
         <div class={cn("overflow-x-auto")}>
           <table class={cn("w-full")}>
             <thead>
               <tr class={cn("text-muted")}>
-                <th class={th}>Device</th>
-                <th class={th}>Target</th>
-                <th class={th}>Gateway</th>
-                <th class={th}>Source</th>
-                <th class={th}>Metric</th>
-                <th class={th}>Table</th>
-                <th class={th}>Protocol</th>
+                <th class={th}>{trans("Device")}</th>
+                <th class={th}>{trans("Target")}</th>
+                <th class={th}>{trans("Gateway")}</th>
+                <th class={th}>{trans("Source")}</th>
+                <th class={th}>{trans("Metric")}</th>
+                <th class={th}>{trans("Table")}</th>
+                <th class={th}>{trans("Protocol")}</th>
               </tr>
             </thead>
             <tbody>
@@ -240,7 +245,7 @@
                   <td class={td}>{rt.prefsrc || rt.from || "—"}</td>
                   <td class={td}>{rt.metric ?? "—"}</td>
                   <td class={cn(td, "text-muted")}>
-                    {rt.table || "main"}
+                    {rt.table || trans("main")}
                   </td>
                   <td class={td}>{rt.protocol || "—"}</td>
                 </tr>
@@ -250,7 +255,7 @@
         </div>
       {:else}
         <p class={cn("text-xs", "text-center", "py-4", "text-muted")}>
-          No entries available
+          {trans("No entries available")}
         </p>
       {/if}
     </div>
@@ -258,24 +263,24 @@
     <!-- Rules -->
     <div class={cn("glass", "p-5", "animate-slide-up")}>
       <h3 class={cn("text-sm", "font-semibold", "text-white", "mb-3")}>
-        Active {tab === "ipv4" ? "IPv4" : "IPv6"} Rules
+        {trans("Active")} {tab === "ipv4" ? trans("IPv4") : trans("IPv6")} {trans("Rules")}
       </h3>
       {#if rls().length}
         <div class={cn("overflow-x-auto")}>
           <table class={cn("w-full")}>
             <thead>
               <tr class={cn("text-muted")}>
-                <th class={th}>Rule</th>
-                <th class={th}>Priority</th>
-                <th class={th}>Ingress</th>
-                <th class={th}>Source</th>
-                <th class={th}>Src Port</th>
-                <th class={th}>Action</th>
-                <th class={th}>IP Proto</th>
-                <th class={th}>Egress</th>
-                <th class={th}>Destination</th>
-                <th class={th}>Dest Port</th>
-                <th class={th}>Table</th>
+                <th class={th}>{trans("Rule")}</th>
+                <th class={th}>{trans("Priority")}</th>
+                <th class={th}>{trans("Ingress")}</th>
+                <th class={th}>{trans("Source")}</th>
+                <th class={th}>{trans("Src Port")}</th>
+                <th class={th}>{trans("Action")}</th>
+                <th class={th}>{trans("IP Proto")}</th>
+                <th class={th}>{trans("Egress")}</th>
+                <th class={th}>{trans("Destination")}</th>
+                <th class={th}>{trans("Dest Port")}</th>
+                <th class={th}>{trans("Table")}</th>
               </tr>
             </thead>
             <tbody>
@@ -284,19 +289,19 @@
                   <td class={td}>
                     <span title={JSON.stringify(rl)}>
                       {[
-                        rl.not && "Not",
-                        rl.noop && "No-op",
-                        rl.l3mdev && "L3Mdev",
-                        rl.fwmark && `Fwmark: ${rl.fwmark}`,
+                        rl.not && trans("Not"),
+                        rl.noop && trans("No-op"),
+                        rl.l3mdev && trans("L3Mdev"),
+                        rl.fwmark && `${trans("Fwmark:")} ${rl.fwmark}`,
                         rl.from &&
-                          `From: ${rl.from}${rl.srclen ? `/${rl.srclen}` : ""}`,
+                          `${trans("From:")} ${rl.from}${rl.srclen ? `/${rl.srclen}` : ""}`,
                         rl.to &&
-                          `To: ${rl.to}${rl.dstlen ? `/${rl.dstlen}` : ""}`,
-                        rl.tos && `ToS: ${rl.tos}`,
-                        rl.dscp && `DSCP: ${rl.dscp}`,
-                        rl.uidrange && `UID-range: ${rl.uidrange}`,
-                        rl.goto && `goto: ${rl.goto}`,
-                        rl.nat && "NAT",
+                          `${trans("To:")} ${rl.to}${rl.dstlen ? `/${rl.dstlen}` : ""}`,
+                        rl.tos && `${trans("ToS:")} ${rl.tos}`,
+                        rl.dscp && `${trans("DSCP:")} ${rl.dscp}`,
+                        rl.uidrange && `${trans("UID-range:")} ${rl.uidrange}`,
+                        rl.goto && `${trans("goto:")} ${rl.goto}`,
+                        rl.nat && trans("NAT"),
                       ]
                         .filter(Boolean)
                         .join(" ") || "#"}
@@ -320,7 +325,7 @@
                   <td class={td}>
                     {rl.src
                       ? `${rl.src}${rl.srclen ? `/${rl.srclen}` : ""}`
-                      : "any"}
+                      : trans("(any)")}
                   </td>
                   <td class={td}>{rl.sport ?? "—"}</td>
                   <td class={td}>{rl.action ?? "—"}</td>
@@ -342,7 +347,7 @@
                   <td class={td}>
                     {rl.dst
                       ? `${rl.dst}${rl.dstlen ? `/${rl.dstlen}` : ""}`
-                      : "any"}
+                      : trans("(any)")}
                   </td>
                   <td class={td}>{rl.dport ?? "—"}</td>
                   <td class={cn(td, "text-muted")}>
@@ -354,7 +359,7 @@
           </table>
         </div>
       {:else}<p class={cn("text-xs", "text-center", "py-4", "text-muted")}>
-          No entries available
+          {trans("No entries available")}
         </p>{/if}
     </div>
   </div>

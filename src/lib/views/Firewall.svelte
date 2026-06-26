@@ -3,6 +3,10 @@
   import { onMount, onDestroy } from "svelte";
   import { slide } from "svelte/transition";
   import { cn } from "../helpers/classname";
+  import { t as _t, getLocale, onLocaleChange } from "../i18n";
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
+  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
   let items = $state<any[]>([]);
   let interval: ReturnType<typeof setInterval>;
 
@@ -118,8 +122,8 @@
     if (e.range) return `${evs(e.range[0])}-${evs(e.range[1])}`;
     if (e.set) return e.set.map(evs).join(", ");
     // actions
-    if (e.accept !== undefined) return "Accept packet";
-    if (e.drop !== undefined) return "Drop packet";
+    if (e.accept !== undefined) return trans("Accept packet");
+    if (e.drop !== undefined) return trans("Drop packet");
     if (e.jump) return `Continue in ${e.jump.target}`;
     if (e.goto) return `Goto chain ${e.goto.target}`;
     if (e.return !== undefined) return "Continue in calling chain";
@@ -127,7 +131,7 @@
     if (e.reject)
       return typeof e.reject === "object"
         ? `Reject with ${e.reject.type || "icmp"}`
-        : "Reject";
+        : trans("Reject");
     if (e.snat)
       return `SNAT ${e.snat.addr || ""}${e.snat.port ? ":" + e.snat.port : ""}`;
     if (e.dnat)
@@ -135,10 +139,10 @@
     if (e.masquerade !== undefined) return "Rewrite to egress device address";
     if (e.redirect)
       return `Redirect${e.redirect.port ? ` to :${e.redirect.port}` : ""}`;
-    if (e.log) return e.log.prefix ? `Log "${e.log.prefix}"` : "Log";
+    if (e.log) return e.log.prefix ? `Log "${e.log.prefix}"` : trans("Log");
     if (e.mangle)
       return `Set header field ${evs(e.mangle.key)} to ${evs(e.mangle.value)}`;
-    if (e.notrack) return "Do not track";
+    if (e.notrack) return trans("Do not track");
     if (e.flow) return `Flow ${e.flow.op || ""} @${e.flow.flowtable || ""}`;
     return Object.keys(e)[0] || String(e);
   };
@@ -268,15 +272,15 @@
 <div class={cn("p-6", "space-y-4", "animate-fade-in")}>
   <div class={cn("flex", "items-center", "justify-between")}>
     <div>
-      <h1 class={cn("text-lg", "font-semibold", "text-white")}>Firewall</h1>
+      <h1 class={cn("text-lg", "font-semibold", "text-white")}>{trans("Firewall")}</h1>
       <p class={cn("text-xs", "mt-0.5", "text-muted")}>
-        nftables ruleset status
+        {trans("nftables ruleset status")}
       </p>
     </div>
   </div>
   {#if tables.length === 0}
     <div class={cn("glass", "p-12", "text-center", "animate-slide-up")}>
-      <p class={cn("text-sm", "text-muted")}>No nftables ruleset loaded.</p>
+      <p class={cn("text-sm", "text-muted")}>{trans("No nftables ruleset loaded.")}</p>
     </div>
   {:else}
     {#each tables as t (t.table.family + t.table.name)}
@@ -299,7 +303,7 @@
           onclick={() => toggle(tf + tn)}
         >
           <span class={cn("text-sm", "font-semibold", "text-white")}>
-            {fam[tf] || tf} table "{tn}"
+            {fam[tf] || tf} {trans("table")} "{tn}"
           </span>
           <span class={cn("flex-1")}></span>
           <span
@@ -322,13 +326,13 @@
                 <h4
                   class={cn("text-sm", "font-semibold", "mb-1", "text-accent")}
                 >
-                  {chainLabel[c.type] || "Rule container chain"} "{c.name}"
+                  {chainLabel[c.type] || trans("Rule container chain")} "{c.name}"
                 </h4>
                 {#if c.hook}
                   <div class={cn("text-xs", "mb-1", "text-muted")}>
-                    Hook: {c.hook} ({hookLabel[c.hook] || ""}){c.prio !==
+                    {trans("Hook:")} {c.hook} ({hookLabel[c.hook] || ""}){c.prio !==
                     undefined
-                      ? `, Priority: ${c.prio}`
+                      ? `, ${trans("Priority:")} ${c.prio}`
                       : ""}
                   </div>
                 {/if}
@@ -339,7 +343,7 @@
                       ? 'var(--danger)'
                       : 'var(--accent)'}"
                   >
-                    Policy: {c.policy} ({policyLabel[c.policy] || ""})
+                    {trans("Policy:")} {c.policy} ({policyLabel[c.policy] || ""})
                   </div>
                 {/if}
                 {#if chainRules(tf, tn, c.name).length}
@@ -355,7 +359,7 @@
                           )}
                           style="width:55%"
                         >
-                          Rule matches
+                          {trans("Rule matches")}
                         </th>
                         <th
                           class={cn(
@@ -366,7 +370,7 @@
                           )}
                           style="width:45%"
                         >
-                          Rule actions
+                          {trans("Rule actions")}
                         </th>
                       </tr>
                     </thead>
@@ -387,7 +391,7 @@
                                   "text-accent",
                                   "bg-accent/10",
                                 )}
-                                title={`Rule comment: ${r.rule.comment}`}
+                                title={`${trans("Rule comment:")} ${r.rule.comment}`}
                               >
                                 #
                               </span>
@@ -410,7 +414,7 @@
                                     "whitespace-pre-wrap",
                                   )}
                                 >
-                                  {ets(e) || "(any)"}
+                                  {ets(e) || trans("(any)")}
                                 </span>
                               {/if}
                             {/each}
@@ -431,7 +435,7 @@
                                       "bg-surface-2",
                                       "border-border",
                                     )}
-                                    title={`Traffic matched by rule: ${fm.pps(ct.counter.packets)} Packets, ${fm.bytes(ct.counter.bytes)} Bytes`}
+                                    title={`${trans("Traffic matched by rule:")} ${fm.pps(ct.counter.packets)} ${trans("Packets")}, ${fm.bytes(ct.counter.bytes)} ${trans("Bytes")}`}
                                   >
                                     {fm.bytes(ct.counter.bytes)}
                                   </span>
@@ -440,7 +444,7 @@
                             {/each}
                             {#if !(r.rule.expr || []).filter((e: any) => !isAction(e)).length}
                               <span class={cn("text-xs", "text-muted")}>
-                                Any packet
+                                {trans("Any packet")}
                               </span>
                             {/if}
                           </td>
@@ -527,7 +531,7 @@
                     </tbody>
                   </table>
                 {:else}<p class={cn("text-xs", "py-3", "text-muted")}>
-                    No rules in this chain
+                    {trans("No rules in this chain")}
                   </p>{/if}
               </div>
             {/each}

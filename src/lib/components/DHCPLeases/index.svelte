@@ -2,8 +2,13 @@
   import { cn } from "../../helpers/classname";
   import { avColors } from "./constants";
   import type { Lease } from "./types";
+  import { t as _t, getLocale, onLocaleChange } from "../../i18n";
 
   let { leases = [] } = $props<{ leases?: Lease[] }>();
+
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
+  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
 
   const formatTime = (s: number) => {
     const h = Math.floor(s / 3600),
@@ -24,7 +29,7 @@
         "tracking-wider",
       )}
     >
-      CONNECTED CLIENTS
+      {trans("CONNECTED CLIENTS")}
     </span>
     <span
       class={cn(
@@ -40,7 +45,7 @@
   </div>
   {#if leases.length === 0}
     <p class={cn("text-sm", "text-center", "py-6", "text-muted")}>
-      No active leases
+      {trans("No active leases")}
     </p>
   {:else}
     <div class={cn("space-y-2", "max-h-64", "overflow-y-auto")}>
@@ -75,7 +80,7 @@
           </div>
           <div class={cn("flex-1", "min-w-0")}>
             <p class={cn("text-sm", "font-medium", "truncate")}>
-              {lease.hostname || "Unknown"}
+              {lease.hostname || trans("Unknown")}
             </p>
             <p class={cn("text-xs", "font-mono", "text-muted")}>
               {lease.macaddr}

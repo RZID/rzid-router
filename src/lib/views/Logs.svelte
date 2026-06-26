@@ -17,6 +17,11 @@
   import Select from "../components/Select/index.svelte";
   import Input from "../components/Input/index.svelte";
   import { cn } from "../helpers/classname";
+  import { t as _t, getLocale, onLocaleChange } from "../i18n";
+
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
+  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
 
   let tab = $state<"syslog" | "dmesg">("syslog");
   let prevTab = $state("syslog");
@@ -124,8 +129,8 @@
     class={cn("shrink-0", "flex", "items-start", "justify-between", "gap-4")}
   >
     <div>
-      <h1 class={cn("text-lg", "font-semibold", "text-white")}>System Log</h1>
-      <p class={cn("text-sm", "mt-0.5")}>Kernel and system logs</p>
+      <h1 class={cn("text-lg", "font-semibold", "text-white")}>{trans("System Log")}</h1>
+      <p class={cn("text-sm", "mt-0.5")}>{trans("Kernel and system logs")}</p>
     </div>
 
     <div
@@ -157,7 +162,7 @@
           : 'var(--text-muted)'}"
         onclick={() => switchTab("syslog")}
       >
-        System Log
+{trans("System Log")}
       </button>
       <button
         class={cn(
@@ -176,7 +181,7 @@
           : 'var(--text-muted)'}"
         onclick={() => switchTab("dmesg")}
       >
-        Kernel Log
+        {trans("Kernel Log")}
       </button>
     </div>
   </div>
@@ -207,7 +212,7 @@
             "tracking-wider",
           )}
         >
-          Filters
+{trans("Filters")}
         </span>
         {#if loading}
           <span
@@ -228,7 +233,7 @@
                 "animate-pulse",
               )}
             ></span>
-            Refreshing…
+            {trans("Refreshing...")}
           </span>
         {/if}
       </div>
@@ -264,7 +269,7 @@
               )}
               for="facility-select"
             >
-              Facility
+{trans("Facility")}
             </label>
             <div
               id="facility-select"
@@ -302,7 +307,7 @@
                   applyFilters();
                 }}
               >
-                Not
+                {trans("Not")}
               </button>
             </div>
           </div>
@@ -328,7 +333,7 @@
                 "tracking-wider",
               )}
             >
-              Severity
+              {trans("Severity")}
             </label>
             <div
               class={cn("flex", "items-center", "gap-2")}
@@ -366,7 +371,7 @@
                   applyFilters();
                 }}
               >
-                Not
+                {trans("Not")}
               </button>
             </div>
           </div>
@@ -394,13 +399,13 @@
                 "tracking-wider",
               )}
             >
-              Search
+              {trans("Search")}
             </label>
             <div id="search-select" class={cn("flex", "items-center", "gap-2")}>
               <Input
                 bind:value={sysFilters.text}
                 oninput={applyFilters}
-                placeholder="Filter text…"
+                placeholder={trans("Filter text...")}
                 mono
                 class="flex-1"
               />
@@ -430,7 +435,7 @@
                   applyFilters();
                 }}
               >
-                Not
+                {trans("Not")}
               </button>
             </div>
           </div>
@@ -456,7 +461,7 @@
                 "tracking-wider",
               )}
             >
-              Max rows
+              {trans("Max rows")}
             </label>
             <Input
               type="number"
@@ -499,7 +504,7 @@
                 "tracking-wider",
               )}
             >
-              Time range
+              {trans("Time range")}
             </label>
             <div
               id="time-range-select"
@@ -509,7 +514,7 @@
                 type="number"
                 bind:value={dmesgFilters.fromTime}
                 oninput={applyFilters}
-                placeholder="From"
+                placeholder={trans("From")}
                 mono
                 class="flex-1 min-w-24"
               />
@@ -520,7 +525,7 @@
                 type="number"
                 bind:value={dmesgFilters.toTime}
                 oninput={applyFilters}
-                placeholder="To"
+                placeholder={trans("To")}
                 mono
                 class="flex-1 min-w-24"
               />
@@ -550,7 +555,7 @@
                   applyFilters();
                 }}
               >
-                Not
+                {trans("Not")}
               </button>
             </div>
           </div>
@@ -576,7 +581,7 @@
                 "tracking-wider",
               )}
             >
-              Severity
+              {trans("Severity")}
             </label>
             <div
               id="severity-select"
@@ -614,10 +619,10 @@
                   applyFilters();
                 }}
               >
-                Not
+                {trans("Not")}
               </button>
             </div>
-            <p class={cn("text-[10px]", "mt-1.5", "text-muted")}>and above</p>
+            <p class={cn("text-[10px]", "mt-1.5", "text-muted")}>{trans("and above")}</p>
           </div>
 
           <div
@@ -641,13 +646,13 @@
                 "tracking-wider",
               )}
             >
-              Search
+              {trans("Search")}
             </label>
             <div class={cn("flex", "items-center", "gap-2")}>
               <Input
                 bind:value={dmesgFilters.text}
                 oninput={applyFilters}
-                placeholder="Filter text…"
+                placeholder={trans("Filter text...")}
                 mono
                 class="flex-1"
               />
@@ -677,7 +682,7 @@
                   applyFilters();
                 }}
               >
-                Not
+                {trans("Not")}
               </button>
             </div>
           </div>
@@ -717,7 +722,7 @@
                 applyFilters();
               }}
             >
-              Reverse sort
+              {trans("Reverse sort")}
             </button>
           </div>
         </div>
@@ -759,7 +764,7 @@
       >
         <span class={cn("text-xs", "font-mono", "text-muted")}>
           {lineCount}
-          {lineCount === 1 ? "line" : "lines"}
+          {lineCount === 1 ? trans("line") : trans("lines")}
         </span>
         <div class={cn("flex", "items-center", "gap-1.5")}>
           <button
@@ -779,7 +784,7 @@
             )}
             onclick={scrollToHead}
           >
-            <ArrowUp size={14} class={cn("text-muted")} /> Head
+            <ArrowUp size={14} class={cn("text-muted")} /> {trans("Head")}
           </button>
           <button
             type="button"
@@ -798,7 +803,7 @@
             )}
             onclick={scrollToTail}
           >
-            <ArrowDown size={14} class={cn("text-muted")} /> Tail
+            <ArrowDown size={14} class={cn("text-muted")} /> {trans("Tail")}
           </button>
         </div>
       </div>

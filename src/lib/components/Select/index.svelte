@@ -2,12 +2,13 @@
   import { ChevronDown } from "@lucide/svelte";
   import { createSelect } from "@melt-ui/svelte";
   import { cn } from "../../helpers/classname";
+  import { t as _t, getLocale, onLocaleChange } from "../../i18n";
 
   let {
     label = "",
     options = [] as { value: string; label: string }[],
     value = $bindable(""),
-    placeholder = "Select…",
+    placeholder,
     class: className = "",
     onchange,
   }: {
@@ -18,6 +19,12 @@
     class?: string;
     onchange?: () => void;
   } = $props();
+
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
+  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
+
+  const defaultPlaceholder = $derived(trans("Select..."));
 
   let isSearchable = $derived(options.length > 12);
   let searchQuery = $state("");
@@ -32,7 +39,7 @@
   let filtered = $derived(
     searchQuery
       ? options.filter((o) =>
-          o.label.toLowerCase().includes(searchQuery.toLowerCase()),
+          trans(o.label).toLowerCase().includes(searchQuery.toLowerCase()),
         )
       : options,
   );
@@ -116,7 +123,7 @@
     onblur={() => (focused = false)}
   >
     <span class={cn("flex-1", "truncate", value ? "text-fg" : "text-muted")}>
-      {selectedLabel || placeholder}
+      {selectedLabel ? trans(selectedLabel) : (placeholder || defaultPlaceholder)}
     </span>
     <ChevronDown
       size={16}
@@ -146,7 +153,7 @@
       <div class={cn("p-1.5", "border-b", "border-border")}>
         <input
           type="text"
-          placeholder="Search…"
+          placeholder={trans("Search...")}
           bind:value={searchQuery}
           class={cn(
             "w-full",
@@ -167,7 +174,7 @@
     <div bind:this={listbox} class={cn("overflow-y-auto", "max-h-60")} role="listbox">
       {#if filtered.length === 0}
         <div class={cn("px-3", "py-4", "text-xs", "text-center", "text-muted")}>
-          No results
+          {trans("No results")}
         </div>
       {:else}
         {#each filtered as opt}
@@ -196,7 +203,7 @@
               onchange?.();
             }}
           >
-            {opt.label}
+            {trans(opt.label)}
           </button>
         {/each}
       {/if}
