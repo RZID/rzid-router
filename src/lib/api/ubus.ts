@@ -50,6 +50,7 @@ export const call = async <T = any>(
       }),
     });
     const data = await res.json();
+    if (data.error?.code === -32002) { logout(); location.href = "/"; return null; }
     if (data.result?.[0] === 0) return data.result[1];
     return null;
   } catch {
@@ -82,6 +83,7 @@ export const batchCall = async <T = any>(
     });
     const results = await res.json();
     if (!Array.isArray(results)) return calls.map(() => null);
+    if (results.some((r: any) => r.error?.code === -32002)) { logout(); location.href = "/"; return calls.map(() => null); }
     return results.map((r: any) => (r.result?.[0] === 0 ? r.result[1] : null));
   } catch {
     return calls.map(() => null);
