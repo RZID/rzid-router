@@ -116,6 +116,51 @@ export const serviceRestart = async (name: string) => {
   });
 };
 
+export const execCommand = async (command: string, params: string[] = []) => {
+  return call<{ stdout: string; stderr?: string; code?: number }>("file", "exec", {
+    command,
+    params,
+  });
+};
+
+export type LogEntry = { time?: number; priority?: number; msg?: string };
+
+export const readLogEntries = async (lines = 1000): Promise<LogEntry[] | null> => {
+  const res = await call<{ log?: LogEntry[] }>("log", "read", {
+    lines,
+    stream: false,
+    oneshot: true,
+  });
+  if (res?.log) return res.log;
+
+  for (const cmd of ["/sbin/logread", "/usr/sbin/logread"]) {
+    const raw = await execCommand(cmd, ["-l", String(lines)]);
+    if (raw?.stdout) {
+      return raw.stdout
+        .trim()
+        .split("\n")
+        .filter(Boolean)
+        .map((line) => ({ msg: line }));
+    }
+  }
+
+  const wrapper = await execCommand("/usr/libexec/syslog-wrapper", []);
+  if (wrapper?.stdout) {
+    return wrapper.stdout
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .slice(-lines)
+      .map((line) => ({ msg: line }));
+  }
+
+  return null;
+};
+
+export const readDmesg = async () => {
+  return execCommand("/bin/dmesg", ["-r"]);
+};
+
 export const getBandwidth = async () => {
   const res = await call<{ stdout: string }>("file", "exec", {
     command: "cat",

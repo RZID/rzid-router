@@ -5,6 +5,7 @@
   import Services from "./lib/views/Services.svelte";
   import Routes from "./lib/views/Routes.svelte";
   import Firewall from "./lib/views/Firewall.svelte";
+  import Logs from "./lib/views/Logs.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
 
   let authenticated = $state(!!localStorage.getItem("owrt_session"));
@@ -14,7 +15,6 @@
   const handleLogout = () => { authenticated = false; currentView = "dashboard"; };
 
   const placeholders: Record<string, { title: string; sub: string }> = {
-    syslog: { title: "System Log", sub: "Kernel & system logs" },
     processes: { title: "Processes", sub: "Running processes" },
     realtime: { title: "Realtime Graphs", sub: "Load, bandwidth, connections" },
     network: { title: "Interfaces", sub: "Network interface configuration" },
@@ -40,7 +40,10 @@
 {:else}
   <div class="flex h-screen overflow-hidden">
     <Sidebar active={currentView} onnavigate={(id) => currentView = id} onlogout={handleLogout} />
-    <main class="flex-1 overflow-y-auto" style="background: var(--surface)">
+    <main
+      class="flex-1 min-h-0 {currentView === 'syslog' ? 'overflow-hidden' : 'overflow-y-auto'}"
+      style="background: var(--surface)"
+    >
       {#if currentView === "dashboard"}
         <Dashboard />
       {:else if currentView === "routes"}
@@ -49,6 +52,8 @@
         <Firewall />
       {:else if currentView === "services"}
         <Services />
+      {:else if currentView === "syslog"}
+        <Logs />
       {:else if placeholders[currentView]}
         <Placeholder title={placeholders[currentView].title} sub={placeholders[currentView].sub} />
       {:else}
