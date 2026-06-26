@@ -1,450 +1,174 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import {
-    Globe,
-    Radio,
-    Zap,
-  } from "@lucide/svelte";
+  import { Globe, Zap, Radio } from "@lucide/svelte";
   import { cn } from "../helpers/classname";
-  import {
-    getSystemInfo,
-    getBandwidth,
-    getConntrackCount,
-  } from "../api/ubus";
+  import { call, getRealtimeStats, fetchConntrackMetrics, getConntrackList } from "../api/ubus";
+  import RealtimeGraph from "../components/RealtimeGraph.svelte";
 
   let tab = $state<"bandwidth" | "load" | "connections">("bandwidth");
-  let canvas = $state<HTMLCanvasElement>();
   let interval: ReturnType<typeof setInterval>;
 
-  const maxPts = 120;
   const pollMs = 2000;
+  const maxPts = 120;
 
-  let bwPoints = $state<{ t: number; rx: number; tx: number }[]>([]);
-  let loadPoints = $state<{ t: number; l1: number; l5: number; l15: number }[]>([]);
-  let ctPoints = $state<{ t: number; n: number }[]>([]);
-
-  let prevRx = 0;
-  let prevTx = 0;
-  let prevT = 0;
-
+  // ---- Bandwidth ----
   let bwInterfaces = $state<string[]>([]);
-  let bwDevice = $state("");
+  let bwActiveTab = $state("");
+  let bwData = $state<Record<string, { rx: number[]; tx: number[] }>>({});
+  let bwLastTs = $state<Record<string, number>>({});
 
+  // ---- Load ----
+  let loadData = $state<{ l1: number[]; l5: number[]; l15: number[] }>({
+    l1: [], l5: [], l15: [],
+  });
+  let loadLastTs = $state(0);
+
+  // ---- Connections ----
+  let ctData = $state<{ udp: number[]; tcp: number[]; other: number[] }>({
+    udp: [], tcp: [], other: [],
+  });
+  let ctList = $state<any[]>([]);
+  let ctSearch = $state("");
+
+  // ---- Formatters ----
   const fmtBits = (bps: number) => {
     if (bps >= 1e9) return `${(bps / 1e9).toFixed(1)} Gbps`;
     if (bps >= 1e6) return `${(bps / 1e6).toFixed(1)} Mbps`;
     if (bps >= 1e3) return `${(bps / 1e3).toFixed(1)} Kbps`;
-    return `${bps} bps`;
+    return `${bps.toFixed(0)} bps`;
   };
-
+  const fmtLoad = (v: number) => (v / 100).toFixed(2);
+  const fmtInt = (v: number) => String(Math.round(v));
   const fmtBytes = (b: number) => {
+    if (b >= 1e12) return `${(b / 1e12).toFixed(1)} TB`;
     if (b >= 1e9) return `${(b / 1e9).toFixed(1)} GB`;
     if (b >= 1e6) return `${(b / 1e6).toFixed(1)} MB`;
     if (b >= 1e3) return `${(b / 1e3).toFixed(1)} KB`;
     return `${b} B`;
   };
 
-  const fmtNum = (n: number) => {
-    if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
-    if (n >= 1e3) return `${(n / 1e3).toFixed(1)}K`;
-    return String(n);
-  };
-
-  const fmtLoad = (n: number) => n.toFixed(2);
-
-  const refreshBandwidth = async () => {
-    const devs = await getBandwidth();
-    if (!devs) return;
-
+  // ---- Data refresh ----
+  const discoverInterfaces = async () => {
+    const devs = await call<Record<string, any>>("luci-rpc", "getNetworkDevices", {});
+    if (!devs || typeof devs !== "object") return;
     const ifaces = Object.keys(devs).filter(
-      (k) => k !== "lo" && !k.startsWith("ifb"),
+      (k) => k !== "lo" && !k.startsWith("ifb") && devs[k]?.stats,
     );
     if (ifaces.length === 0) return;
-
-    if (bwInterfaces.length === 0) {
-      bwInterfaces = ifaces;
-      if (ifaces.includes("wan")) bwDevice = "wan";
-      else bwDevice = ifaces[0];
+    bwInterfaces = ifaces;
+    if (!bwActiveTab || !ifaces.includes(bwActiveTab)) bwActiveTab = ifaces[0];
+    for (const iface of ifaces) {
+      if (!bwData[iface]) bwData[iface] = { rx: [], tx: [] };
     }
+  };
 
-    const target = devs[bwDevice] || devs[ifaces[0]];
-    if (!target) return;
-
-    const now = Date.now();
-    if (prevRx > 0) {
-      const dt = (now - prevT) / 1000;
-      if (dt > 0) {
-        const rxRate = Math.max(0, (target.rx - prevRx) / dt);
-        const txRate = Math.max(0, (target.tx - prevTx) / dt);
-        bwPoints = [...bwPoints, { t: now, rx: rxRate, tx: txRate }].slice(
-          -maxPts,
-        );
+  const refreshBandwidth = async () => {
+    if (bwInterfaces.length === 0) return;
+    const data = await getRealtimeStats("interface", bwActiveTab);
+    if (!data?.length) return;
+    const pts = bwData[bwActiveTab];
+    if (!pts) return;
+    const lastTs = bwLastTs[bwActiveTab] || 0;
+    for (let j = lastTs ? 0 : 1; j < data.length; j++) {
+      if (data[j][0] <= lastTs) continue;
+      if (j > 0) {
+        const dt = data[j][0] - data[j - 1][0];
+        if (dt > 0) {
+          const rx = Math.max(0, (data[j][1] - data[j - 1][1]) / dt);
+          const tx = Math.max(0, (data[j][3] - data[j - 1][3]) / dt);
+          pts.rx = [...pts.rx, rx].slice(-maxPts);
+          pts.tx = [...pts.tx, tx].slice(-maxPts);
+        }
       }
     }
-    prevRx = target.rx;
-    prevTx = target.tx;
-    prevT = now;
+    bwData = { ...bwData, [bwActiveTab]: pts };
+    bwLastTs = { ...bwLastTs, [bwActiveTab]: data[data.length - 1][0] };
   };
 
   const refreshLoad = async () => {
-    const info = await getSystemInfo();
-    if (!info?.load) return;
-    const l = info.load;
-    bwPoints = bwPoints;
-    loadPoints = [
-      ...loadPoints,
-      { t: Date.now(), l1: l[0] / 65536, l5: l[1] / 65536, l15: l[2] / 65536 },
-    ].slice(-maxPts);
+    const data = await getRealtimeStats("load");
+    if (!data?.length) return;
+    for (let j = loadLastTs ? 0 : 1; j < data.length; j++) {
+      if (data[j][0] <= loadLastTs) continue;
+      loadData = {
+        l1: [...loadData.l1, data[j][1]].slice(-maxPts),
+        l5: [...loadData.l5, data[j][2]].slice(-maxPts),
+        l15: [...loadData.l15, data[j][3]].slice(-maxPts),
+      };
+    }
+    loadLastTs = data[data.length - 1][0];
   };
 
   const refreshConnections = async () => {
-    const n = await getConntrackCount();
-    if (n === null) return;
-    ctPoints = [...ctPoints, { t: Date.now(), n }].slice(-maxPts);
+    const metrics = await fetchConntrackMetrics();
+    if (metrics) {
+      ctData = {
+        udp: [...ctData.udp, metrics.udp].slice(-maxPts),
+        tcp: [...ctData.tcp, metrics.tcp].slice(-maxPts),
+        other: [...ctData.other, metrics.other].slice(-maxPts),
+      };
+    }
+    const list = await getConntrackList();
+    if (list) ctList = list;
   };
 
   const refresh = async () => {
-    if (tab === "bandwidth") await refreshBandwidth();
+    if (tab === "bandwidth") { await discoverInterfaces(); await refreshBandwidth(); }
     else if (tab === "load") await refreshLoad();
     else if (tab === "connections") await refreshConnections();
   };
 
-  const draw = () => {
-    const c = canvas;
-    if (!c) return;
-    const ctx = c.getContext("2d");
-    if (!ctx) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    const w = c.clientWidth;
-    const h = c.clientHeight;
-    c.width = w * dpr;
-    c.height = h * dpr;
-    ctx.scale(dpr, dpr);
-
-    ctx.clearRect(0, 0, w, h);
-
-    const pad = { t: 20, r: 16, b: 28, l: 56 };
-    const gw = w - pad.l - pad.r;
-    const gh = h - pad.t - pad.b;
-
-    if (gw <= 0 || gh <= 0) return;
-
-    ctx.strokeStyle = "rgba(139,148,158,0.15)";
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 4; i++) {
-      const y = pad.t + (gh * i) / 4;
-      ctx.beginPath();
-      ctx.moveTo(pad.l, y);
-      ctx.lineTo(w - pad.r, y);
-      ctx.stroke();
-    }
-
-    if (tab === "bandwidth") drawBw(ctx, w, h, pad, gw, gh);
-    else if (tab === "load") drawLoad(ctx, w, h, pad, gw, gh);
-    else if (tab === "connections") drawCt(ctx, w, h, pad, gw, gh);
-  };
-
-  const drawBw = (
-    ctx: CanvasRenderingContext2D,
-    w: number,
-    h: number,
-    pad: { t: number; r: number; b: number; l: number },
-    gw: number,
-    gh: number,
-  ) => {
-    const pts = bwPoints;
-    if (pts.length < 2) {
-      ctx.fillStyle = "var(--text-muted)";
-      ctx.textAlign = "center";
-      ctx.font = "12px monospace";
-      ctx.fillText("Collecting data…", w / 2, h / 2);
-      return;
-    }
-
-    const rates = pts.flatMap((p) => [p.rx, p.tx]);
-    const maxVal = Math.max(...rates, 1);
-    const scale = Math.pow(10, Math.floor(Math.log10(maxVal)));
-    const yMax = Math.ceil(maxVal / scale) * scale || scale;
-
-    const toY = (v: number) => pad.t + gh - (v / yMax) * gh;
-
-    for (let i = 0; i <= 4; i++) {
-      const val = (yMax * i) / 4;
-      ctx.fillStyle = "var(--text-muted)";
-      ctx.textAlign = "right";
-      ctx.font = "10px monospace";
-      ctx.fillText(fmtBits(val), pad.l - 8, pad.t + gh - (gh * i) / 4 + 3);
-    }
-
-    const drawLine = (data: number[], color: string) => {
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      for (let i = 0; i < data.length; i++) {
-        const x = pad.l + (i / (maxPts - 1)) * gw;
-        const y = toY(data[i]);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    };
-
-    const rxData = pts.map((p) => p.rx);
-    const txData = pts.map((p) => p.tx);
-    drawLine(rxData, "rgb(56,189,248)");
-    drawLine(txData, "rgb(52,211,153)");
-
-    ctx.fillStyle = "var(--text-muted)";
-    ctx.textAlign = "left";
-    ctx.font = "10px monospace";
-    const last = pts[pts.length - 1];
-    const avgRx = rxData.reduce((a, b) => a + b, 0) / rxData.length;
-    const peakRx = Math.max(...rxData);
-    const avgTx = txData.reduce((a, b) => a + b, 0) / txData.length;
-    const peakTx = Math.max(...txData);
-
-    const info = [
-      { label: "RX", val: fmtBits(last.rx), color: "rgb(56,189,248)" },
-      { label: "TX", val: fmtBits(last.tx), color: "rgb(52,211,153)" },
-    ];
-
-    ctx.font = "10px monospace";
-    let lx = pad.l;
-    for (const item of info) {
-      ctx.fillStyle = item.color;
-      ctx.fillRect(lx, 4, 8, 8);
-      ctx.fillStyle = "var(--text-muted)";
-      ctx.fillText(`${item.label} ${item.val}`, lx + 12, 12);
-      lx += ctx.measureText(`${item.label} ${item.val}`).width + 24;
-    }
-
-    const statsY = h - 2;
-    ctx.textAlign = "right";
-    ctx.font = "9px monospace";
-    ctx.fillStyle = "var(--text-muted)";
-    ctx.fillText(
-      `Avg RX ${fmtBits(avgRx)} / Peak ${fmtBits(peakRx)}  |  Avg TX ${fmtBits(avgTx)} / Peak ${fmtBits(peakTx)}`,
-      w - pad.r,
-      statsY,
-    );
-  };
-
-  const drawLoad = (
-    ctx: CanvasRenderingContext2D,
-    w: number,
-    h: number,
-    pad: { t: number; r: number; b: number; l: number },
-    gw: number,
-    gh: number,
-  ) => {
-    const pts = loadPoints;
-    if (pts.length < 2) {
-      ctx.fillStyle = "var(--text-muted)";
-      ctx.textAlign = "center";
-      ctx.font = "12px monospace";
-      ctx.fillText("Collecting data…", w / 2, h / 2);
-      return;
-    }
-
-    const all = pts.flatMap((p) => [p.l1, p.l5, p.l15]);
-    const maxVal = Math.max(...all, 0.1);
-    const scale = Math.pow(10, Math.floor(Math.log10(maxVal)));
-    const yMax = Math.ceil(maxVal / scale) * scale || scale;
-
-    const toY = (v: number) => pad.t + gh - (v / yMax) * gh;
-
-    for (let i = 0; i <= 4; i++) {
-      const val = (yMax * i) / 4;
-      ctx.fillStyle = "var(--text-muted)";
-      ctx.textAlign = "right";
-      ctx.font = "10px monospace";
-      ctx.fillText(fmtLoad(val), pad.l - 8, pad.t + gh - (gh * i) / 4 + 3);
-    }
-
-    const lines: { data: number[]; color: string }[] = [
-      {
-        data: pts.map((p) => p.l1),
-        color: "rgb(239,68,68)",
-      },
-      {
-        data: pts.map((p) => p.l5),
-        color: "rgb(251,146,60)",
-      },
-      {
-        data: pts.map((p) => p.l15),
-        color: "rgb(250,204,21)",
-      },
-    ];
-
-    for (const line of lines) {
-      ctx.strokeStyle = line.color;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      for (let i = 0; i < line.data.length; i++) {
-        const x = pad.l + (i / (maxPts - 1)) * gw;
-        const y = toY(line.data[i]);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    }
-
-    const last = pts[pts.length - 1];
-    const legend = [
-      { label: "1m", val: fmtLoad(last.l1), color: "rgb(239,68,68)" },
-      { label: "5m", val: fmtLoad(last.l5), color: "rgb(251,146,60)" },
-      { label: "15m", val: fmtLoad(last.l15), color: "rgb(250,204,21)" },
-    ];
-
-    ctx.font = "10px monospace";
-    let lx = pad.l;
-    for (const item of legend) {
-      ctx.fillStyle = item.color;
-      ctx.fillRect(lx, 4, 8, 8);
-      ctx.fillStyle = "var(--text-muted)";
-      ctx.fillText(`${item.label} ${item.val}`, lx + 12, 12);
-      lx += ctx.measureText(`${item.label} ${item.val}`).width + 24;
-    }
-
-    ctx.textAlign = "right";
-    ctx.font = "9px monospace";
-    ctx.fillStyle = "var(--text-muted)";
-    const allData = pts.flatMap((p) => [p.l1, p.l5, p.l15]);
-    ctx.fillText(
-      `Avg ${fmtLoad(allData.reduce((a, b) => a + b, 0) / allData.length)} / Peak ${fmtLoad(Math.max(...allData))}`,
-      w - pad.r,
-      h - 2,
-    );
-  };
-
-  const drawCt = (
-    ctx: CanvasRenderingContext2D,
-    w: number,
-    h: number,
-    pad: { t: number; r: number; b: number; l: number },
-    gw: number,
-    gh: number,
-  ) => {
-    const pts = ctPoints;
-    if (pts.length < 2) {
-      ctx.fillStyle = "var(--text-muted)";
-      ctx.textAlign = "center";
-      ctx.font = "12px monospace";
-      ctx.fillText("Collecting data…", w / 2, h / 2);
-      return;
-    }
-
-    const vals = pts.map((p) => p.n);
-    const maxVal = Math.max(...vals, 1);
-    const scale = Math.pow(10, Math.floor(Math.log10(maxVal)));
-    const yMax = Math.ceil(maxVal / scale) * scale || scale;
-
-    const toY = (v: number) => pad.t + gh - (v / yMax) * gh;
-
-    for (let i = 0; i <= 4; i++) {
-      const val = (yMax * i) / 4;
-      ctx.fillStyle = "var(--text-muted)";
-      ctx.textAlign = "right";
-      ctx.font = "10px monospace";
-      ctx.fillText(fmtNum(val), pad.l - 8, pad.t + gh - (gh * i) / 4 + 3);
-    }
-
-    ctx.strokeStyle = "rgb(56,189,248)";
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    for (let i = 0; i < vals.length; i++) {
-      const x = pad.l + (i / (maxPts - 1)) * gw;
-      const y = toY(vals[i]);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-
-    ctx.fillStyle = "rgb(56,189,248)";
-    ctx.globalAlpha = 0.1;
-    ctx.beginPath();
-    ctx.moveTo(pad.l, toY(0));
-    for (let i = 0; i < vals.length; i++) {
-      const x = pad.l + (i / (maxPts - 1)) * gw;
-      const y = toY(vals[i]);
-      ctx.lineTo(x, y);
-    }
-    ctx.lineTo(pad.l + gw, toY(0));
-    ctx.closePath();
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    const last = pts[pts.length - 1];
-    ctx.fillStyle = "rgb(56,189,248)";
-    ctx.fillRect(pad.l, 4, 8, 8);
-    ctx.fillStyle = "var(--text-muted)";
-    ctx.font = "10px monospace";
-    ctx.fillText(
-      `Connections ${fmtNum(last.n)}`,
-      pad.l + 12,
-      12,
-    );
-
-    ctx.textAlign = "right";
-    ctx.font = "9px monospace";
-    ctx.fillStyle = "var(--text-muted)";
-    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-    ctx.fillText(
-      `Avg ${fmtNum(avg)} / Peak ${fmtNum(Math.max(...vals))}`,
-      w - pad.r,
-      h - 2,
-    );
-  };
-
-  const switchTab = async (t: typeof tab) => {
-    tab = t;
-    bwPoints = bwPoints;
-    loadPoints = loadPoints;
-    ctPoints = ctPoints;
-    await refresh();
-  };
-
+  // ---- Lifecycle ----
   onMount(async () => {
+    await discoverInterfaces();
     await refresh();
     interval = setInterval(refresh, pollMs);
   });
 
   onDestroy(() => clearInterval(interval));
 
-  let raf = $state(0);
-  $effect(() => {
-    if (tab) {
-      const loop = () => {
-        draw();
-        raf = requestAnimationFrame(loop);
-      };
-      raf = requestAnimationFrame(loop);
-      return () => cancelAnimationFrame(raf);
-    }
-  });
+  // ---- Connection table helpers ----
+  const joinAddr = (addr: string, port: number) =>
+    addr.includes(":") ? `[${addr}]:${port}` : `${addr}:${port}`;
+
+  const ctFiltered = $derived(
+    ctSearch
+      ? ctList.filter(
+          (c) =>
+            c.src?.includes(ctSearch) ||
+            c.dst?.includes(ctSearch) ||
+            c.layer4?.toLowerCase().includes(ctSearch.toLowerCase()),
+        )
+      : ctList,
+  );
+
+  const protoColor: Record<string, string> = {
+    tcp: "#00d4aa",
+    udp: "#58a6ff",
+  };
+
+  // ---- Interface tabs ----
+  const switchIface = (name: string) => {
+    bwActiveTab = name;
+    bwLastTs = { ...bwLastTs, [name]: 0 };
+    bwData = { ...bwData, [name]: { rx: [], tx: [] } };
+    refreshBandwidth();
+  };
 </script>
 
-<div class={cn("p-6", "space-y-4", "animate-fade-in")}>
-  <div>
-    <h1 class={cn("text-lg", "font-semibold", "text-white")}>
-      Realtime Graphs
-    </h1>
+<div class={cn("p-6", "flex", "flex-col", "h-screen", "gap-4", "animate-fade-in")}>
+  <div class={cn("flex-shrink-0")}>
+    <h1 class={cn("text-lg", "font-semibold", "text-white")}>Realtime Graphs</h1>
     <p class={cn("text-sm", "mt-0.5", "text-muted")}>
-      Load, bandwidth, connections
+      Bandwidth, load, connections
     </p>
   </div>
 
+  <!-- Tab bar -->
   <div
     class={cn(
-      "flex",
-      "gap-1",
-      "p-0.5",
-      "w-fit",
-      "border",
-      "rounded-lg",
-      "bg-surface-2",
-      "border-border",
+      "flex", "gap-1", "p-0.5", "w-fit", "border", "rounded-lg",
+      "bg-surface-2", "border-border", "flex-shrink-0",
     )}
   >
     {#each [
@@ -455,23 +179,11 @@
       {@const TabIcon = t.icon}
       <button
         class={cn(
-          "px-3",
-          "py-1.5",
-          "text-xs",
-          "rounded-md",
-          "font-medium",
-          "transition-all",
-          "flex",
-          "items-center",
-          "gap-1.5",
-          "cursor-pointer",
+          "px-3", "py-1.5", "text-xs", "rounded-md", "font-medium",
+          "transition-all", "flex", "items-center", "gap-1.5", "cursor-pointer",
         )}
-        style="background:{tab === t.id
-          ? 'var(--accent)'
-          : 'transparent'};color:{tab === t.id
-          ? '#0d1117'
-          : 'var(--text-muted)'}"
-        onclick={() => switchTab(t.id)}
+        style="background:{tab === t.id ? 'var(--accent)' : 'transparent'};color:{tab === t.id ? '#0d1117' : 'var(--text-muted)'}"
+        onclick={() => { tab = t.id; refresh(); }}
       >
         <TabIcon size={14} />
         {t.label}
@@ -479,44 +191,143 @@
     {/each}
   </div>
 
+  <!-- Content -->
+  <div class={cn("flex-1", "min-h-0")}>
+  <!-- Bandwidth -->
   {#if tab === "bandwidth"}
-    <div class={cn("flex", "items-center", "gap-2")}>
-      <label for="bw-iface" class={cn("text-xs", "text-muted")}>Interface:</label>
-      <select
-        id="bw-iface"
-        class={cn(
-          "px-2",
-          "py-1",
-          "border",
-          "text-xs",
-          "text-fg",
-          "rounded-md",
-          "outline-none",
-          "bg-surface",
-          "border-border",
-        )}
-        bind:value={bwDevice}
-      >
+    <div class={cn("flex", "flex-col", "h-full", "gap-4")}>
+      <div class={cn("flex", "flex-wrap", "gap-1", "items-center")}>
         {#each bwInterfaces as iface}
-          <option value={iface}>{iface}</option>
+          <button
+            class={cn(
+              "px-2.5", "py-1", "text-xs", "rounded-md", "font-medium",
+              "transition-all", "cursor-pointer", "border",
+            )}
+            style="background:{bwActiveTab === iface ? 'var(--accent)' : 'var(--surface)'};color:{bwActiveTab === iface ? '#0d1117' : 'var(--text-muted)'};border-color:{bwActiveTab === iface ? 'var(--accent)' : 'var(--border)'}"
+            onclick={() => switchIface(iface)}
+          >
+            {iface}
+          </button>
         {/each}
-      </select>
+      </div>
+
+      {#if bwActiveTab && bwData[bwActiveTab]}
+        <RealtimeGraph
+          series={[
+            { label: "Inbound", color: "#58a6ff", data: bwData[bwActiveTab].rx },
+            { label: "Outbound", color: "#00d4aa", data: bwData[bwActiveTab].tx },
+          ]}
+          formatValue={fmtBits}
+          noData={bwData[bwActiveTab].rx.length === 0}
+          noDataMsg="Collecting data…"
+        />
+      {:else}
+        <RealtimeGraph series={[]} formatValue={fmtBits} noData noDataMsg="No interfaces" />
+      {/if}
     </div>
   {/if}
 
-  <div class={cn("glass", "p-5")}>
-    <div class={cn("flex", "items-center", "justify-between", "mb-3")}>
-      <h3 class={cn("text-sm", "font-semibold", "text-white")}>
-        {tab === "bandwidth"
-          ? "Bandwidth"
-          : tab === "load"
-            ? "CPU Load"
-            : "Active Connections"}
-      </h3>
+  <!-- Load -->
+  {#if tab === "load"}
+    <RealtimeGraph
+      series={[
+        { label: "1 Minute", color: "#ff4d4f", data: loadData.l1 },
+        { label: "5 Minute", color: "#f0883e", data: loadData.l5 },
+        { label: "15 Minute", color: "#f0c83e", data: loadData.l15 },
+      ]}
+      formatValue={fmtLoad}
+      noData={loadData.l1.length === 0}
+      noDataMsg="Collecting data…"
+    />
+  {/if}
+
+  <!-- Connections -->
+  {#if tab === "connections"}
+    <div class={cn("flex", "flex-col", "h-full", "gap-4")}>
+      <RealtimeGraph
+        series={[
+          { label: "UDP", color: "#58a6ff", data: ctData.udp },
+          { label: "TCP", color: "#00d4aa", data: ctData.tcp },
+          { label: "Other", color: "#ff4d4f", data: ctData.other },
+        ]}
+        formatValue={fmtInt}
+        height={160}
+        noData={ctData.udp.length === 0 && ctData.tcp.length === 0}
+        noDataMsg="Connection tracking unavailable"
+      />
+
+      <!-- Connections table -->
+      <div class={cn("glass", "p-5", "flex", "flex-col", "flex-1", "min-h-0")}>
+        <div class={cn("flex", "items-center", "justify-between", "flex-shrink-0", "mb-3")}>
+          <h3 class={cn("text-sm", "font-semibold", "text-white")}>
+            Active Connections
+            <span class={cn("text-muted", "font-normal", "ml-1")}>
+              ({ctList.length})
+            </span>
+          </h3>
+          <input
+            type="text"
+            placeholder="Filter connections…"
+            class={cn(
+              "px-2", "py-1", "text-xs", "rounded-md", "outline-none",
+              "bg-surface", "border", "border-border", "text-fg",
+              "w-48", "placeholder:text-muted",
+            )}
+            bind:value={ctSearch}
+          />
+        </div>
+
+        {#if ctFiltered.length > 0}
+          <div class={cn("flex-1", "min-h-0", "overflow-y-auto")}>
+            <table class={cn("w-full", "text-xs", "font-mono")}>
+              <thead>
+                <tr class={cn("text-muted", "uppercase", "text-xs", "tracking-wider")}>
+                  <th class={cn("text-left", "p-1.5")}>Network</th>
+                  <th class={cn("text-left", "p-1.5")}>Protocol</th>
+                  <th class={cn("text-left", "p-1.5")}>Source</th>
+                  <th class={cn("text-left", "p-1.5")}>Destination</th>
+                  <th class={cn("text-right", "p-1.5")}>Transfer</th>
+                </tr>
+              </thead>
+              <tbody>
+                {#each ctFiltered.slice(0, 500) as c}
+                  <tr class={cn("border-t", "border-border", "hover:bg-surface-2/50")}>
+                    <td class={cn("p-1.5", "text-muted")}>{c.layer3?.toUpperCase?.() || "-"}</td>
+                    <td class={cn("p-1.5")}>
+                      <span
+                        class={cn("font-semibold")}
+                        style="color:{protoColor[c.layer4?.toLowerCase()] || 'var(--text-muted)'}"
+                      >
+                        {c.layer4?.toUpperCase?.() || "-"}
+                      </span>
+                    </td>
+                    <td class={cn("p-1.5")}>{joinAddr(c.src || "?", c.sport || 0)}</td>
+                    <td class={cn("p-1.5")}>{joinAddr(c.dst || "?", c.dport || 0)}</td>
+                    <td class={cn("p-1.5", "text-right")}>
+                      {fmtBytes(c.bytes || 0)}
+                      <span class={cn("text-muted")}>
+                        {" "}({c.packets || 0} pkts)
+                      </span>
+                    </td>
+                  </tr>
+                {/each}
+              </tbody>
+            </table>
+            {#if ctFiltered.length > 500}
+              <p class={cn("text-xs", "text-muted", "text-center", "mt-2")}>
+                Showing 500 of {ctFiltered.length} connections
+              </p>
+            {/if}
+          </div>
+        {:else}
+          <div class={cn("flex-1", "flex", "items-center", "justify-center")}>
+            <p class={cn("text-xs", "text-muted")}>
+              {ctSearch ? "No matching connections" : "Collecting data…"}
+            </p>
+          </div>
+        {/if}
+      </div>
     </div>
-    <canvas
-      bind:this={canvas}
-      class={cn("w-full", "h-64", "rounded-lg")}
-    ></canvas>
+  {/if}
   </div>
 </div>

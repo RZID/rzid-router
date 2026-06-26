@@ -192,22 +192,57 @@ export const getBandwidth = async () => {
   return stats;
 };
 
-export const getConntrackCount = async (): Promise<number | null> => {
-  const res = await execCommand("cat", [
-    "/proc/sys/net/netfilter/nf_conntrack_count",
-  ]);
-  if (res?.stdout) {
-    const n = parseInt(res.stdout.trim());
-    if (!isNaN(n)) return n;
-  }
+export const getRealtimeStats = async (
+  mode: "interface" | "load" | "conntrack" | "wireless",
+  device?: string,
+): Promise<number[][] | null> => {
+  const params: Record<string, string> = { mode };
+  if (device) params.device = device;
+  const res = await call<{ result: number[][] }>("luci", "getRealtimeStats", params);
+  return res?.result ?? null;
+};
 
-  const raw = await execCommand("wc", ["-l", "/proc/net/nf_conntrack"]);
-  if (raw?.stdout) {
-    const n = parseInt(raw.stdout.trim().split(/\s+/)[0]);
-    if (!isNaN(n)) return n;
-  }
+export const getConntrackList = async (): Promise<any[] | null> => {
+  const res = await call<{ result: any[] }>("luci", "getConntrackList", {});
+  return res?.result ?? null;
+};
 
+export type ConntrackMetrics = { udp: number; tcp: number; other: number };
+
+export const fetchConntrackMetrics = async (): Promise<ConntrackMetrics | null> => {
+  // 1. luci.getRealtimeStats (requires luci-bwc daemon — returns per-protocol breakdown)
+  const stats = await getRealtimeStats("conntrack");
+  if (stats?.length) {
+    const latest = stats[stats.length - 1];
+    if (latest.length >= 4) return { udp: latest[1], tcp: latest[2], other: latest[3] };
+  }
+  // 2. luci.getConntrackList and count entries by protocol
+  const list = await getConntrackList();
+  if (list) {
+    const udp = list.filter((c: any) => c.layer4 === "udp").length;
+    const tcp = list.filter((c: any) => c.layer4 === "tcp").length;
+    return { udp, tcp, other: list.length - udp - tcp };
+  }
+  // 3. file.exec — try proc files, sysctl, and conntrack utility
+  for (const cmd of [
+    ["/bin/cat", "/proc/sys/net/netfilter/nf_conntrack_count"],
+    ["/bin/cat", "/proc/sys/net/ipv4/netfilter/ip_conntrack_count"],
+    ["/sbin/sysctl", "-n", "net.netfilter.nf_conntrack_count"],
+    ["/usr/sbin/conntrack", "-C"],
+  ] as [string, ...string[]][]) {
+    const res = await execCommand(cmd[0], cmd.slice(1));
+    if (res?.stdout) {
+      const s = res.stdout.trim().split(/\s+/)[0];
+      const n = parseInt(s);
+      if (!isNaN(n)) return { udp: 0, tcp: n, other: 0 };
+    }
+  }
   return null;
+};
+
+export const getConntrackCount = async (): Promise<number | null> => {
+  const m = await fetchConntrackMetrics();
+  return m ? m.tcp + m.udp + m.other : null;
 };
 
 export const getAdGuardStats = async () => {
