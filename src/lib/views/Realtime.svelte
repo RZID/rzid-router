@@ -5,8 +5,22 @@
   import { call, getRealtimeStats, fetchConntrackMetrics, getConntrackList } from "../api/ubus";
   import RealtimeGraph from "../components/RealtimeGraph.svelte";
 
+  let {
+    sub: _sub = "bandwidth",
+    onsubchange,
+  } = $props<{
+    sub?: string;
+    onsubchange?: (s: string) => void;
+  }>();
+
   let tab = $state<"bandwidth" | "load" | "connections">("bandwidth");
   let interval: ReturnType<typeof setInterval>;
+
+  $effect(() => {
+    if (_sub === "bandwidth" || _sub === "load" || _sub === "connections") {
+      tab = _sub;
+    }
+  });
 
   const pollMs = 2000;
   const maxPts = 120;
@@ -183,7 +197,7 @@
           "transition-all", "flex", "items-center", "gap-1.5", "cursor-pointer",
         )}
         style="background:{tab === t.id ? 'var(--accent)' : 'transparent'};color:{tab === t.id ? '#0d1117' : 'var(--text-muted)'}"
-        onclick={() => { tab = t.id; refresh(); }}
+        onclick={() => { tab = t.id; onsubchange?.(t.id); refresh(); }}
       >
         <TabIcon size={14} />
         {t.label}

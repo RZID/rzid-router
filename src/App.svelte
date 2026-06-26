@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import Login from "./lib/components/Login.svelte";
   import Sidebar from "./lib/components/Sidebar.svelte";
   import Dashboard from "./lib/views/Dashboard.svelte";
@@ -10,16 +11,32 @@
   import Realtime from "./lib/views/Realtime.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
+  import { parsePath, buildPath } from "./lib/router";
 
   let authenticated = $state(!!localStorage.getItem("owrt_session"));
   let currentView = $state("dashboard");
+  let currentSub = $state<string | undefined>(undefined);
 
-  const handleAuth = () => {
-    authenticated = true;
+  const navigate = (view: string, sub?: string) => {
+    const path = buildPath(view, sub);
+    history.pushState({ view, sub }, "", path);
+    currentView = view;
+    currentSub = sub;
   };
+
+  const handleSidebarNav = (id: string) => {
+    if (id === "realtime") navigate(id, "bandwidth");
+    else navigate(id, undefined);
+  };
+
+  const handleAuth = () => { authenticated = true; };
   const handleLogout = () => {
     authenticated = false;
-    currentView = "dashboard";
+    navigate("dashboard");
+  };
+
+  const handleSubChange = (sub: string) => {
+    navigate("realtime", sub);
   };
 
   const placeholders: Record<string, { title: string; sub: string }> = {
@@ -42,6 +59,20 @@
       sub: "Backup, restore, firmware upgrade",
     },
   };
+
+  onMount(() => {
+    const { view, sub } = parsePath(window.location.pathname);
+    currentView = view;
+    currentSub = sub;
+
+    const onPop = () => {
+      const { view, sub } = parsePath(window.location.pathname);
+      currentView = view;
+      currentSub = sub;
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  });
 </script>
 
 {#if !authenticated}
@@ -51,7 +82,7 @@
     <Sidebar
       active={currentView}
       onlogout={handleLogout}
-      onnavigate={(id) => (currentView = id)}
+      onnavigate={handleSidebarNav}
     />
     <main
       class={cn(
@@ -70,7 +101,7 @@
       {:else if currentView === "processes"}
         <Processes />
       {:else if currentView === "realtime"}
-        <Realtime />
+        <Realtime sub={currentSub} onsubchange={handleSubChange} />
       {:else if currentView === "syslog"}
         <Logs />
       {:else if placeholders[currentView]}

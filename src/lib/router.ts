@@ -1,0 +1,67 @@
+export function parsePath(path: string): { view: string; sub?: string } {
+  const map: Record<string, { view: string; sub?: string }> = {
+    "/": { view: "dashboard" },
+    "/status/overview": { view: "dashboard" },
+    "/status/routing": { view: "routes" },
+    "/status/firewall": { view: "firewall-status" },
+    "/status/syslog": { view: "syslog" },
+    "/status/processes": { view: "processes" },
+    "/status/realtime": { view: "realtime", sub: "bandwidth" },
+    "/status/services": { view: "services" },
+    "/graphs": { view: "realtime", sub: "bandwidth" },
+    "/graphs/bandwidth": { view: "realtime", sub: "bandwidth" },
+    "/graphs/load": { view: "realtime", sub: "load" },
+    "/graphs/connections": { view: "realtime", sub: "connections" },
+    "/routing": { view: "routes" },
+    "/firewall": { view: "firewall-status" },
+    "/syslog": { view: "syslog" },
+    "/services": { view: "services" },
+    "/processes": { view: "processes" },
+    "/network": { view: "network" },
+    "/network/interfaces": { view: "network" },
+    "/network/routing": { view: "network-routes" },
+    "/network/dhcp": { view: "dhcp" },
+    "/network/dns": { view: "dns" },
+    "/network/diagnostics": { view: "diagnostics" },
+    "/services/ddns": { view: "ddns" },
+    "/services/adguard": { view: "adguard" },
+    "/services/banip": { view: "banip" },
+    "/services/upnp": { view: "upnp" },
+    "/system": { view: "system" },
+    "/system/system": { view: "system" },
+    "/system/admin": { view: "admin" },
+    "/system/software": { view: "software" },
+    "/system/startup": { view: "startup" },
+    "/system/crontab": { view: "crontab" },
+    "/system/flash": { view: "flash" },
+  };
+  return map[path] || { view: "dashboard" };
+}
+
+export function buildPath(view: string, sub?: string): string {
+  if (view === "realtime") return sub ? `/graphs/${sub}` : "/graphs/bandwidth";
+  const map: Record<string, string> = {
+    dashboard: "/status/overview",
+    routes: "/routing",
+    "firewall-status": "/status/firewall",
+    syslog: "/syslog",
+    processes: "/processes",
+    services: "/services",
+    network: "/network",
+    "network-routes": "/network/routing",
+    dhcp: "/network/dhcp",
+    dns: "/network/dns",
+    diagnostics: "/network/diagnostics",
+    ddns: "/services/ddns",
+    adguard: "/services/adguard",
+    banip: "/services/banip",
+    upnp: "/services/upnp",
+    system: "/system",
+    admin: "/system/admin",
+    software: "/system/software",
+    startup: "/system/startup",
+    crontab: "/system/crontab",
+    flash: "/system/flash",
+  };
+  return map[view] || "/";
+}
