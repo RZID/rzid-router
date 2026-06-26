@@ -4,6 +4,7 @@
   import Dashboard from "./lib/views/Dashboard.svelte";
   import Services from "./lib/views/Services.svelte";
   import Routes from "./lib/views/Routes.svelte";
+  import Firewall from "./lib/views/Firewall.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
 
   let authenticated = $state(!!localStorage.getItem("owrt_session"));
@@ -13,7 +14,6 @@
   const handleLogout = () => { authenticated = false; currentView = "dashboard"; };
 
   const placeholders: Record<string, { title: string; sub: string }> = {
-    "firewall-status": { title: "Firewall", sub: "Status, rules & port forwards" },
     syslog: { title: "System Log", sub: "Kernel & system logs" },
     processes: { title: "Processes", sub: "Running processes" },
     realtime: { title: "Realtime Graphs", sub: "Load, bandwidth, connections" },
@@ -45,6 +45,8 @@
         <Dashboard />
       {:else if currentView === "routes"}
         <Routes />
+      {:else if currentView === "firewall-status"}
+        <Firewall />
       {:else if currentView === "services"}
         <Services />
       {:else if placeholders[currentView]}
