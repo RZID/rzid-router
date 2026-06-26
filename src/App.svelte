@@ -25,8 +25,7 @@
   };
 
   const handleSidebarNav = (id: string) => {
-    if (id === "realtime") navigate(id, "bandwidth");
-    else navigate(id, undefined);
+    navigate(id, undefined);
   };
 
   const handleAuth = () => { authenticated = true; };
