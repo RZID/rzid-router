@@ -1,12 +1,12 @@
-export function parsePath(path: string): { view: string; sub?: string } {
-  const map: Record<string, { view: string; sub?: string }> = {
+export function parsePath(path: string): { view: string; sub?: string; redirect?: string } {
+  const map: Record<string, { view: string; sub?: string; redirect?: string }> = {
     "/": { view: "dashboard" },
     "/status/overview": { view: "dashboard" },
     "/status/routing": { view: "routes" },
     "/status/firewall": { view: "firewall-status" },
     "/status/syslog": { view: "syslog" },
     "/status/processes": { view: "processes" },
-    "/status/realtime": { view: "realtime", sub: "bandwidth" },
+    "/status/realtime": { view: "realtime", sub: "bandwidth", redirect: "/status/realtime/bandwidth" },
     "/status/realtime/bandwidth": { view: "realtime", sub: "bandwidth" },
     "/status/realtime/load": { view: "realtime", sub: "load" },
     "/status/realtime/connections": { view: "realtime", sub: "connections" },
@@ -39,7 +39,7 @@ export function buildPath(view: string, sub?: string): string {
     "firewall-status": "/status/firewall",
     syslog: "/status/syslog",
     processes: "/status/processes",
-    realtime: sub ? `/status/realtime/${sub}` : "/status/realtime",
+    realtime: sub ? `/status/realtime/${sub}` : "/status/realtime/bandwidth",
     services: "/services",
     network: "/network",
     "network-routes": "/network/routing",

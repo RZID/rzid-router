@@ -60,12 +60,14 @@
   };
 
   onMount(() => {
-    const { view, sub } = parsePath(window.location.pathname);
+    const { view, sub, redirect } = parsePath(window.location.pathname);
+    if (redirect) history.replaceState({ view, sub }, "", redirect);
     currentView = view;
     currentSub = sub;
 
     const onPop = () => {
-      const { view, sub } = parsePath(window.location.pathname);
+      const { view, sub, redirect } = parsePath(window.location.pathname);
+      if (redirect) history.replaceState({ view, sub }, "", redirect);
       currentView = view;
       currentSub = sub;
     };
