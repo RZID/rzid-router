@@ -128,8 +128,8 @@
   const td = "py-1.5 pr-3 text-xs whitespace-nowrap";
 </script>
 
-<div class={cn("p-6", "space-y-4", "animate-fade-in")}>
-  <div class={cn("flex", "items-start", "justify-between", "gap-4")}>
+<div class={cn("p-6", "flex", "flex-col", "h-screen", "gap-4", "animate-fade-in")}>
+  <div class={cn("flex", "items-start", "justify-between", "gap-4", "shrink-0")}>
     <div>
       <h1 class={cn("text-lg", "font-semibold", "text-white")}>Processes</h1>
       <p class={cn("text-sm", "mt-0.5", "text-muted")}>Running processes</p>
@@ -201,6 +201,7 @@
         "border",
         "text-xs",
         "rounded-lg",
+        "shrink-0",
         "text-danger",
         "bg-danger/10",
         "border-danger/20",
@@ -210,8 +211,8 @@
     </div>
   {/if}
 
-  <div class={cn("glass", "p-5", "animate-slide-up")}>
-    <div class={cn("flex", "items-center", "justify-between", "mb-3")}>
+  <div class={cn("glass", "p-5", "flex", "flex-col", "flex-1", "min-h-0", "animate-slide-up")}>
+    <div class={cn("flex", "items-center", "justify-between", "mb-3", "shrink-0")}>
       <h3 class={cn("text-sm", "font-semibold", "text-white")}>Process List</h3>
       {#if loading}
         <span
@@ -243,10 +244,10 @@
     </div>
 
     {#if sorted.length > 0}
-      <div class={cn("overflow-x-auto")}>
+      <div class={cn("flex-1", "min-h-0", "overflow-y-auto")}>
         <table class={cn("w-full")}>
           <thead>
-            <tr class={cn("text-muted")}>
+            <tr class={cn("text-muted", "sticky", "top-0", "z-10")} style="background:var(--surface-1)">
               {#each columns as col}
                 {@const Icon = sortIcon(col.key)}
                 <th
