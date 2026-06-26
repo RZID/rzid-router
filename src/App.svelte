@@ -3,27 +3,35 @@
   import Sidebar from "./lib/components/Sidebar.svelte";
   import Dashboard from "./lib/views/Dashboard.svelte";
   import Services from "./lib/views/Services.svelte";
-  import Placeholder from "./lib/views/Placeholder.svelte";
   import Routes from "./lib/views/Routes.svelte";
+  import Placeholder from "./lib/views/Placeholder.svelte";
 
   let authenticated = $state(!!localStorage.getItem("owrt_session"));
   let currentView = $state("dashboard");
 
-  const handleAuth = () => {
-    authenticated = true;
-  };
-
-  const handleLogout = () => {
-    authenticated = false;
-    currentView = "dashboard";
-  };
+  const handleAuth = () => { authenticated = true; };
+  const handleLogout = () => { authenticated = false; currentView = "dashboard"; };
 
   const placeholders: Record<string, { title: string; sub: string }> = {
-    network: { title: "Network", sub: "Interface configuration" },
-    clients: { title: "Clients", sub: "DHCP leases & device management" },
-    dns: { title: "DNS / AdGuard", sub: "DNS filtering & blocklists" },
-    firewall: { title: "Firewall", sub: "Rules & port forwards" },
-    system: { title: "System", sub: "Logs, updates & settings" },
+    "firewall-status": { title: "Firewall", sub: "Status, rules & port forwards" },
+    syslog: { title: "System Log", sub: "Kernel & system logs" },
+    processes: { title: "Processes", sub: "Running processes" },
+    realtime: { title: "Realtime Graphs", sub: "Load, bandwidth, connections" },
+    network: { title: "Interfaces", sub: "Network interface configuration" },
+    "network-routes": { title: "Routing", sub: "Static routes & rules" },
+    dhcp: { title: "DHCP", sub: "DHCP server & lease configuration" },
+    dns: { title: "DNS", sub: "DNS resolver & forwarding" },
+    diagnostics: { title: "Diagnostics", sub: "Ping, traceroute, nslookup" },
+    ddns: { title: "Dynamic DNS", sub: "DDNS service configuration" },
+    adguard: { title: "AdGuard Home", sub: "DNS filtering & blocklists" },
+    banip: { title: "banIP", sub: "IP threat blocking" },
+    upnp: { title: "UPnP", sub: "Port mapping & IGD" },
+    system: { title: "System", sub: "System settings" },
+    admin: { title: "Administration", sub: "Password, SSH, HTTP" },
+    software: { title: "Software", sub: "Package management" },
+    startup: { title: "Startup", sub: "Init scripts & services" },
+    crontab: { title: "Scheduled Tasks", sub: "Cron jobs" },
+    flash: { title: "Backup / Flash", sub: "Backup, restore, firmware upgrade" },
   };
 </script>
 
@@ -31,23 +39,18 @@
   <Login onauthenticated={handleAuth} />
 {:else}
   <div class="flex h-screen overflow-hidden">
-    <Sidebar
-      active={currentView}
-      onnavigate={(id) => (currentView = id)}
-      onlogout={handleLogout}
-    />
+    <Sidebar active={currentView} onnavigate={(id) => currentView = id} onlogout={handleLogout} />
     <main class="flex-1 overflow-y-auto" style="background: var(--surface)">
       {#if currentView === "dashboard"}
         <Dashboard />
-      {:else if currentView === "network"}
+      {:else if currentView === "routes"}
         <Routes />
       {:else if currentView === "services"}
         <Services />
       {:else if placeholders[currentView]}
-        <Placeholder
-          title={placeholders[currentView].title}
-          sub={placeholders[currentView].sub}
-        />
+        <Placeholder title={placeholders[currentView].title} sub={placeholders[currentView].sub} />
+      {:else}
+        <Placeholder title="Not Found" sub="This page is not available" />
       {/if}
     </main>
   </div>
