@@ -55,11 +55,9 @@
     />
     <main
       class={cn(
-        "flex-1",
-        "min-h-0",
+        "flex-1", "min-h-0", "bg-surface",
         currentView === "syslog" ? "overflow-hidden" : "overflow-y-auto",
       )}
-      style="background: var(--surface)"
     >
       {#if currentView === "dashboard"}
         <Dashboard />
