@@ -13,6 +13,7 @@
     type SystemLogFilters,
     type DmesgFilters,
   } from "../logs";
+  import { cn } from "../helpers/classname";
 
   let tab = $state<"syslog" | "dmesg">("syslog");
   let logText = $state("");
@@ -94,22 +95,40 @@
   onDestroy(() => clearInterval(interval));
 </script>
 
-<div class="h-full flex flex-col overflow-hidden p-6 gap-4 animate-fade-in">
+<div
+  class={cn(
+    "p-6",
+    "flex",
+    "gap-4",
+    "h-full",
+    "flex-col",
+    "overflow-hidden",
+    "animate-fade-in",
+  )}
+>
   <!-- Header -->
-  <div class="shrink-0 flex items-start justify-between gap-4">
+  <div
+    class={cn("shrink-0", "flex", "items-start", "justify-between", "gap-4")}
+  >
     <div>
-      <h1 class="text-lg font-semibold text-white">System Log</h1>
-      <p class="text-sm mt-0.5" style="color: var(--text-muted)">
-        Kernel and system logs
-      </p>
+      <h1 class={cn("text-lg", "font-semibold", "text-white")}>System Log</h1>
+      <p class={cn("text-sm", "mt-0.5")}>Kernel and system logs</p>
     </div>
 
     <div
-      class="flex gap-1 rounded-lg p-0.5 shrink-0"
+      class={cn("flex", "gap-1", "rounded-lg", "p-0.5", "shrink-0")}
       style="background:var(--surface-2);border:1px solid var(--border)"
     >
       <button
-        class="px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer"
+        class={cn(
+          "px-3",
+          "py-1.5",
+          "text-xs",
+          "rounded-md",
+          "font-medium",
+          "transition-all",
+          "cursor-pointer",
+        )}
         style="background:{tab === 'syslog'
           ? 'var(--accent)'
           : 'transparent'};color:{tab === 'syslog'
@@ -123,7 +142,15 @@
         System Log
       </button>
       <button
-        class="px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer"
+        class={cn(
+          "px-3",
+          "py-1.5",
+          "text-xs",
+          "rounded-md",
+          "font-medium",
+          "transition-all",
+          "cursor-pointer",
+        )}
         style="background:{tab === 'dmesg'
           ? 'var(--accent)'
           : 'transparent'};color:{tab === 'dmesg'
@@ -141,24 +168,35 @@
 
   <!-- Main panel -->
   <div
-    class="glass flex-1 flex flex-col min-h-0 overflow-hidden animate-slide-up"
+    class={cn(
+      "flex",
+      "glass",
+      "flex-1",
+      "min-h-0",
+      "flex-col",
+      "overflow-hidden",
+      "animate-slide-up",
+    )}
   >
     <!-- Filters -->
-    <div class="shrink-0 p-4" style="border-bottom:1px solid var(--border)">
-      <div class="flex items-center justify-between mb-3">
+    <div
+      class={cn("shrink-0", "p-4")}
+      style="border-bottom:1px solid var(--border)"
+    >
+      <div class={cn("flex", "items-center", "justify-between", "mb-3")}>
         <span
-          class="text-xs font-semibold uppercase tracking-wider"
+          class={cn("text-xs", "font-semibold", "uppercase", "tracking-wider")}
           style="color:var(--text-muted)"
         >
           Filters
         </span>
         {#if loading}
           <span
-            class="text-xs flex items-center gap-1.5"
+            class={cn("text-xs", "flex", "items-center", "gap-1.5")}
             style="color:var(--accent)"
           >
             <span
-              class="w-1.5 h-1.5 rounded-full animate-pulse"
+              class={cn("w-1.5", "h-1.5", "rounded-full", "animate-pulse")}
               style="background:var(--accent)"
             ></span>
             Refreshing…
@@ -167,20 +205,46 @@
       </div>
 
       {#if tab === "syslog"}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div
+          class={cn(
+            "grid",
+            "gap-3",
+            "grid-cols-1",
+            "sm:grid-cols-2",
+            "lg:grid-cols-4",
+          )}
+        >
           <div
-            class="rounded-lg p-3"
+            class={cn("rounded-lg", "p-3")}
             style="background:var(--surface-2);border:1px solid var(--border)"
           >
             <label
-              class="block text-[10px] font-semibold uppercase tracking-wider mb-2"
+              class={cn(
+                "mb-2",
+                "block",
+                "uppercase",
+                "text-[10px]",
+                "font-semibold",
+                "tracking-wider",
+              )}
               style="color:var(--text-muted)"
+              for="facility-select"
             >
               Facility
             </label>
-            <div class="flex items-center gap-2">
+            <div id="facility-select" class={cn("flex items-center gap-2")}>
               <select
-                class="flex-1 min-w-0 px-2.5 py-1.5 rounded-md text-xs outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                class={cn(
+                  "flex-1",
+                  "px-2.5",
+                  "py-1.5",
+                  "min-w-0",
+                  "text-xs",
+                  "rounded-md",
+                  "outline-none",
+                  "focus:ring-1",
+                  "focus:ring-(--accent)",
+                )}
                 style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={sysFilters.facility}
                 onchange={applyFilters}
@@ -191,7 +255,18 @@
               </select>
               <button
                 type="button"
-                class="shrink-0 px-2 py-1.5 rounded-md text-[10px] font-semibold uppercase tracking-wide transition-all cursor-pointer"
+                class={cn(
+                  "px-2",
+                  "py-1.5",
+                  "shrink-0",
+                  "uppercase",
+                  "rounded-md",
+                  "text-[10px]",
+                  "font-semibold",
+                  "tracking-wide",
+                  "transition-all",
+                  "cursor-pointer",
+                )}
                 style="background:{sysFilters.invertFacility
                   ? 'rgba(255,77,79,0.15)'
                   : 'var(--surface)'};color:{sysFilters.invertFacility
@@ -210,18 +285,39 @@
           </div>
 
           <div
-            class="rounded-lg p-3"
+            class={cn("rounded-lg", "p-3")}
             style="background:var(--surface-2);border:1px solid var(--border)"
           >
             <label
-              class="block text-[10px] font-semibold uppercase tracking-wider mb-2"
+              for="severity-select"
+              class={cn(
+                "mb-2",
+                "block",
+                "uppercase",
+                "text-[10px]",
+                "font-semibold",
+                "tracking-wider",
+              )}
               style="color:var(--text-muted)"
             >
               Severity
             </label>
-            <div class="flex items-center gap-2">
+            <div
+              class={cn("flex", "items-center", "gap-2")}
+              id="severity-select"
+            >
               <select
-                class="flex-1 min-w-0 px-2.5 py-1.5 rounded-md text-xs outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                class={cn(
+                  "flex-1",
+                  "px-2.5",
+                  "py-1.5",
+                  "min-w-0",
+                  "text-xs",
+                  "rounded-md",
+                  "outline-none",
+                  "focus:ring-1",
+                  "focus:ring-(--accent)",
+                )}
                 style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={sysFilters.severity}
                 onchange={applyFilters}
@@ -232,7 +328,18 @@
               </select>
               <button
                 type="button"
-                class="shrink-0 px-2 py-1.5 rounded-md text-[10px] font-semibold uppercase tracking-wide transition-all cursor-pointer"
+                class={cn(
+                  "px-2",
+                  "py-1.5",
+                  "shrink-0",
+                  "uppercase",
+                  "rounded-md",
+                  "text-[10px]",
+                  "font-semibold",
+                  "tracking-wide",
+                  "transition-all",
+                  "cursor-pointer",
+                )}
                 style="background:{sysFilters.invertSeverity
                   ? 'rgba(255,77,79,0.15)'
                   : 'var(--surface)'};color:{sysFilters.invertSeverity
@@ -251,18 +358,37 @@
           </div>
 
           <div
-            class="rounded-lg p-3 sm:col-span-2 lg:col-span-1"
+            class={cn("rounded-lg", "p-3", "sm:col-span-2", "lg:col-span-1")}
             style="background:var(--surface-2);border:1px solid var(--border)"
           >
             <label
-              class="block text-[10px] font-semibold uppercase tracking-wider mb-2"
+              for="search-select"
+              class={cn(
+                "mb-2",
+                "block",
+                "uppercase",
+                "text-[10px]",
+                "font-semibold",
+                "tracking-wider",
+              )}
               style="color:var(--text-muted)"
             >
               Search
             </label>
-            <div class="flex items-center gap-2">
+            <div id="search-select" class={cn("flex items-center gap-2")}>
               <input
-                class="flex-1 min-w-0 px-2.5 py-1.5 rounded-md text-xs font-mono outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                class={cn(
+                  "py-1.5",
+                  "flex-1",
+                  "px-2.5",
+                  "min-w-0",
+                  "text-xs",
+                  "font-mono",
+                  "rounded-md",
+                  "outline-none",
+                  "focus:ring-1",
+                  "focus:ring-(--accent)",
+                )}
                 style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={sysFilters.text}
                 oninput={applyFilters}
@@ -270,7 +396,18 @@
               />
               <button
                 type="button"
-                class="shrink-0 px-2 py-1.5 rounded-md text-[10px] font-semibold uppercase tracking-wide transition-all cursor-pointer"
+                class={cn(
+                  "px-2",
+                  "py-1.5",
+                  "shrink-0",
+                  "uppercase",
+                  "rounded-md",
+                  "text-[10px]",
+                  "font-semibold",
+                  "tracking-wide",
+                  "transition-all",
+                  "cursor-pointer",
+                )}
                 style="background:{sysFilters.invertText
                   ? 'rgba(255,77,79,0.15)'
                   : 'var(--surface)'};color:{sysFilters.invertText
@@ -289,19 +426,38 @@
           </div>
 
           <div
-            class="rounded-lg p-3"
+            class={cn("rounded-lg", "p-3")}
             style="background:var(--surface-2);border:1px solid var(--border)"
           >
             <label
-              class="block text-[10px] font-semibold uppercase tracking-wider mb-2"
+              for="max-rows-select"
+              class={cn(
+                "mb-2",
+                "block",
+                "uppercase",
+                "text-[10px]",
+                "font-semibold",
+                "tracking-wider",
+              )}
               style="color:var(--text-muted)"
             >
               Max rows
             </label>
             <input
+              id="max-rows-select"
               type="number"
               min="1"
-              class="w-full px-2.5 py-1.5 rounded-md text-xs font-mono outline-none focus:ring-1 focus:ring-[var(--accent)]"
+              class={cn(
+                "w-full",
+                "px-2.5",
+                "py-1.5",
+                "text-xs",
+                "font-mono",
+                "rounded-md",
+                "outline-none",
+                "focus:ring-1",
+                "focus:ring-(--accent)",
+              )}
               style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
               bind:value={sysFilters.maxRows}
               onchange={applyFilters}
@@ -309,34 +465,77 @@
           </div>
         </div>
       {:else}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div
+          class={cn(
+            "grid",
+            "gap-3",
+            "grid-cols-1",
+            "sm:grid-cols-2",
+            "lg:grid-cols-4",
+          )}
+        >
           <div
-            class="rounded-lg p-3 sm:col-span-2"
+            class={cn("rounded-lg", "p-3", "sm:col-span-2")}
             style="background:var(--surface-2);border:1px solid var(--border)"
           >
             <label
-              class="block text-[10px] font-semibold uppercase tracking-wider mb-2"
+              for="time-range-select"
+              class={cn(
+                "mb-2",
+                "block",
+                "uppercase",
+                "text-[10px]",
+                "font-semibold",
+                "tracking-wider",
+              )}
               style="color:var(--text-muted)"
             >
               Time range
             </label>
-            <div class="flex flex-wrap items-center gap-2">
+            <div
+              id="time-range-select"
+              class={cn("flex", "flex-wrap", "items-center", "gap-2")}
+            >
               <input
                 type="number"
                 min="0"
                 step="0.1"
-                class="flex-1 min-w-[6rem] px-2.5 py-1.5 rounded-md text-xs font-mono outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                class={cn(
+                  "flex-1",
+                  "px-2.5",
+                  "py-1.5",
+                  "text-xs",
+                  "min-w-24",
+                  "font-mono",
+                  "rounded-md",
+                  "outline-none",
+                  "focus:ring-1",
+                  "focus:ring-(--accent)",
+                )}
                 style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={dmesgFilters.fromTime}
                 oninput={applyFilters}
                 placeholder="From"
               />
-              <span class="text-xs" style="color:var(--text-muted)">→</span>
+              <span class={cn("text-xs")} style="color:var(--text-muted)">
+                →
+              </span>
               <input
                 type="number"
                 min="0"
                 step="0.1"
-                class="flex-1 min-w-[6rem] px-2.5 py-1.5 rounded-md text-xs font-mono outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                class={cn(
+                  "flex-1",
+                  "px-2.5",
+                  "py-1.5",
+                  "text-xs",
+                  "min-w-24",
+                  "font-mono",
+                  "rounded-md",
+                  "outline-none",
+                  "focus:ring-1",
+                  "focus:ring-(--accent)",
+                )}
                 style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={dmesgFilters.toTime}
                 oninput={applyFilters}
@@ -344,7 +543,18 @@
               />
               <button
                 type="button"
-                class="shrink-0 px-2 py-1.5 rounded-md text-[10px] font-semibold uppercase tracking-wide transition-all cursor-pointer"
+                class={cn(
+                  "px-2",
+                  "py-1.5",
+                  "shrink-0",
+                  "uppercase",
+                  "rounded-md",
+                  "text-[10px]",
+                  "font-semibold",
+                  "tracking-wide",
+                  "transition-all",
+                  "cursor-pointer",
+                )}
                 style="background:{dmesgFilters.invertTimeRange
                   ? 'rgba(255,77,79,0.15)'
                   : 'var(--surface)'};color:{dmesgFilters.invertTimeRange
@@ -363,18 +573,39 @@
           </div>
 
           <div
-            class="rounded-lg p-3"
+            class={cn("rounded-lg", "p-3")}
             style="background:var(--surface-2);border:1px solid var(--border)"
           >
             <label
-              class="block text-[10px] font-semibold uppercase tracking-wider mb-2"
+              for="severity-select"
+              class={cn(
+                "mb-2",
+                "block",
+                "uppercase",
+                "text-[10px]",
+                "font-semibold",
+                "tracking-wider",
+              )}
               style="color:var(--text-muted)"
             >
               Severity
             </label>
-            <div class="flex items-center gap-2">
+            <div
+              id="severity-select"
+              class={cn("flex", "items-center", "gap-2")}
+            >
               <select
-                class="flex-1 min-w-0 px-2.5 py-1.5 rounded-md text-xs outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                class={cn(
+                  "flex-1",
+                  "px-2.5",
+                  "py-1.5",
+                  "min-w-0",
+                  "text-xs",
+                  "rounded-md",
+                  "outline-none",
+                  "focus:ring-1",
+                  "focus:ring-(--accent)",
+                )}
                 style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={dmesgFilters.minSeverity}
                 onchange={applyFilters}
@@ -385,7 +616,18 @@
               </select>
               <button
                 type="button"
-                class="shrink-0 px-2 py-1.5 rounded-md text-[10px] font-semibold uppercase tracking-wide transition-all cursor-pointer"
+                class={cn(
+                  "px-2",
+                  "py-1.5",
+                  "shrink-0",
+                  "uppercase",
+                  "rounded-md",
+                  "text-[10px]",
+                  "font-semibold",
+                  "tracking-wide",
+                  "transition-all",
+                  "cursor-pointer",
+                )}
                 style="background:{dmesgFilters.invertSeverity
                   ? 'rgba(255,77,79,0.15)'
                   : 'var(--surface)'};color:{dmesgFilters.invertSeverity
@@ -401,24 +643,47 @@
                 Not
               </button>
             </div>
-            <p class="text-[10px] mt-1.5" style="color:var(--text-muted)">
+            <p
+              class={cn("text-[10px]", "mt-1.5")}
+              style="color:var(--text-muted)"
+            >
               and above
             </p>
           </div>
 
           <div
-            class="rounded-lg p-3"
+            class={cn("rounded-lg", "p-3")}
             style="background:var(--surface-2);border:1px solid var(--border)"
           >
             <label
-              class="block text-[10px] font-semibold uppercase tracking-wider mb-2"
+              for="search-input"
+              class={cn(
+                "mb-2",
+                "block",
+                "uppercase",
+                "text-[10px]",
+                "font-semibold",
+                "tracking-wider",
+              )}
               style="color:var(--text-muted)"
             >
               Search
             </label>
-            <div class="flex items-center gap-2">
+            <div class={cn("flex", "items-center", "gap-2")}>
               <input
-                class="flex-1 min-w-0 px-2.5 py-1.5 rounded-md text-xs font-mono outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                id="search-input"
+                class={cn(
+                  "flex-1",
+                  "px-2.5",
+                  "py-1.5",
+                  "min-w-0",
+                  "text-xs",
+                  "font-mono",
+                  "rounded-md",
+                  "outline-none",
+                  "focus:ring-1",
+                  "focus:ring-(--accent)",
+                )}
                 style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={dmesgFilters.text}
                 oninput={applyFilters}
@@ -426,7 +691,18 @@
               />
               <button
                 type="button"
-                class="shrink-0 px-2 py-1.5 rounded-md text-[10px] font-semibold uppercase tracking-wide transition-all cursor-pointer"
+                class={cn(
+                  "px-2",
+                  "py-1.5",
+                  "shrink-0",
+                  "uppercase",
+                  "rounded-md",
+                  "text-[10px]",
+                  "font-semibold",
+                  "tracking-wide",
+                  "transition-all",
+                  "cursor-pointer",
+                )}
                 style="background:{dmesgFilters.invertText
                   ? 'rgba(255,77,79,0.15)'
                   : 'var(--surface)'};color:{dmesgFilters.invertText
@@ -445,12 +721,21 @@
           </div>
 
           <div
-            class="rounded-lg p-3 flex items-end"
+            class={cn("rounded-lg", "p-3", "flex", "items-end")}
             style="background:var(--surface-2);border:1px solid var(--border)"
           >
             <button
               type="button"
-              class="w-full px-2.5 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer"
+              class={cn(
+                "w-full",
+                "px-2.5",
+                "py-1.5",
+                "text-xs",
+                "rounded-md",
+                "font-medium",
+                "transition-all",
+                "cursor-pointer",
+              )}
               style="background:{dmesgFilters.reverseSort
                 ? 'rgba(0,212,170,0.15)'
                 : 'var(--surface)'};color:{dmesgFilters.reverseSort
@@ -471,7 +756,7 @@
 
       {#if error}
         <p
-          class="text-xs mt-3 px-3 py-2 rounded-lg"
+          class={cn("text-xs", "mt-3", "px-3", "py-2", "rounded-lg")}
           style="color:var(--danger);background:rgba(255,77,79,0.08);border:1px solid rgba(255,77,79,0.2)"
         >
           {error}
@@ -480,19 +765,38 @@
     </div>
 
     <!-- Log output -->
-    <div class="flex-1 flex flex-col min-h-0">
+    <div class={cn("flex-1", "flex", "flex-col", "min-h-0")}>
       <div
-        class="shrink-0 flex items-center justify-between px-4 py-2"
+        class={cn(
+          "px-4",
+          "py-2",
+          "flex",
+          "shrink-0",
+          "items-center",
+          "justify-between",
+        )}
         style="border-bottom:1px solid var(--border);background:rgba(0,0,0,0.15)"
       >
-        <span class="text-xs font-mono" style="color:var(--text-muted)">
+        <span
+          class={cn("text-xs", "font-mono")}
+          style="color:var(--text-muted)"
+        >
           {lineCount}
           {lineCount === 1 ? "line" : "lines"}
         </span>
-        <div class="flex items-center gap-1.5">
+        <div class={cn("flex", "items-center", "gap-1.5")}>
           <button
             type="button"
-            class="px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer hover:bg-white/5"
+            class={cn(
+              "py-1",
+              "px-2.5",
+              "rounded-md",
+              "text-[11px]",
+              "font-medium",
+              "transition-all",
+              "cursor-pointer",
+              "hover:bg-white/5",
+            )}
             style="color:var(--text-muted);border:1px solid var(--border)"
             onclick={scrollToHead}
           >
@@ -500,7 +804,16 @@
           </button>
           <button
             type="button"
-            class="px-2.5 py-1 rounded-md text-[11px] font-medium transition-all cursor-pointer hover:bg-white/5"
+            class={cn(
+              "py-1",
+              "px-2.5",
+              "rounded-md",
+              "text-[11px]",
+              "font-medium",
+              "transition-all",
+              "cursor-pointer",
+              "hover:bg-white/5",
+            )}
             style="color:var(--text-muted);border:1px solid var(--border)"
             onclick={scrollToTail}
           >
@@ -509,12 +822,23 @@
         </div>
       </div>
 
-      <div class="flex-1 min-h-0 p-3">
+      <div class={cn("flex-1", "min-h-0", "p-3")}>
         <textarea
           bind:this={logArea}
           readonly
           wrap="off"
-          class="w-full h-full rounded-lg p-3 text-xs font-mono outline-none resize-none overflow-auto block"
+          class={cn(
+            "p-3",
+            "block",
+            "w-full",
+            "h-full",
+            "text-xs",
+            "font-mono",
+            "rounded-lg",
+            "resize-none",
+            "outline-none",
+            "overflow-auto",
+          )}
           style="background:var(--surface);border:1px solid var(--border);color:var(--text);line-height:1.6"
           value={logText}
         ></textarea>

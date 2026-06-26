@@ -1,5 +1,6 @@
 <script lang="ts">
   import { login } from "../api/ubus";
+  import { cn } from "../helpers/classname";
 
   let { onauthenticated } = $props<{ onauthenticated?: () => void }>();
 
@@ -23,13 +24,21 @@
 </script>
 
 <div
-  class="min-h-screen flex items-center justify-center"
+  class={cn("min-h-screen", "flex", "items-center", "justify-center")}
   style="background: radial-gradient(ellipse at center, #0d1f1a 0%, #0d1117 60%)"
 >
-  <div class="glass p-8 w-full max-w-sm animate-slide-up">
-    <div class="text-center mb-8">
+  <div class={cn("glass", "p-8", "w-full", "max-w-sm", "animate-slide-up")}>
+    <div class={cn("text-center", "mb-8")}>
       <div
-        class="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4"
+        class={cn(
+          "w-12",
+          "h-12",
+          "mb-4",
+          "rounded-xl",
+          "inline-flex",
+          "items-center",
+          "justify-center",
+        )}
         style="background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.3)"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -42,32 +51,43 @@
           />
         </svg>
       </div>
-      <h1 class="text-xl font-semibold text-white">RZID Router</h1>
-      <p class="text-sm mt-1" style="color: var(--text-muted)">
+      <h1 class={cn("text-xl", "font-semibold", "text-white")}>RZID Router</h1>
+      <p class={cn("text-sm", "mt-1")} style="color: var(--text-muted)">
         OpenWrt Dashboard
       </p>
     </div>
 
-    <form onsubmit={handleLogin} class="space-y-4">
+    <form onsubmit={handleLogin} class={cn("space-y-4")}>
       <div>
         <label
           for="password"
-          class="block text-xs font-medium mb-2"
-          style="color: var(--text-muted)">PASSWORD</label
+          class={cn("block", "text-xs", "font-medium", "mb-2")}
+          style="color: var(--text-muted)"
         >
+          PASSWORD
+        </label>
         <input
           type="password"
           id="password"
           bind:value={password}
           placeholder="root password"
-          class="w-full px-4 py-3 rounded-lg text-sm font-mono outline-none transition-all"
+          class={cn(
+            "px-4",
+            "py-3",
+            "w-full",
+            "text-sm",
+            "font-mono",
+            "rounded-lg",
+            "outline-none",
+            "transition-all",
+          )}
           style="background: var(--surface-2); border: 1px solid {error
             ? 'var(--danger)'
             : 'var(--border)'}; color: var(--text);"
           disabled={loading}
         />
         {#if error}
-          <p class="text-xs mt-2" style="color: var(--danger)">
+          <p class={cn("text-xs", "mt-2")} style="color: var(--danger)">
             Invalid password
           </p>
         {/if}
@@ -76,7 +96,15 @@
       <button
         type="submit"
         disabled={loading || !password}
-        class="w-full py-3 rounded-lg text-sm font-medium transition-all duration-200"
+        class={cn(
+          "py-3",
+          "w-full",
+          "text-sm",
+          "rounded-lg",
+          "font-medium",
+          "duration-200",
+          "transition-all",
+        )}
         style="background: {loading || !password
           ? 'var(--surface-3)'
           : 'var(--accent)'}; color: {loading || !password

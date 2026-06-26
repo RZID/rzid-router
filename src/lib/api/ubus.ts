@@ -57,7 +57,11 @@ export const call = async <T = any>(
   }
 };
 
-type BatchItem = { object: string; method: string; params?: Record<string, any> };
+type BatchItem = {
+  object: string;
+  method: string;
+  params?: Record<string, any>;
+};
 type BatchResult<T> = T | null;
 
 export const batchCall = async <T = any>(
@@ -117,15 +121,21 @@ export const serviceRestart = async (name: string) => {
 };
 
 export const execCommand = async (command: string, params: string[] = []) => {
-  return call<{ stdout: string; stderr?: string; code?: number }>("file", "exec", {
-    command,
-    params,
-  });
+  return call<{ stdout: string; stderr?: string; code?: number }>(
+    "file",
+    "exec",
+    {
+      command,
+      params,
+    },
+  );
 };
 
 export type LogEntry = { time?: number; priority?: number; msg?: string };
 
-export const readLogEntries = async (lines = 1000): Promise<LogEntry[] | null> => {
+export const readLogEntries = async (
+  lines = 1000,
+): Promise<LogEntry[] | null> => {
   const res = await call<{ log?: LogEntry[] }>("log", "read", {
     lines,
     stream: false,

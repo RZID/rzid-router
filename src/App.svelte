@@ -7,12 +7,18 @@
   import Firewall from "./lib/views/Firewall.svelte";
   import Logs from "./lib/views/Logs.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
+  import { cn } from "./lib/helpers/classname";
 
   let authenticated = $state(!!localStorage.getItem("owrt_session"));
   let currentView = $state("dashboard");
 
-  const handleAuth = () => { authenticated = true; };
-  const handleLogout = () => { authenticated = false; currentView = "dashboard"; };
+  const handleAuth = () => {
+    authenticated = true;
+  };
+  const handleLogout = () => {
+    authenticated = false;
+    currentView = "dashboard";
+  };
 
   const placeholders: Record<string, { title: string; sub: string }> = {
     processes: { title: "Processes", sub: "Running processes" },
@@ -31,17 +37,28 @@
     software: { title: "Software", sub: "Package management" },
     startup: { title: "Startup", sub: "Init scripts & services" },
     crontab: { title: "Scheduled Tasks", sub: "Cron jobs" },
-    flash: { title: "Backup / Flash", sub: "Backup, restore, firmware upgrade" },
+    flash: {
+      title: "Backup / Flash",
+      sub: "Backup, restore, firmware upgrade",
+    },
   };
 </script>
 
 {#if !authenticated}
   <Login onauthenticated={handleAuth} />
 {:else}
-  <div class="flex h-screen overflow-hidden">
-    <Sidebar active={currentView} onnavigate={(id) => currentView = id} onlogout={handleLogout} />
+  <div class={cn("flex", "h-screen", "overflow-hidden")}>
+    <Sidebar
+      active={currentView}
+      onlogout={handleLogout}
+      onnavigate={(id) => (currentView = id)}
+    />
     <main
-      class="flex-1 min-h-0 {currentView === 'syslog' ? 'overflow-hidden' : 'overflow-y-auto'}"
+      class={cn(
+        "flex-1",
+        "min-h-0",
+        currentView === "syslog" ? "overflow-hidden" : "overflow-y-auto",
+      )}
       style="background: var(--surface)"
     >
       {#if currentView === "dashboard"}
@@ -55,7 +72,10 @@
       {:else if currentView === "syslog"}
         <Logs />
       {:else if placeholders[currentView]}
-        <Placeholder title={placeholders[currentView].title} sub={placeholders[currentView].sub} />
+        <Placeholder
+          title={placeholders[currentView].title}
+          sub={placeholders[currentView].sub}
+        />
       {:else}
         <Placeholder title="Not Found" sub="This page is not available" />
       {/if}

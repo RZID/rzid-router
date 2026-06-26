@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { cn } from "../helpers/classname";
+
   interface Lease {
     hostname: string;
     ipaddr: string;
@@ -21,28 +23,80 @@
   const colors = ["#00d4aa", "#58a6ff", "#f0883e", "#bc8cff", "#ff6b9d"];
 </script>
 
-<div class="glass p-5 animate-slide-up">
-  <div class="flex items-center justify-between mb-4">
-    <span class="text-xs font-medium tracking-wider uppercase" style="color: var(--text-muted)">CONNECTED CLIENTS</span>
-    <span class="text-xs font-mono px-2 py-0.5 rounded-full" style="background: rgba(0,212,170,0.1); color: var(--accent)">{leases.length}</span>
+<div class={cn("glass", "p-5", "animate-slide-up")}>
+  <div class={cn("flex", "items-center", "justify-between", "mb-4")}>
+    <span
+      class={cn("text-xs", "font-medium", "tracking-wider", "uppercase")}
+      style="color: var(--text-muted)"
+    >
+      CONNECTED CLIENTS
+    </span>
+    <span
+      class={cn("text-xs", "font-mono", "px-2", "py-0.5", "rounded-full")}
+      style="background: rgba(0,212,170,0.1); color: var(--accent)"
+    >
+      {leases.length}
+    </span>
   </div>
 
   {#if leases.length === 0}
-    <p class="text-sm text-center py-6" style="color: var(--text-muted)">No active leases</p>
+    <p
+      class={cn("text-sm", "text-center", "py-6")}
+      style="color: var(--text-muted)"
+    >
+      No active leases
+    </p>
   {:else}
-    <div class="space-y-2 max-h-64 overflow-y-auto">
+    <div class={cn("space-y-2", "max-h-64", "overflow-y-auto")}>
       {#each leases as lease, i (lease.macaddr)}
-        <div class="flex items-center gap-3 p-3 rounded-lg transition-colors duration-150 hover:bg-white/5">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-semibold shrink-0" style="background: {colors[i % colors.length]}22; color: {colors[i % colors.length]}">
+        <div
+          class={cn(
+            "p-3",
+            "flex",
+            "gap-3",
+            "rounded-lg",
+            "items-center",
+            "duration-150",
+            "transition-colors",
+            "hover:bg-white/5",
+          )}
+        >
+          <div
+            class={cn(
+              "w-8",
+              "h-8",
+              "flex",
+              "text-xs",
+              "shrink-0",
+              "rounded-lg",
+              "items-center",
+              "font-semibold",
+              "justify-center",
+            )}
+            style="background: {colors[i % colors.length]}22; color: {colors[
+              i % colors.length
+            ]}"
+          >
             {getInitials(lease.hostname)}
           </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium truncate">{lease.hostname || "Unknown"}</p>
-            <p class="text-xs font-mono" style="color: var(--text-muted)">{lease.macaddr}</p>
+          <div class={cn("flex-1", "min-w-0")}>
+            <p class={cn("text-sm", "font-medium", "truncate")}>
+              {lease.hostname || "Unknown"}
+            </p>
+            <p
+              class={cn("text-xs", "font-mono")}
+              style="color: var(--text-muted)"
+            >
+              {lease.macaddr}
+            </p>
           </div>
-          <div class="text-right shrink-0">
-            <p class="text-sm font-mono" style="color: var(--accent)">{lease.ipaddr}</p>
-            <p class="text-xs" style="color: var(--text-muted)">{formatTime(lease.leasetime)}</p>
+          <div class={cn("text-right", "shrink-0")}>
+            <p class={cn("text-sm", "font-mono")} style="color: var(--accent)">
+              {lease.ipaddr}
+            </p>
+            <p class={cn("text-xs")} style="color: var(--text-muted)">
+              {formatTime(lease.leasetime)}
+            </p>
           </div>
         </div>
       {/each}

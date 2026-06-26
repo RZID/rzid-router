@@ -1,5 +1,6 @@
 <script lang="ts">
   import { serviceRestart } from "../api/ubus";
+  import { cn } from "../helpers/classname";
 
   const services = [
     { name: "dnsmasq", label: "DNS / DHCP", desc: "dnsmasq" },
@@ -27,33 +28,53 @@
   };
 </script>
 
-<div class="p-6 space-y-6 animate-fade-in">
+<div class={cn("p-6", "space-y-6", "animate-fade-in")}>
   <div>
-    <h1 class="text-lg font-semibold text-white">Services</h1>
-    <p class="text-sm mt-0.5" style="color: var(--text-muted)">
+    <h1 class={cn("text-lg", "font-semibold", "text-white")}>Services</h1>
+    <p class={cn("text-sm", "mt-0.5")} style="color: var(--text-muted)">
       Manage running services
     </p>
   </div>
 
-  <div class="space-y-2">
+  <div class={cn("space-y-2")}>
     {#each services as svc}
-      <div class="glass p-4 flex items-center justify-between animate-slide-up">
-        <div class="flex items-center gap-3">
+      <div
+        class={cn(
+          "p-4",
+          "flex",
+          "glass",
+          "items-center",
+          "justify-between",
+          "animate-slide-up",
+        )}
+      >
+        <div class={cn("flex", "items-center", "gap-3")}>
           <div
-            class="w-2 h-2 rounded-full animate-pulse"
+            class={cn("w-2", "h-2", "rounded-full", "animate-pulse")}
             style="background: var(--accent)"
           ></div>
           <div>
-            <p class="text-sm font-medium text-white">{svc.label}</p>
-            <p class="text-xs font-mono" style="color: var(--text-muted)">
+            <p class={cn("text-sm", "font-medium", "text-white")}>
+              {svc.label}
+            </p>
+            <p
+              class={cn("text-xs", "font-mono")}
+              style="color: var(--text-muted)"
+            >
               {svc.desc}
             </p>
           </div>
         </div>
-        <div class="flex items-center gap-3">
+        <div class={cn("flex", "items-center", "gap-3")}>
+          {#if restarting[svc.name]}
+            <span
+              class={cn("text-xs", "font-mono")}
+              style="color: var(--text-muted)">Restarting…</span
+            >
+          {/if}
           {#if feedback[svc.name]}
             <span
-              class="text-xs font-mono"
+              class={cn("text-xs", "font-mono")}
               style="color: {feedback[svc.name] === 'Restarted'
                 ? 'var(--accent)'
                 : 'var(--danger)'}">{feedback[svc.name]}</span
@@ -62,7 +83,15 @@
           <button
             onclick={() => restart(svc.name)}
             disabled={restarting[svc.name]}
-            class="px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150"
+            class={cn(
+              "px-3",
+              "py-1.5",
+              "text-xs",
+              "rounded-lg",
+              "font-medium",
+              "duration-150",
+              "transition-all",
+            )}
             style="background: {restarting[svc.name]
               ? 'var(--surface-3)'
               : 'rgba(0,212,170,0.1)'}; color: {restarting[svc.name]
