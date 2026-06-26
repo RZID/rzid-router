@@ -120,11 +120,11 @@
       class={cn(
         "flex",
         "gap-1",
-        "rounded-lg",
         "p-0.5",
-        "shrink-0",
-        "bg-surface-2",
         "border",
+        "shrink-0",
+        "rounded-lg",
+        "bg-surface-2",
         "border-border",
       )}
     >
