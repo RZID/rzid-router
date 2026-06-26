@@ -268,16 +268,14 @@
   <div class={cn("flex", "items-center", "justify-between")}>
     <div>
       <h1 class={cn("text-lg", "font-semibold", "text-white")}>Firewall</h1>
-      <p class={cn("text-xs", "mt-0.5")} style="color:var(--text-muted)">
+      <p class={cn("text-xs", "mt-0.5", "text-muted")}>
         nftables ruleset status
       </p>
     </div>
   </div>
   {#if tables.length === 0}
     <div class={cn("glass", "p-12", "text-center")}>
-      <p class={cn("text-sm")} style="color:var(--text-muted)">
-        No nftables ruleset loaded.
-      </p>
+      <p class={cn("text-sm", "text-muted")}>No nftables ruleset loaded.</p>
     </div>
   {:else}
     {#each tables as t (t.table.family + t.table.name)}
@@ -315,25 +313,18 @@
         {#if !hidden[tf + tn]}
           <div
             transition:slide|local={{ duration: 200 }}
-            style="border-top:1px solid var(--border)"
+            class={cn("border-t", "border-border")}
           >
             {#each chains.filter((c: any) => c.chain.family === tf && c.chain.table === tn) as ch}
               {@const c = ch.chain}
-              <div
-                class={cn("px-5", "py-4")}
-                style="border-bottom:1px solid var(--border)"
-              >
+              <div class={cn("px-5", "py-4", "border-b border-border")}>
                 <h4
-                  class={cn("text-sm", "font-semibold", "mb-1")}
-                  style="color:var(--accent)"
+                  class={cn("text-sm", "font-semibold", "mb-1", "text-accent")}
                 >
                   {chainLabel[c.type] || "Rule container chain"} "{c.name}"
                 </h4>
                 {#if c.hook}
-                  <div
-                    class={cn("text-xs", "mb-1")}
-                    style="color:var(--text-muted)"
-                  >
+                  <div class={cn("text-xs", "mb-1", "text-muted")}>
                     Hook: {c.hook} ({hookLabel[c.hook] || ""}){c.prio !==
                     undefined
                       ? `, Priority: ${c.prio}`
@@ -352,9 +343,9 @@
                 {/if}
                 {#if chainRules(tf, tn, c.name).length}
                   <table class={cn("w-full")}>
-                    <thead
-                      ><tr style="color:var(--text-muted)"
-                        ><th
+                    <thead>
+                      <tr class={cn("text-muted")}>
+                        <th
                           class={cn(
                             "pb-2",
                             "text-xs",
@@ -380,7 +371,7 @@
                     </thead>
                     <tbody>
                       {#each chainRules(tf, tn, c.name) as r}
-                        <tr style="border-top:1px solid var(--border)">
+                        <tr class={cn("border-t border-border")}>
                           <td
                             class={cn("py-2", "pr-3", "text-xs", "align-top")}
                           >
@@ -392,8 +383,9 @@
                                   "py-0.5",
                                   "rounded",
                                   "text-xs",
+                                  "text-accent",
+                                  "bg-accent/10",
                                 )}
-                                style="background:rgba(0,212,170,0.1);color:var(--accent)"
                                 title={`Rule comment: ${r.rule.comment}`}
                               >
                                 #
@@ -407,13 +399,15 @@
                                     "mb-1",
                                     "px-1.5",
                                     "py-0.5",
+                                    "border",
                                     "rounded",
                                     "text-xs",
                                     "font-mono",
                                     "inline-block",
+                                    "bg-surface-2",
+                                    "border-border",
                                     "whitespace-pre-wrap",
                                   )}
-                                  style="background:var(--surface-2);border:1px solid var(--border)"
                                 >
                                   {ets(e) || "(any)"}
                                 </span>
@@ -428,12 +422,14 @@
                                       "mb-1",
                                       "px-1.5",
                                       "py-0.5",
+                                      "border",
                                       "rounded",
                                       "text-xs",
                                       "font-mono",
                                       "inline-block",
+                                      "bg-surface-2",
+                                      "border-border",
                                     )}
-                                    style="background:var(--surface-2);border:1px solid var(--border)"
                                     title={`Traffic matched by rule: ${fm.pps(ct.counter.packets)} Packets, ${fm.bytes(ct.counter.bytes)} Bytes`}
                                   >
                                     {fm.bytes(ct.counter.bytes)}
@@ -442,10 +438,7 @@
                               {/if}
                             {/each}
                             {#if !(r.rule.expr || []).filter((e: any) => !isAction(e)).length}
-                              <span
-                                class={cn("text-xs")}
-                                style="color:var(--text-muted)"
-                              >
+                              <span class={cn("text-xs", "text-muted")}>
                                 Any packet
                               </span>
                             {/if}
@@ -462,12 +455,14 @@
                                         "mr-1",
                                         "px-1.5",
                                         "py-0.5",
+                                        "border",
                                         "rounded",
                                         "text-xs",
                                         "font-mono",
                                         "inline-block",
+                                        "bg-surface-2",
+                                        "border-border",
                                       )}
-                                      style="background:var(--surface-2);border:1px solid var(--border)"
                                     >
                                       {evs(mk)}:
                                     </span>
@@ -530,10 +525,7 @@
                       {/each}
                     </tbody>
                   </table>
-                {:else}<p
-                    class={cn("text-xs", "py-3")}
-                    style="color:var(--text-muted)"
-                  >
+                {:else}<p class={cn("text-xs", "py-3", "text-muted")}>
                     No rules in this chain
                   </p>{/if}
               </div>

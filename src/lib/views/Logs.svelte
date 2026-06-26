@@ -116,8 +116,16 @@
     </div>
 
     <div
-      class={cn("flex", "gap-1", "rounded-lg", "p-0.5", "shrink-0")}
-      style="background:var(--surface-2);border:1px solid var(--border)"
+      class={cn(
+        "flex",
+        "gap-1",
+        "rounded-lg",
+        "p-0.5",
+        "shrink-0",
+        "bg-surface-2",
+        "border",
+        "border-border",
+      )}
     >
       <button
         class={cn(
@@ -179,25 +187,37 @@
     )}
   >
     <!-- Filters -->
-    <div
-      class={cn("shrink-0", "p-4")}
-      style="border-bottom:1px solid var(--border)"
-    >
+    <div class={cn("shrink-0", "p-4", "border-b border-border")}>
       <div class={cn("flex", "items-center", "justify-between", "mb-3")}>
         <span
-          class={cn("text-xs", "font-semibold", "uppercase", "tracking-wider")}
-          style="color:var(--text-muted)"
+          class={cn(
+            "text-xs",
+            "font-semibold",
+            "uppercase",
+            "tracking-wider",
+            "text-muted",
+          )}
         >
           Filters
         </span>
         {#if loading}
           <span
-            class={cn("text-xs", "flex", "items-center", "gap-1.5")}
-            style="color:var(--accent)"
+            class={cn(
+              "text-xs",
+              "flex",
+              "items-center",
+              "gap-1.5",
+              "text-accent",
+            )}
           >
             <span
-              class={cn("w-1.5", "h-1.5", "rounded-full", "animate-pulse")}
-              style="background:var(--accent)"
+              class={cn(
+                "w-1.5",
+                "h-1.5",
+                "rounded-full",
+                "animate-pulse",
+                "bg-accent",
+              )}
             ></span>
             Refreshing…
           </span>
@@ -215,8 +235,7 @@
           )}
         >
           <div
-            class={cn("rounded-lg", "p-3")}
-            style="background:var(--surface-2);border:1px solid var(--border)"
+            class={cn("rounded-lg", "p-3", "bg-surface-2 border border-border")}
           >
             <label
               class={cn(
@@ -226,8 +245,8 @@
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
+                "text-muted",
               )}
-              style="color:var(--text-muted)"
               for="facility-select"
             >
               Facility
@@ -244,8 +263,8 @@
                   "outline-none",
                   "focus:ring-1",
                   "focus:ring-(--accent)",
+                  "bg-surface border border-border text-fg",
                 )}
-                style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={sysFilters.facility}
                 onchange={applyFilters}
               >
@@ -285,8 +304,7 @@
           </div>
 
           <div
-            class={cn("rounded-lg", "p-3")}
-            style="background:var(--surface-2);border:1px solid var(--border)"
+            class={cn("rounded-lg", "p-3", "bg-surface-2 border border-border")}
           >
             <label
               for="severity-select"
@@ -297,8 +315,8 @@
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
+                "text-muted",
               )}
-              style="color:var(--text-muted)"
             >
               Severity
             </label>
@@ -317,8 +335,8 @@
                   "outline-none",
                   "focus:ring-1",
                   "focus:ring-(--accent)",
+                  "bg-surface border border-border text-fg",
                 )}
-                style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={sysFilters.severity}
                 onchange={applyFilters}
               >
@@ -358,8 +376,13 @@
           </div>
 
           <div
-            class={cn("rounded-lg", "p-3", "sm:col-span-2", "lg:col-span-1")}
-            style="background:var(--surface-2);border:1px solid var(--border)"
+            class={cn(
+              "rounded-lg",
+              "p-3",
+              "sm:col-span-2",
+              "lg:col-span-1",
+              "bg-surface-2 border border-border",
+            )}
           >
             <label
               for="search-select"
@@ -370,8 +393,8 @@
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
+                "text-muted",
               )}
-              style="color:var(--text-muted)"
             >
               Search
             </label>
@@ -388,8 +411,8 @@
                   "outline-none",
                   "focus:ring-1",
                   "focus:ring-(--accent)",
+                  "bg-surface border border-border text-fg",
                 )}
-                style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={sysFilters.text}
                 oninput={applyFilters}
                 placeholder="Filter text…"
@@ -426,8 +449,7 @@
           </div>
 
           <div
-            class={cn("rounded-lg", "p-3")}
-            style="background:var(--surface-2);border:1px solid var(--border)"
+            class={cn("rounded-lg", "p-3", "bg-surface-2 border border-border")}
           >
             <label
               for="max-rows-select"
@@ -438,8 +460,8 @@
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
+                "text-muted",
               )}
-              style="color:var(--text-muted)"
             >
               Max rows
             </label>
@@ -457,8 +479,8 @@
                 "outline-none",
                 "focus:ring-1",
                 "focus:ring-(--accent)",
+                "bg-surface border border-border text-fg",
               )}
-              style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
               bind:value={sysFilters.maxRows}
               onchange={applyFilters}
             />
@@ -475,8 +497,12 @@
           )}
         >
           <div
-            class={cn("rounded-lg", "p-3", "sm:col-span-2")}
-            style="background:var(--surface-2);border:1px solid var(--border)"
+            class={cn(
+              "rounded-lg",
+              "p-3",
+              "sm:col-span-2",
+              "bg-surface-2 border border-border",
+            )}
           >
             <label
               for="time-range-select"
@@ -487,8 +513,8 @@
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
+                "text-muted",
               )}
-              style="color:var(--text-muted)"
             >
               Time range
             </label>
@@ -511,15 +537,13 @@
                   "outline-none",
                   "focus:ring-1",
                   "focus:ring-(--accent)",
+                  "bg-surface border border-border text-fg",
                 )}
-                style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={dmesgFilters.fromTime}
                 oninput={applyFilters}
                 placeholder="From"
               />
-              <span class={cn("text-xs")} style="color:var(--text-muted)">
-                →
-              </span>
+              <span class={cn("text-xs", "text-muted")}> → </span>
               <input
                 type="number"
                 min="0"
@@ -535,8 +559,8 @@
                   "outline-none",
                   "focus:ring-1",
                   "focus:ring-(--accent)",
+                  "bg-surface border border-border text-fg",
                 )}
-                style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={dmesgFilters.toTime}
                 oninput={applyFilters}
                 placeholder="To"
@@ -573,8 +597,7 @@
           </div>
 
           <div
-            class={cn("rounded-lg", "p-3")}
-            style="background:var(--surface-2);border:1px solid var(--border)"
+            class={cn("rounded-lg", "p-3", "bg-surface-2 border border-border")}
           >
             <label
               for="severity-select"
@@ -585,8 +608,8 @@
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
+                "text-muted",
               )}
-              style="color:var(--text-muted)"
             >
               Severity
             </label>
@@ -605,8 +628,8 @@
                   "outline-none",
                   "focus:ring-1",
                   "focus:ring-(--accent)",
+                  "bg-surface border border-border text-fg",
                 )}
-                style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={dmesgFilters.minSeverity}
                 onchange={applyFilters}
               >
@@ -643,17 +666,11 @@
                 Not
               </button>
             </div>
-            <p
-              class={cn("text-[10px]", "mt-1.5")}
-              style="color:var(--text-muted)"
-            >
-              and above
-            </p>
+            <p class={cn("text-[10px]", "mt-1.5", "text-muted")}>and above</p>
           </div>
 
           <div
-            class={cn("rounded-lg", "p-3")}
-            style="background:var(--surface-2);border:1px solid var(--border)"
+            class={cn("rounded-lg", "p-3", "bg-surface-2 border border-border")}
           >
             <label
               for="search-input"
@@ -664,8 +681,8 @@
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
+                "text-muted",
               )}
-              style="color:var(--text-muted)"
             >
               Search
             </label>
@@ -683,8 +700,8 @@
                   "outline-none",
                   "focus:ring-1",
                   "focus:ring-(--accent)",
+                  "bg-surface border border-border text-fg",
                 )}
-                style="background:var(--surface);border:1px solid var(--border);color:var(--text)"
                 bind:value={dmesgFilters.text}
                 oninput={applyFilters}
                 placeholder="Filter text…"
@@ -721,8 +738,13 @@
           </div>
 
           <div
-            class={cn("rounded-lg", "p-3", "flex", "items-end")}
-            style="background:var(--surface-2);border:1px solid var(--border)"
+            class={cn(
+              "rounded-lg",
+              "p-3",
+              "flex",
+              "items-end",
+              "bg-surface-2 border border-border",
+            )}
           >
             <button
               type="button"
@@ -756,8 +778,14 @@
 
       {#if error}
         <p
-          class={cn("text-xs", "mt-3", "px-3", "py-2", "rounded-lg")}
-          style="color:var(--danger);background:rgba(255,77,79,0.08);border:1px solid rgba(255,77,79,0.2)"
+          class={cn(
+            "text-xs",
+            "mt-3",
+            "px-3",
+            "py-2",
+            "rounded-lg",
+            "text-danger bg-danger/10 border border-danger/20",
+          )}
         >
           {error}
         </p>
@@ -774,13 +802,10 @@
           "shrink-0",
           "items-center",
           "justify-between",
+          "border-b border-border bg-black/15",
         )}
-        style="border-bottom:1px solid var(--border);background:rgba(0,0,0,0.15)"
       >
-        <span
-          class={cn("text-xs", "font-mono")}
-          style="color:var(--text-muted)"
-        >
+        <span class={cn("text-xs", "font-mono", "text-muted")}>
           {lineCount}
           {lineCount === 1 ? "line" : "lines"}
         </span>
@@ -796,8 +821,8 @@
               "transition-all",
               "cursor-pointer",
               "hover:bg-white/5",
+              "text-muted border border-border",
             )}
-            style="color:var(--text-muted);border:1px solid var(--border)"
             onclick={scrollToHead}
           >
             ↑ Head
@@ -813,8 +838,8 @@
               "transition-all",
               "cursor-pointer",
               "hover:bg-white/5",
+              "text-muted border border-border",
             )}
-            style="color:var(--text-muted);border:1px solid var(--border)"
             onclick={scrollToTail}
           >
             ↓ Tail
@@ -838,8 +863,8 @@
             "resize-none",
             "outline-none",
             "overflow-auto",
+            "bg-surface border border-border text-fg",
           )}
-          style="background:var(--surface);border:1px solid var(--border);color:var(--text);line-height:1.6"
           value={logText}
         ></textarea>
       </div>

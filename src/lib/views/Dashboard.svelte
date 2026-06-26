@@ -164,10 +164,7 @@
         <h1 class={cn("text-lg", "font-semibold", "text-white")}>
           {board.hostname || "Dashboard"}
         </h1>
-        <p
-          class={cn("text-xs", "mt-0.5", "font-mono")}
-          style="color: var(--accent-dim)"
-        >
+        <p class={cn("text-xs", "mt-0.5", "font-mono", "text-accent-dim")}>
           {board.release?.version || ""}
         </p>
       </div>
@@ -176,22 +173,29 @@
           "flex",
           "py-1",
           "px-2.5",
+          "border",
           "gap-1.5",
           "text-xs",
           "font-medium",
           "items-center",
           "rounded-full",
+          "bg-accent/10",
+          "border-accent/20",
         )}
-        style="background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.2)"
       >
         <div
-          class={cn("w-1.5", "h-1.5", "rounded-full", "animate-pulse")}
-          style="background:var(--accent)"
+          class={cn(
+            "w-1.5",
+            "h-1.5",
+            "bg-accent",
+            "rounded-full",
+            "animate-pulse",
+          )}
         ></div>
-        <span style="color:var(--accent)">LIVE</span>
+        <span class={cn("text-accent")}>LIVE</span>
       </div>
     </div>
-    <div class={cn("text-right", "text-xs")} style="color: var(--text-muted)">
+    <div class={cn("text-right", "text-xs", "text-muted")}>
       <span class={cn("font-mono block")}>{localTime}</span>
       <span>up {uptime}</span>
     </div>
@@ -237,14 +241,15 @@
   <!-- System -->
   {#if board.hostname}
     <div class={cn("glass", "animate-slide-up")}>
-      <button
-        class={secClass}
-        style="padding:20px"
-        onclick={() => toggle("sys")}
-      >
+      <button class={cn("p-5", secClass)} onclick={() => toggle("sys")}>
         <span
-          class={cn("text-xs", "font-medium", "tracking-wider", "uppercase")}
-          style="color: var(--text-muted)"
+          class={cn(
+            "text-xs",
+            "uppercase",
+            "text-muted",
+            "font-medium",
+            "tracking-wider",
+          )}
         >
           ⚙ System
         </span>
@@ -259,16 +264,20 @@
       {#if !hidden.sys}
         <div
           transition:slide|local={{ duration: 200 }}
-          class={cn("px-5 pb-5")}
-          style="border-top:1px solid var(--border); padding-top:16px"
+          class={cn("px-5 pb-5", "border-t", "border-border", "pt-4")}
         >
           <dl
             class={cn("grid", "grid-cols-2", "gap-y-3", "gap-x-8", "text-sm")}
           >
             <div>
               <dt
-                class={cn("text-xs", "tracking-wider", "uppercase", "mb-0.5")}
-                style="color:var(--text-muted)"
+                class={cn(
+                  "mb-0.5",
+                  "text-xs",
+                  "uppercase",
+                  "text-muted",
+                  "tracking-wider",
+                )}
               >
                 Hostname
               </dt>
@@ -276,8 +285,13 @@
             </div>
             <div>
               <dt
-                class={cn("text-xs", "tracking-wider", "uppercase", "mb-0.5")}
-                style="color:var(--text-muted)"
+                class={cn(
+                  "mb-0.5",
+                  "text-xs",
+                  "uppercase",
+                  "text-muted",
+                  "tracking-wider",
+                )}
               >
                 Model
               </dt>
@@ -285,8 +299,13 @@
             </div>
             <div>
               <dt
-                class={cn("text-xs", "tracking-wider", "uppercase", "mb-0.5")}
-                style="color:var(--text-muted)"
+                class={cn(
+                  "mb-0.5",
+                  "text-xs",
+                  "uppercase",
+                  "text-muted",
+                  "tracking-wider",
+                )}
               >
                 Architecture
               </dt>
@@ -294,8 +313,13 @@
             </div>
             {#if board.release?.target}<div>
                 <dt
-                  class={cn("text-xs", "tracking-wider", "uppercase", "mb-0.5")}
-                  style="color:var(--text-muted)"
+                  class={cn(
+                    "mb-0.5",
+                    "text-xs",
+                    "uppercase",
+                    "text-muted",
+                    "tracking-wider",
+                  )}
                 >
                   Target
                 </dt>
@@ -305,19 +329,29 @@
               </div>{/if}
             <div>
               <dt
-                class={cn("text-xs", "tracking-wider", "uppercase", "mb-0.5")}
-                style="color:var(--text-muted)"
+                class={cn(
+                  "mb-0.5",
+                  "text-xs",
+                  "uppercase",
+                  "text-muted",
+                  "tracking-wider",
+                )}
               >
                 Firmware
               </dt>
-              <dd class={cn("font-semibold")} style="color:var(--accent)">
+              <dd class={cn("font-semibold", "text-accent")}>
                 {board.release?.version}
               </dd>
             </div>
             <div>
               <dt
-                class={cn("text-xs", "tracking-wider", "uppercase", "mb-0.5")}
-                style="color:var(--text-muted)"
+                class={cn(
+                  "mb-0.5",
+                  "text-xs",
+                  "uppercase",
+                  "text-muted",
+                  "tracking-wider",
+                )}
               >
                 Kernel
               </dt>
@@ -325,13 +359,18 @@
             </div>
             <div>
               <dt
-                class={cn("text-xs", "tracking-wider", "uppercase", "mb-0.5")}
-                style="color:var(--text-muted)"
+                class={cn(
+                  "mb-0.5",
+                  "text-xs",
+                  "uppercase",
+                  "text-muted",
+                  "tracking-wider",
+                )}
               >
                 Load Average
               </dt>
               <dd
-                class={cn("font-mono text-xs")}
+                class={cn("font-mono", "text-xs")}
                 style="color:{parseFloat(load1) > 1
                   ? 'var(--warn)'
                   : 'var(--text)'}"
@@ -349,10 +388,15 @@
 
   <!-- Memory + Storage -->
   <div class={cn("glass", "animate-slide-up")}>
-    <button class={secClass} style="padding:20px" onclick={() => toggle("mem")}>
+    <button class={cn("p-5", secClass)} onclick={() => toggle("mem")}>
       <span
-        class={cn("text-xs", "font-medium", "tracking-wider", "uppercase")}
-        style="color: var(--text-muted)"
+        class={cn(
+          "text-xs",
+          "uppercase",
+          "text-muted",
+          "font-medium",
+          "tracking-wider",
+        )}
       >
         ◫ Memory & Storage
       </span>
@@ -367,20 +411,17 @@
     {#if !hidden.mem}
       <div
         transition:slide|local={{ duration: 200 }}
-        class={cn("px-5", "pb-5")}
-        style="border-top:1px solid var(--border); padding-top:16px"
+        class={cn("px-5", "pb-5", "border-t", "border-border", "pt-4")}
       >
         <div class={cn("mb-4")}>
           <div class={cn("flex", "justify-between", "text-xs", "mb-1")}>
-            <span style="color:var(--text-muted)">RAM</span><span
-              class={cn("font-mono")}
-              style="color:var(--text-muted)"
-              >{fmtBytes(memUsed)} / {fmtBytes(memTotal)}</span
-            >
+            <span class={cn("text-muted")}>RAM</span>
+            <span class={cn("font-mono", "text-muted")}>
+              {fmtBytes(memUsed)} / {fmtBytes(memTotal)}
+            </span>
           </div>
           <div
-            class={cn("h-2", "rounded-full", "overflow-hidden")}
-            style="background:var(--surface-3)"
+            class={cn("h-2", "rounded-full", "overflow-hidden", "bg-surface-3")}
           >
             <div
               class={cn(
@@ -397,8 +438,14 @@
             ></div>
           </div>
           <div
-            class={cn("flex", "gap-4", "mt-2", "text-xs", "font-mono")}
-            style="color:var(--text-muted)"
+            class={cn(
+              "mt-2",
+              "flex",
+              "gap-4",
+              "text-xs",
+              "font-mono",
+              "text-muted",
+            )}
           >
             <span>Free {fmtBytes(sysInfo.memory?.free || 0)}</span>
             <span>Buf {fmtBytes(memBuffered)}</span>
@@ -411,18 +458,22 @@
               {#if v}
                 <div>
                   <div class={cn("flex", "justify-between", "mb-1")}>
-                    <span style="color:var(--text-muted)">{k}</span>
+                    <span class={cn("text-muted")}>{k}</span>
                     <span class={cn("font-mono")}
                       >{fmtBytes((v.total - v.free) * 1024)} / {fmtBytes(
                         v.total * 1024,
                       )} ({v.total > 0
                         ? Math.round(((v.total - v.free) / v.total) * 100)
-                        : 0}%)</span
-                    >
+                        : 0}%)
+                    </span>
                   </div>
                   <div
-                    class={cn("h-1.5", "rounded-full", "overflow-hidden")}
-                    style="background:var(--surface-3)"
+                    class={cn(
+                      "h-1.5",
+                      "rounded-full",
+                      "bg-surface-3",
+                      "overflow-hidden",
+                    )}
                   >
                     <div
                       class={cn(
@@ -448,15 +499,18 @@
   <!-- Port Status -->
   {#if Object.keys(devices).length > 0}
     <div class={cn("glass", "animate-slide-up")}>
-      <button
-        class={secClass}
-        style="padding:20px"
-        onclick={() => toggle("ports")}
-      >
+      <button class={cn(secClass, "p-5")} onclick={() => toggle("ports")}>
         <span
-          class={cn("text-xs", "font-medium", "tracking-wider", "uppercase")}
-          style="color: var(--text-muted)">⬡ Port Status</span
+          class={cn(
+            "text-xs",
+            "uppercase",
+            "text-muted",
+            "font-medium",
+            "tracking-wider",
+          )}
         >
+          ⬡ Port Status
+        </span>
         <span class={cn("flex-1")}></span>
         <span
           class={cn("text-xs", "font-mono", "transition-transform")}
@@ -470,29 +524,35 @@
       {#if !hidden.ports}
         <div
           transition:slide|local={{ duration: 200 }}
-          class={cn("px-5", "pb-5", "space-y-4")}
-          style="border-top:1px solid var(--border); padding-top:16px"
+          class={cn("px-5", "pb-5", "space-y-4", "border-t border-border pt-4")}
         >
           {#each Object.entries(devices).filter(([n]) => n !== "lo" && !n.startsWith("ifb")) as [name, dev] (name)}
             {#if dev.stats}
               <div
-                class={cn("rounded-lg", "p-4")}
-                style="background:var(--surface-1);border:1px solid var(--border)"
+                class={cn(
+                  "p-4",
+                  "border",
+                  "rounded-lg",
+                  "bg-surface-1",
+                  "border-border",
+                )}
               >
                 <div class={cn("flex", "items-center", "gap-2", "mb-3")}>
                   <div
-                    class={cn("w-2", "h-2", "rounded-full", "animate-pulse")}
-                    style="background:var(--accent)"
+                    class={cn(
+                      "w-2",
+                      "h-2",
+                      "bg-accent",
+                      "rounded-full",
+                      "animate-pulse",
+                    )}
                   ></div>
                   <span class={cn("font-semibold", "text-sm")}>{name}</span>
-                  <span
-                    class={cn("font-mono", "text-xs")}
-                    style="color:var(--text-muted)"
-                  >
+                  <span class={cn("font-mono", "text-xs", "text-muted")}>
                     {dev.mac}
                   </span>
                   <span class={cn("flex-1")}></span>
-                  <span class={cn("text-xs")} style="color:var(--accent-dim)">
+                  <span class={cn("text-xs", "text-accent-dim")}>
                     {interfaces
                       .filter((i) => i.device === name || i.l3_device === name)
                       .map((i) => i.interface)
@@ -509,38 +569,38 @@
                     "gap-2",
                     "text-xs",
                     "font-mono",
+                    "text-muted",
                     "grid-cols-4",
                   )}
-                  style="color:var(--text-muted)"
                 >
                   <div>
                     RX
-                    <span style="color:var(--text)" class={cn("block")}>
+                    <span class={cn("block", "text-fg")}>
                       {fmtBytes(dev.stats.rx_bytes)}
                     </span>
-                    <span class={cn("block")} style="color:var(--text-muted)">
+                    <span class={cn("block", "text-muted")}>
                       {fmtPkts(dev.stats.rx_packets)} pkts
                     </span>
                   </div>
                   <div>
                     TX
-                    <span style="color:var(--text)" class={cn("block")}>
+                    <span class={cn("block", "text-fg")}>
                       {fmtBytes(dev.stats.tx_bytes)}
                     </span>
-                    <span class={cn("block")} style="color:var(--text-muted)">
+                    <span class={cn("block", "text-muted")}>
                       {fmtPkts(dev.stats.tx_packets)} pkts
                     </span>
                   </div>
                   <div>
                     Errors
-                    <span style="color:var(--text)" class={cn("block")}>
+                    <span class={cn("block", "text-fg")}>
                       RX {dev.stats.rx_errors}
                       TX {dev.stats.tx_errors}
                     </span>
                   </div>
                   <div>
                     Drop
-                    <span style="color:var(--text)" class={cn("block")}>
+                    <span class={cn("block", "text-fg")}>
                       RX {dev.stats.rx_dropped}
                       TX {dev.stats.tx_dropped}
                     </span>
@@ -557,14 +617,15 @@
   <!-- Network -->
   {#if wanIp !== "—"}
     <div class={cn("glass", "animate-slide-up")}>
-      <button
-        class={secClass}
-        style="padding:20px"
-        onclick={() => toggle("net")}
-      >
+      <button class={cn(secClass, "p-5")} onclick={() => toggle("net")}>
         <span
-          class={cn("text-xs", "font-medium", "tracking-wider", "uppercase")}
-          style="color: var(--text-muted)">⟁ Network</span
+          class={cn(
+            "text-xs",
+            "uppercase",
+            "text-muted",
+            "font-medium",
+            "tracking-wider",
+          )}>⟁ Network</span
         >
         <span class={cn("flex-1")}></span>
         <span
@@ -579,16 +640,20 @@
       {#if !hidden.net}
         <div
           transition:slide|local={{ duration: 200 }}
-          class={cn("px-5", "pb-5")}
-          style="border-top:1px solid var(--border); padding-top:16px"
+          class={cn("px-5", "pb-5", "border-t border-border pt-4")}
         >
           <dl
             class={cn("grid", "grid-cols-2", "gap-y-3", "gap-x-8", "text-sm")}
           >
             <div>
               <dt
-                class={cn("text-xs", "tracking-wider", "uppercase", "mb-0.5")}
-                style="color:var(--text-muted)"
+                class={cn(
+                  "mb-0.5",
+                  "text-xs",
+                  "uppercase",
+                  "text-muted",
+                  "tracking-wider",
+                )}
               >
                 Protocol
               </dt>
@@ -596,19 +661,29 @@
             </div>
             <div>
               <dt
-                class={cn("text-xs", "tracking-wider", "uppercase", "mb-0.5")}
-                style="color:var(--text-muted)"
+                class={cn(
+                  "mb-0.5",
+                  "text-xs",
+                  "uppercase",
+                  "text-muted",
+                  "tracking-wider",
+                )}
               >
                 Address
               </dt>
-              <dd class={cn("font-mono text-xs")} style="color:var(--accent)">
+              <dd class={cn("font-mono", "text-xs", "text-accent")}>
                 {wanIp}
               </dd>
             </div>
             <div>
               <dt
-                class={cn("text-xs", "tracking-wider", "uppercase", "mb-0.5")}
-                style="color:var(--text-muted)"
+                class={cn(
+                  "mb-0.5",
+                  "text-xs",
+                  "uppercase",
+                  "text-muted",
+                  "tracking-wider",
+                )}
               >
                 Gateway
               </dt>
@@ -617,8 +692,13 @@
             {#each wanDns as dns}
               <div>
                 <dt
-                  class={cn("text-xs", "tracking-wider", "uppercase", "mb-0.5")}
-                  style="color:var(--text-muted)"
+                  class={cn(
+                    "mb-0.5",
+                    "text-xs",
+                    "uppercase",
+                    "text-muted",
+                    "tracking-wider",
+                  )}
                 >
                   DNS
                 </dt>
@@ -627,8 +707,13 @@
             {/each}
             <div>
               <dt
-                class={cn("text-xs", "tracking-wider", "uppercase", "mb-0.5")}
-                style="color:var(--text-muted)"
+                class={cn(
+                  "mb-0.5",
+                  "text-xs",
+                  "uppercase",
+                  "text-muted",
+                  "tracking-wider",
+                )}
               >
                 Device
               </dt>
@@ -636,8 +721,13 @@
             </div>
             <div>
               <dt
-                class={cn("text-xs", "tracking-wider", "uppercase", "mb-0.5")}
-                style="color:var(--text-muted)"
+                class={cn(
+                  "mb-0.5",
+                  "text-xs",
+                  "uppercase",
+                  "text-muted",
+                  "tracking-wider",
+                )}
               >
                 MAC
               </dt>
@@ -653,20 +743,29 @@
 
   <!-- DHCP Leases -->
   <div class={cn("glass", "animate-slide-up")}>
-    <button
-      class={secClass}
-      style="padding:20px"
-      onclick={() => toggle("dhcp")}
-    >
+    <button class={cn(secClass, "p-5")} onclick={() => toggle("dhcp")}>
       <span
-        class={cn("text-xs", "font-medium", "tracking-wider", "uppercase")}
-        style="color: var(--text-muted)">◎ DHCP Leases</span
+        class={cn(
+          "text-xs",
+          "uppercase",
+          "text-muted",
+          "font-medium",
+          "tracking-wider",
+        )}
       >
+        ◎ DHCP Leases
+      </span>
       <span class={cn("flex-1")}></span>
       <span
-        class={cn("text-xs", "font-mono", "px-2", "py-0.5", "rounded-full")}
-        style="background:rgba(0,212,170,0.1);color:var(--accent)"
-        >{dhcpLeases.dhcp_leases?.length || 0}</span
+        class={cn(
+          "px-2",
+          "py-0.5",
+          "text-xs",
+          "font-mono",
+          "rounded-full",
+          "text-accent",
+          "bg-accent/10",
+        )}>{dhcpLeases.dhcp_leases?.length || 0}</span
       >
       <span
         class={cn("text-xs", "font-mono", "transition-transform", "ml-2")}
@@ -680,8 +779,7 @@
     {#if !hidden.dhcp}
       <div
         transition:slide|local={{ duration: 200 }}
-        class={cn("px-5", "pb-5")}
-        style="border-top:1px solid var(--border); padding-top:16px"
+        class={cn("px-5", "pb-5", "border-t", "border-border pt-4")}
       >
         {#if dhcpLeases.dhcp_leases?.length}
           <span
@@ -690,15 +788,15 @@
               "block",
               "text-xs",
               "uppercase",
+              "text-muted",
               "font-medium",
               "tracking-wider",
-            )}
-            style="color:var(--text-muted)">Active DHCPv4 Leases</span
+            )}>Active DHCPv4 Leases</span
           >
           <div class={cn("overflow-x-auto")}>
             <table class={cn("w-full text-xs")}>
               <thead>
-                <tr class={cn("text-left")} style="color:var(--text-muted)">
+                <tr class={cn("text-left", "text-muted")}>
                   <th class={cn("pb-2", "pr-3", "font-medium")}> Hostname </th>
                   <th class={cn("pb-2", "pr-3", "font-medium")}> IPv4 </th>
                   <th class={cn("pb-2", "pr-3", "font-medium")}> MAC </th>
@@ -709,20 +807,14 @@
               >
               <tbody>
                 {#each dhcpLeases.dhcp_leases as l (l.macaddr)}
-                  <tr style="border-top:1px solid var(--border)">
+                  <tr class={cn("border-t border-border")}>
                     <td class={cn("py-2", "pr-3", "font-medium")}>
                       {l.hostname || "?"}
                     </td>
-                    <td
-                      class={cn("py-2", "pr-3", "font-mono")}
-                      style="color:var(--accent)"
-                    >
+                    <td class={cn("py-2", "pr-3", "font-mono", "text-accent")}>
                       {l.ipaddr}
                     </td>
-                    <td
-                      class={cn("py-2", "pr-3", "font-mono")}
-                      style="color:var(--text-muted)"
-                    >
+                    <td class={cn("py-2", "pr-3", "font-mono", "text-muted")}>
                       {l.macaddr}
                     </td>
                     <td class={cn("py-2", "pr-3", "font-mono")}>
@@ -742,15 +834,17 @@
               "block",
               "text-xs",
               "uppercase",
+              "text-muted",
               "font-medium",
               "tracking-wider",
             )}
-            style="color:var(--text-muted)">Active DHCPv6 Leases</span
           >
+            Active DHCPv6 Leases
+          </span>
           <div class={cn("overflow-x-auto")}>
             <table class={cn("w-full text-xs")}>
               <thead
-                ><tr class={cn("text-left")} style="color:var(--text-muted)">
+                ><tr class={cn("text-left", "text-muted")}>
                   <th class={cn("pb-2", "pr-3", "font-medium")}> Hostname </th>
                   <th class={cn("pb-2", "pr-3", "font-medium")}> IPv6 </th><th
                     class={cn("pb-2", "pr-3", "font-medium")}
@@ -762,22 +856,16 @@
               </thead>
               <tbody>
                 {#each dhcpLeases.dhcp6_leases as l (l.duid)}
-                  <tr style="border-top:1px solid var(--border)">
+                  <tr class={cn("border-t border-border")}>
                     <td class={cn("py-2", "pr-3", "font-medium")}>
                       {l.hostname || "?"}
                     </td>
-                    <td
-                      class={cn("py-2", "pr-3", "font-mono")}
-                      style="color:var(--accent)"
-                    >
+                    <td class={cn("py-2", "pr-3", "font-mono", "text-accent")}>
                       {(Array.isArray(l.ip6addrs)
                         ? l.ip6addrs.join(", ")
                         : l.ip6addr || "—") || "—"}
                     </td>
-                    <td
-                      class={cn("py-2", "pr-3", "font-mono")}
-                      style="color:var(--text-muted)"
-                    >
+                    <td class={cn("py-2", "pr-3", "font-mono", "text-muted")}>
                       {l.duid || "—"}
                     </td>
                     <td class={cn("py-2", "pr-3", "font-mono")}>
@@ -789,10 +877,7 @@
             </table>
           </div>
         {:else if !dhcpLeases.dhcp_leases?.length}
-          <p
-            class={cn("text-sm", "text-center", "py-6")}
-            style="color:var(--text-muted)"
-          >
+          <p class={cn("text-sm", "text-center", "py-6", "text-muted")}>
             No active leases
           </p>
         {/if}
@@ -803,14 +888,15 @@
   <!-- Dynamic DNS -->
   {#if ddnsStatus.length > 0}
     <div class={cn("glass", "animate-slide-up")}>
-      <button
-        class={secClass}
-        style="padding:20px"
-        onclick={() => toggle("ddns")}
-      >
+      <button class={cn(secClass, "p-5")} onclick={() => toggle("ddns")}>
         <span
-          class={cn("text-xs", "font-medium", "tracking-wider", "uppercase")}
-          style="color: var(--text-muted)">◎ Dynamic DNS</span
+          class={cn(
+            "text-xs",
+            "uppercase",
+            "text-muted",
+            "font-medium",
+            "tracking-wider",
+          )}>◎ Dynamic DNS</span
         >
         <span class={cn("flex-1")}></span>
         <span
@@ -825,13 +911,12 @@
       {#if !hidden.ddns}
         <div
           transition:slide|local={{ duration: 200 }}
-          class={cn("px-5", "pb-5")}
-          style="border-top:1px solid var(--border); padding-top:16px"
+          class={cn("px-5", "pb-5", "border-t", "border-border", "pt-4")}
         >
           <div class={cn("overflow-x-auto")}>
             <table class={cn("w-full", "text-xs")}>
               <thead>
-                <tr class={cn("text-left")} style="color:var(--text-muted)">
+                <tr class={cn("text-left", "text-muted")}>
                   <th class={cn("pb-2", "pr-3", "font-medium")}>
                     Configuration
                   </th>
@@ -847,7 +932,7 @@
               </thead>
               <tbody>
                 {#each ddnsStatus as s}
-                  <tr style="border-top:1px solid var(--border)">
+                  <tr class={cn("border-t border-border")}>
                     <td class={cn("py-2", "pr-3", "font-medium")}>{s._name}</td>
                     <td class={cn("py-2", "pr-3")}
                       ><span
@@ -860,18 +945,13 @@
                         >{s.pid ? "Running" : s.next_update || "Stopped"}</span
                       ></td
                     >
-                    <td
-                      class={cn("py-2", "pr-3", "font-mono")}
-                      style="color:var(--text-muted)"
+                    <td class={cn("py-2", "pr-3", "font-mono", "text-muted")}
                       >{s._lookup_host || "—"}</td
                     >
                     <td class={cn("py-2", "pr-3", "font-mono")}
                       >{s.ip || "—"}</td
                     >
-                    <td
-                      class={cn("py-2", "pr-3", "font-mono")}
-                      style="color:var(--text-muted)"
-                    >
+                    <td class={cn("py-2", "pr-3", "font-mono", "text-muted")}>
                       {s._network || "—"}
                     </td>
                   </tr>
@@ -887,21 +967,30 @@
   <!-- UPnP -->
   {#if upnpStatus?.rules}
     <div class={cn("glass", "animate-slide-up")}>
-      <button
-        class={secClass}
-        style="padding:20px"
-        onclick={() => toggle("upnp")}
-      >
+      <button class={cn(secClass, "p-5")} onclick={() => toggle("upnp")}>
         <span
-          class={cn("text-xs", "font-medium", "tracking-wider", "uppercase")}
-          style="color: var(--text-muted)">⊞ UPnP Port Maps</span
+          class={cn(
+            "text-xs",
+            "uppercase",
+            "text-muted",
+            "font-medium",
+            "tracking-wider",
+          )}>⊞ UPnP Port Maps</span
         >
         <span class={cn("flex-1")}></span>
         <span
-          class={cn("text-xs", "font-mono", "px-2", "py-0.5", "rounded-full")}
-          style="background:rgba(0,212,170,0.1);color:var(--accent)"
-          >{upnpStatus.rules?.length || 0}</span
+          class={cn(
+            "px-2",
+            "py-0.5",
+            "text-xs",
+            "font-mono",
+            "rounded-full",
+            "text-accent",
+            "bg-accent/10",
+          )}
         >
+          {upnpStatus.rules?.length || 0}
+        </span>
         <span
           class={cn("text-xs", "font-mono", "transition-transform", "ml-2")}
           style="color: var(--text-muted); transform: rotate({hidden.upnp
@@ -914,14 +1003,13 @@
       {#if !hidden.upnp}
         <div
           transition:slide|local={{ duration: 200 }}
-          class={cn("px-5", "pb-5")}
-          style="border-top:1px solid var(--border); padding-top:16px"
+          class={cn("px-5", "pb-5", "border-t", "border-border", "pt-4")}
         >
           {#if upnpStatus.rules?.length}
             <div class={cn("overflow-x-auto")}>
               <table class={cn("w-full", "text-xs")}>
                 <thead
-                  ><tr class={cn("text-left")} style="color:var(--text-muted)"
+                  ><tr class={cn("text-left", "text-muted")}
                     ><th class={cn("pb-2", "pr-3", "font-medium")}>Client</th
                     ><th class={cn("pb-2", "pr-3", "font-medium")}>Address</th>
                     <th class={cn("pb-2", "pr-3", "font-medium")}>Port</th>
@@ -934,32 +1022,25 @@
                 </thead>
                 <tbody>
                   {#each upnpStatus.rules as r}
-                    <tr style="border-top:1px solid var(--border)">
+                    <tr class={cn("border-t", "border-border")}>
                       <td class={cn("py-2", "pr-3", "font-medium")}>
                         {r.descr || r.client || "—"}
                       </td>
-                      <td
-                        class={cn("py-2", "pr-3", "font-mono")}
-                        style="color:var(--text-muted)"
-                      >
+                      <td class={cn("py-2", "pr-3", "font-mono", "text-muted")}>
                         {r.client_addr || "—"}
                       </td>
                       <td class={cn("py-2", "pr-3", "font-mono")}>
                         {r.client_port || "—"}
                       </td>
                       <td
-                        class={cn("py-2", "pr-3", "font-mono")}
-                        style="color:var(--accent)"
+                        class={cn("py-2", "pr-3", "font-mono", "text-accent")}
                       >
                         {r.ext_port || "—"}
                       </td>
                       <td class={cn("py-2", "pr-3")}>
                         {r.protocol || "—"}
                       </td>
-                      <td
-                        class={cn("py-2", "pr-3", "font-mono")}
-                        style="color:var(--text-muted)"
-                      >
+                      <td class={cn("py-2", "pr-3", "font-mono", "text-muted")}>
                         {r.expires || "—"}
                       </td>
                     </tr>
@@ -968,10 +1049,7 @@
               </table>
             </div>
           {:else}
-            <p
-              class={cn("text-sm", "text-center", "py-6")}
-              style="color:var(--text-muted)"
-            >
+            <p class={cn("text-sm", "text-center", "py-6", "text-muted")}>
               No active port maps
             </p>
           {/if}

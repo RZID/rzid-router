@@ -97,13 +97,22 @@
 
 <div class={cn("p-6", "animate-fade-in")}>
   <h1 class={cn("text-lg", "font-semibold", "text-white")}>Routing</h1>
-  <p class={cn("text-sm", "mt-0.5", "mb-4")} style="color:var(--text-muted)">
+  <p class={cn("text-sm", "mt-0.5", "mb-4", "text-muted")}>
     The following rules are currently active on this system.
   </p>
 
   <div
-    class={cn("flex", "gap-1", "rounded-lg", "p-0.5", "mb-4", "w-fit")}
-    style="background:var(--surface-2);border:1px solid var(--border)"
+    class={cn(
+      "flex",
+      "mb-4",
+      "gap-1",
+      "p-0.5",
+      "w-fit",
+      "border",
+      "rounded-lg",
+      "bg-surface-2",
+      "border-border",
+    )}
   >
     <button
       class={cn(
@@ -153,7 +162,7 @@
         <div class={cn("overflow-x-auto")}>
           <table class={cn("w-full")}>
             <thead>
-              <tr style="color:var(--text-muted)">
+              <tr class={cn("text-muted")}>
                 <th class={th}>Entry</th>
                 <th class={th}>IP address</th>
                 <th class={th}>MAC address</th>
@@ -162,11 +171,11 @@
             </thead>
             <tbody>
               {#each n() as nb}
-                <tr style="border-top:1px solid var(--border)">
+                <tr class={cn("border-t", "border-border")}>
                   <td class={td} title={JSON.stringify(nb)}>#</td>
-                  <td class={td} style="color:var(--accent)">{nb.dst}</td>
+                  <td class={cn(td, "text-accent")}>{nb.dst}</td>
                   <td class={td}>{nb.lladdr?.toUpperCase() || "—"}</td>
-                  <td class={td} style="color:var(--text-muted)"
+                  <td class={cn(td, "text-muted")}
                     >{netName(nb.dev, v6() ? undefined : nb.dst)}</td
                   >
                 </tr>
@@ -174,10 +183,7 @@
             </tbody>
           </table>
         </div>
-      {:else}<p
-          class={cn("text-xs", "text-center", "py-4")}
-          style="color:var(--text-muted)"
-        >
+      {:else}<p class={cn("text-xs", "text-center", "py-4", "text-muted")}>
           No entries available
         </p>{/if}
     </div>
@@ -191,7 +197,7 @@
         <div class={cn("overflow-x-auto")}>
           <table class={cn("w-full")}>
             <thead>
-              <tr style="color:var(--text-muted)">
+              <tr class={cn("text-muted")}>
                 <th class={th}>Device</th>
                 <th class={th}>Target</th>
                 <th class={th}>Gateway</th>
@@ -203,22 +209,26 @@
             </thead>
             <tbody>
               {#each rts() as rt}
-                <tr style="border-top:1px solid var(--border)">
-                  <td class={td}
-                    ><span
-                      class={cn("px-1.5 py-0.5 rounded text-xs")}
-                      style="background:rgba(0,212,170,0.1);color:var(--accent)"
-                      >{netName(
-                        rt.dev,
-                        v6() ? undefined : rt.gateway || rt.dst,
-                      )}</span
-                    ></td
-                  >
+                <tr class={cn("border-t", "border-border")}>
+                  <td class={td}>
+                    <span
+                      class={cn(
+                        "px-1.5",
+                        "py-0.5",
+                        "rounded",
+                        "text-xs",
+                        "text-accent",
+                        "bg-accent/10",
+                      )}
+                    >
+                      {netName(rt.dev, v6() ? undefined : rt.gateway || rt.dst)}
+                    </span>
+                  </td>
                   <td class={td}>{rt.dst || "—"}</td>
                   <td class={td}>{rt.gateway || "—"}</td>
                   <td class={td}>{rt.prefsrc || rt.from || "—"}</td>
                   <td class={td}>{rt.metric ?? "—"}</td>
-                  <td class={td} style="color:var(--text-muted)">
+                  <td class={cn(td, "text-muted")}>
                     {rt.table || "main"}
                   </td>
                   <td class={td}>{rt.protocol || "—"}</td>
@@ -228,10 +238,7 @@
           </table>
         </div>
       {:else}
-        <p
-          class={cn("text-xs", "text-center", "py-4")}
-          style="color:var(--text-muted)"
-        >
+        <p class={cn("text-xs", "text-center", "py-4", "text-muted")}>
           No entries available
         </p>
       {/if}
@@ -246,7 +253,7 @@
         <div class={cn("overflow-x-auto")}>
           <table class={cn("w-full")}>
             <thead>
-              <tr style="color:var(--text-muted)">
+              <tr class={cn("text-muted")}>
                 <th class={th}>Rule</th>
                 <th class={th}>Priority</th>
                 <th class={th}>Ingress</th>
@@ -262,7 +269,7 @@
             </thead>
             <tbody>
               {#each rls() as rl}
-                <tr style="border-top:1px solid var(--border)">
+                <tr class={cn("border-t", "border-border")}>
                   <td class={td}>
                     <span title={JSON.stringify(rl)}>
                       {[
@@ -287,8 +294,14 @@
                   <td class={td}>{rl.priority ?? "—"}</td>
                   <td class={td}>
                     <span
-                      class={cn("px-1.5", "py-0.5", "rounded", "text-xs")}
-                      style="background:rgba(88,166,255,0.1);color:var(--info)"
+                      class={cn(
+                        "px-1.5",
+                        "py-0.5",
+                        "rounded",
+                        "text-xs",
+                        "text-info",
+                        "bg-info/10",
+                      )}
                     >
                       {rl.iif || "—"}
                     </span>
@@ -303,8 +316,14 @@
                   <td class={td}>{rl.ipproto || "—"}</td>
                   <td class={td}>
                     <span
-                      class={cn("px-1.5", "py-0.5", "rounded", "text-xs")}
-                      style="background:rgba(88,166,255,0.1);color:var(--info)"
+                      class={cn(
+                        "px-1.5",
+                        "py-0.5",
+                        "rounded",
+                        "text-xs",
+                        "text-info",
+                        "bg-info/10",
+                      )}
                     >
                       {rl.oif || "—"}
                     </span>
@@ -315,7 +334,7 @@
                       : "any"}
                   </td>
                   <td class={td}>{rl.dport ?? "—"}</td>
-                  <td class={td} style="color:var(--text-muted)">
+                  <td class={cn(td, "text-muted")}>
                     {rl.table ?? "—"}
                   </td>
                 </tr>
@@ -323,10 +342,7 @@
             </tbody>
           </table>
         </div>
-      {:else}<p
-          class={cn("text-xs", "text-center", "py-4")}
-          style="color:var(--text-muted)"
-        >
+      {:else}<p class={cn("text-xs", "text-center", "py-4", "text-muted")}>
           No entries available
         </p>{/if}
     </div>
