@@ -6,6 +6,7 @@
   import Routes from "./lib/views/Routes.svelte";
   import Firewall from "./lib/views/Firewall.svelte";
   import Logs from "./lib/views/Logs.svelte";
+  import Processes from "./lib/views/Processes.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
 
@@ -21,7 +22,6 @@
   };
 
   const placeholders: Record<string, { title: string; sub: string }> = {
-    processes: { title: "Processes", sub: "Running processes" },
     realtime: { title: "Realtime Graphs", sub: "Load, bandwidth, connections" },
     network: { title: "Interfaces", sub: "Network interface configuration" },
     "network-routes": { title: "Routing", sub: "Static routes & rules" },
@@ -67,6 +67,8 @@
         <Firewall />
       {:else if currentView === "services"}
         <Services />
+      {:else if currentView === "processes"}
+        <Processes />
       {:else if currentView === "syslog"}
         <Logs />
       {:else if placeholders[currentView]}

@@ -202,3 +202,58 @@ export const getAdGuardStats = async () => {
     return null;
   }
 };
+
+export type Process = {
+  PID: string;
+  PPID: string;
+  USER: string;
+  STAT: string;
+  VSZ: string;
+  "%MEM": string;
+  "%CPU": string;
+  COMMAND: string;
+};
+
+const parseTopOutput = (stdout: string): Process[] => {
+  const lines = stdout.trim().split("\n");
+  const list: Process[] = [];
+  let inTable = false;
+  for (const line of lines) {
+    if (/^  PID /.test(line)) { inTable = true; continue; }
+    if (!inTable) continue;
+    if (/^\s*$/.test(line)) continue;
+    const m = line.match(
+      /^\s*(\d+)\s+(\d+)\s+(.+?)\s+([RSDZTWI][<NW ]?[<N ]?)\s+(\S+)\s+(\S+%?)\s+(\S+%?)\s+(.+)$/,
+    );
+    if (m && m[8] !== "/bin/busybox top -bn1" && m[8] !== "busybox top -bn1") {
+      list.push({
+        PID: m[1],
+        PPID: m[2],
+        USER: m[3].trim(),
+        STAT: m[4],
+        VSZ: m[5],
+        "%MEM": m[6],
+        "%CPU": m[7],
+        COMMAND: m[8],
+      });
+    }
+  }
+  return list;
+};
+
+export const getProcessList = async (): Promise<Process[] | null> => {
+  const ubus = await call<{ result: Process[] }>("luci", "getProcessList", {});
+  if (ubus?.result) return ubus.result;
+
+  const top = await execCommand("/bin/busybox", ["top", "-bn1"]);
+  if (top?.stdout) return parseTopOutput(top.stdout);
+
+  const top2 = await execCommand("top", ["-bn1"]);
+  if (top2?.stdout) return parseTopOutput(top2.stdout);
+
+  return null;
+};
+
+export const killProcess = async (pid: string, signal: number) => {
+  return execCommand("/bin/kill", [`-${signal}`, pid]);
+};
