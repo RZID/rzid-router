@@ -4,6 +4,7 @@
   import Dashboard from "./lib/views/Dashboard.svelte";
   import Services from "./lib/views/Services.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
+  import Routes from "./lib/views/Routes.svelte";
 
   let authenticated = $state(!!localStorage.getItem("owrt_session"));
   let currentView = $state("dashboard");
@@ -38,6 +39,8 @@
     <main class="flex-1 overflow-y-auto" style="background: var(--surface)">
       {#if currentView === "dashboard"}
         <Dashboard />
+      {:else if currentView === "network"}
+        <Routes />
       {:else if currentView === "services"}
         <Services />
       {:else if placeholders[currentView]}
