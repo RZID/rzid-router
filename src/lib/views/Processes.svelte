@@ -210,7 +210,7 @@
     </div>
   {/if}
 
-  <div class={cn("glass", "p-5")}>
+  <div class={cn("glass", "p-5", "animate-slide-up")}>
     <div class={cn("flex", "items-center", "justify-between", "mb-3")}>
       <h3 class={cn("text-sm", "font-semibold", "text-white")}>Process List</h3>
       {#if loading}

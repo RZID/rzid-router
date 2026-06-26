@@ -15,6 +15,7 @@
       "p-12",
       "flex",
       "glass",
+      "animate-slide-up",
       "items-center",
       "justify-center",
       "animate-slide-up",

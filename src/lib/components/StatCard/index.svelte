@@ -27,6 +27,7 @@
     "p-5",
     "flex",
     "glass",
+    "animate-slide-up",
     "gap-3",
     "group",
     "flex-col",

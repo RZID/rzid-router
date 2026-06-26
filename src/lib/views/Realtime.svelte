@@ -332,7 +332,7 @@
 
         <!-- Connections table -->
         <div
-          class={cn("glass", "p-5", "flex", "flex-col", "flex-1", "min-h-0")}
+          class={cn("glass", "p-5", "flex", "flex-col", "flex-1", "min-h-0", "animate-slide-up")}
         >
           <div
             class={cn(

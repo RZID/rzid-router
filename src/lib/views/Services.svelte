@@ -40,6 +40,7 @@
           "p-4",
           "flex",
           "glass",
+          "animate-slide-up",
           "items-center",
           "justify-between",
           "animate-slide-up",

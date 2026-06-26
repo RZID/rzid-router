@@ -180,6 +180,7 @@
     class={cn(
       "flex",
       "glass",
+      "animate-slide-up",
       "flex-1",
       "min-h-0",
       "flex-col",

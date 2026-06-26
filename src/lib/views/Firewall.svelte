@@ -275,7 +275,7 @@
     </div>
   </div>
   {#if tables.length === 0}
-    <div class={cn("glass", "p-12", "text-center")}>
+    <div class={cn("glass", "p-12", "text-center", "animate-slide-up")}>
       <p class={cn("text-sm", "text-muted")}>No nftables ruleset loaded.</p>
     </div>
   {:else}

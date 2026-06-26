@@ -148,7 +148,7 @@
   const current = (arr: number[]) => (arr.length ? arr[arr.length - 1] : 0);
 </script>
 
-<div class={cn("glass", "p-5")}>
+<div class={cn("glass", "p-5", "animate-slide-up")}>
   <div class={cn("w-full", "rounded-lg", "overflow-hidden")}>
     <canvas bind:this={canvas} class={cn("w-full")} style="height:{height}px"
     ></canvas>
