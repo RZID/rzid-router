@@ -154,7 +154,7 @@
 
   <div class={cn("space-y-6")}>
     <!-- Neighbours -->
-    <div class={cn("glass", "p-5")}>
+    <div class={cn("glass", "p-5", "animate-slide-up")}>
       <h3 class={cn("text-sm", "font-semibold", "text-white", "mb-3")}>
         {tab === "ipv4" ? "IPv4" : "IPv6"} Neighbours
       </h3>
@@ -189,7 +189,7 @@
     </div>
 
     <!-- Routes -->
-    <div class={cn("glass", "p-5")}>
+    <div class={cn("glass", "p-5", "animate-slide-up")}>
       <h3 class={cn("text-sm", "font-semibold", "text-white", "mb-3")}>
         Active {tab === "ipv4" ? "IPv4" : "IPv6"} Routes
       </h3>
@@ -245,7 +245,7 @@
     </div>
 
     <!-- Rules -->
-    <div class={cn("glass", "p-5")}>
+    <div class={cn("glass", "p-5", "animate-slide-up")}>
       <h3 class={cn("text-sm", "font-semibold", "text-white", "mb-3")}>
         Active {tab === "ipv4" ? "IPv4" : "IPv6"} Rules
       </h3>
