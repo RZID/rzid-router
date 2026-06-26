@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ArrowUpDown, ChevronRight } from "@lucide/svelte";
   import { onMount, onDestroy } from "svelte";
   import { slide } from "svelte/transition";
   import { cn } from "../helpers/classname";
@@ -98,7 +99,7 @@
     if (e.counter) {
       const c = getCounter(e.counter);
       return c
-        ? `⇅ ${fm.bytes(c.counter.bytes)} / ${fm.pps(c.counter.packets)} pkts`
+        ? `${fm.bytes(c.counter.bytes)} / ${fm.pps(c.counter.packets)} pkts`
         : "";
     }
     if (e.payload) {
@@ -307,7 +308,7 @@
               ? 0
               : 90}deg)"
           >
-            ▶
+            <ChevronRight size={14} class={cn("text-muted")} />
           </span>
         </button>
         {#if !hidden[tf + tn]}

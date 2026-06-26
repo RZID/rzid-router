@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
+  import { ArrowRight, ArrowUp, ArrowDown } from "@lucide/svelte";
   import { readLogEntries, readDmesg, uciGet } from "../api/ubus";
   import {
     LOG_FACILITIES,
@@ -187,15 +188,15 @@
     )}
   >
     <!-- Filters -->
-    <div class={cn("shrink-0", "p-4", "border-b border-border")}>
+    <div class={cn("shrink-0", "p-4", "border-b", "border-border")}>
       <div class={cn("flex", "items-center", "justify-between", "mb-3")}>
         <span
           class={cn(
             "text-xs",
-            "font-semibold",
             "uppercase",
-            "tracking-wider",
             "text-muted",
+            "font-semibold",
+            "tracking-wider",
           )}
         >
           Filters
@@ -203,10 +204,10 @@
         {#if loading}
           <span
             class={cn(
-              "text-xs",
               "flex",
-              "items-center",
+              "text-xs",
               "gap-1.5",
+              "items-center",
               "text-accent",
             )}
           >
@@ -214,9 +215,9 @@
               class={cn(
                 "w-1.5",
                 "h-1.5",
+                "bg-accent",
                 "rounded-full",
                 "animate-pulse",
-                "bg-accent",
               )}
             ></span>
             Refreshing…
@@ -235,35 +236,47 @@
           )}
         >
           <div
-            class={cn("rounded-lg", "p-3", "bg-surface-2 border border-border")}
+            class={cn(
+              "p-3",
+              "border",
+              "rounded-lg",
+              "bg-surface-2",
+              "border-border",
+            )}
           >
             <label
               class={cn(
                 "mb-2",
                 "block",
                 "uppercase",
+                "text-muted",
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
-                "text-muted",
               )}
               for="facility-select"
             >
               Facility
             </label>
-            <div id="facility-select" class={cn("flex items-center gap-2")}>
+            <div
+              id="facility-select"
+              class={cn("flex", "items-center", "gap-2")}
+            >
               <select
                 class={cn(
                   "flex-1",
                   "px-2.5",
                   "py-1.5",
+                  "border",
                   "min-w-0",
                   "text-xs",
+                  "text-fg",
                   "rounded-md",
                   "outline-none",
                   "focus:ring-1",
+                  "bg-surface",
+                  "border-border",
                   "focus:ring-(--accent)",
-                  "bg-surface border border-border text-fg",
                 )}
                 bind:value={sysFilters.facility}
                 onchange={applyFilters}
@@ -304,7 +317,13 @@
           </div>
 
           <div
-            class={cn("rounded-lg", "p-3", "bg-surface-2 border border-border")}
+            class={cn(
+              "rounded-lg",
+              "p-3",
+              "bg-surface-2",
+              "border",
+              "border-border",
+            )}
           >
             <label
               for="severity-select"
@@ -312,10 +331,10 @@
                 "mb-2",
                 "block",
                 "uppercase",
+                "text-muted",
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
-                "text-muted",
               )}
             >
               Severity
@@ -329,13 +348,16 @@
                   "flex-1",
                   "px-2.5",
                   "py-1.5",
+                  "border",
                   "min-w-0",
                   "text-xs",
+                  "text-fg",
                   "rounded-md",
                   "outline-none",
                   "focus:ring-1",
+                  "bg-surface",
+                  "border-border",
                   "focus:ring-(--accent)",
-                  "bg-surface border border-border text-fg",
                 )}
                 bind:value={sysFilters.severity}
                 onchange={applyFilters}
@@ -377,11 +399,13 @@
 
           <div
             class={cn(
-              "rounded-lg",
               "p-3",
+              "border",
+              "rounded-lg",
               "sm:col-span-2",
               "lg:col-span-1",
-              "bg-surface-2 border border-border",
+              "bg-surface-2",
+              "border-border",
             )}
           >
             <label
@@ -390,28 +414,31 @@
                 "mb-2",
                 "block",
                 "uppercase",
+                "text-muted",
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
-                "text-muted",
               )}
             >
               Search
             </label>
-            <div id="search-select" class={cn("flex items-center gap-2")}>
+            <div id="search-select" class={cn("flex", "items-center", "gap-2")}>
               <input
                 class={cn(
                   "py-1.5",
                   "flex-1",
                   "px-2.5",
+                  "border",
                   "min-w-0",
                   "text-xs",
+                  "text-fg",
                   "font-mono",
                   "rounded-md",
                   "outline-none",
                   "focus:ring-1",
+                  "bg-surface",
+                  "border-border",
                   "focus:ring-(--accent)",
-                  "bg-surface border border-border text-fg",
                 )}
                 bind:value={sysFilters.text}
                 oninput={applyFilters}
@@ -449,7 +476,13 @@
           </div>
 
           <div
-            class={cn("rounded-lg", "p-3", "bg-surface-2 border border-border")}
+            class={cn(
+              "p-3",
+              "border",
+              "rounded-lg",
+              "bg-surface-2",
+              "border-border",
+            )}
           >
             <label
               for="max-rows-select"
@@ -457,10 +490,10 @@
                 "mb-2",
                 "block",
                 "uppercase",
+                "text-muted",
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
-                "text-muted",
               )}
             >
               Max rows
@@ -472,14 +505,17 @@
               class={cn(
                 "w-full",
                 "px-2.5",
+                "border",
                 "py-1.5",
                 "text-xs",
+                "text-fg",
                 "font-mono",
                 "rounded-md",
+                "bg-surface",
                 "outline-none",
                 "focus:ring-1",
+                "border-border",
                 "focus:ring-(--accent)",
-                "bg-surface border border-border text-fg",
               )}
               bind:value={sysFilters.maxRows}
               onchange={applyFilters}
@@ -498,10 +534,12 @@
         >
           <div
             class={cn(
-              "rounded-lg",
               "p-3",
+              "border",
+              "rounded-lg",
               "sm:col-span-2",
-              "bg-surface-2 border border-border",
+              "bg-surface-2",
+              "border-border",
             )}
           >
             <label
@@ -510,10 +548,10 @@
                 "mb-2",
                 "block",
                 "uppercase",
+                "text-muted",
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
-                "text-muted",
               )}
             >
               Time range
@@ -530,20 +568,25 @@
                   "flex-1",
                   "px-2.5",
                   "py-1.5",
+                  "border",
                   "text-xs",
+                  "text-fg",
                   "min-w-24",
                   "font-mono",
                   "rounded-md",
                   "outline-none",
+                  "bg-surface",
                   "focus:ring-1",
+                  "border-border",
                   "focus:ring-(--accent)",
-                  "bg-surface border border-border text-fg",
                 )}
                 bind:value={dmesgFilters.fromTime}
                 oninput={applyFilters}
                 placeholder="From"
               />
-              <span class={cn("text-xs", "text-muted")}> → </span>
+              <span class={cn("text-xs", "text-muted")}
+                ><ArrowRight size={14} class={cn("text-muted")} /></span
+              >
               <input
                 type="number"
                 min="0"
@@ -552,14 +595,17 @@
                   "flex-1",
                   "px-2.5",
                   "py-1.5",
+                  "border",
                   "text-xs",
+                  "text-fg",
                   "min-w-24",
                   "font-mono",
                   "rounded-md",
                   "outline-none",
                   "focus:ring-1",
+                  "bg-surface",
+                  "border-border",
                   "focus:ring-(--accent)",
-                  "bg-surface border border-border text-fg",
                 )}
                 bind:value={dmesgFilters.toTime}
                 oninput={applyFilters}
@@ -597,7 +643,13 @@
           </div>
 
           <div
-            class={cn("rounded-lg", "p-3", "bg-surface-2 border border-border")}
+            class={cn(
+              "p-3",
+              "border",
+              "rounded-lg",
+              "bg-surface-2",
+              "border-border",
+            )}
           >
             <label
               for="severity-select"
@@ -605,10 +657,10 @@
                 "mb-2",
                 "block",
                 "uppercase",
+                "text-muted",
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
-                "text-muted",
               )}
             >
               Severity
@@ -622,13 +674,16 @@
                   "flex-1",
                   "px-2.5",
                   "py-1.5",
+                  "border",
                   "min-w-0",
                   "text-xs",
+                  "text-fg",
                   "rounded-md",
                   "outline-none",
+                  "bg-surface",
                   "focus:ring-1",
+                  "border-border",
                   "focus:ring-(--accent)",
-                  "bg-surface border border-border text-fg",
                 )}
                 bind:value={dmesgFilters.minSeverity}
                 onchange={applyFilters}
@@ -670,7 +725,13 @@
           </div>
 
           <div
-            class={cn("rounded-lg", "p-3", "bg-surface-2 border border-border")}
+            class={cn(
+              "p-3",
+              "border",
+              "rounded-lg",
+              "bg-surface-2",
+              "border-border",
+            )}
           >
             <label
               for="search-input"
@@ -678,10 +739,10 @@
                 "mb-2",
                 "block",
                 "uppercase",
+                "text-muted",
                 "text-[10px]",
                 "font-semibold",
                 "tracking-wider",
-                "text-muted",
               )}
             >
               Search
@@ -693,14 +754,17 @@
                   "flex-1",
                   "px-2.5",
                   "py-1.5",
+                  "border",
                   "min-w-0",
                   "text-xs",
+                  "text-fg",
                   "font-mono",
                   "rounded-md",
                   "outline-none",
                   "focus:ring-1",
+                  "bg-surface",
+                  "border-border",
                   "focus:ring-(--accent)",
-                  "bg-surface border border-border text-fg",
                 )}
                 bind:value={dmesgFilters.text}
                 oninput={applyFilters}
@@ -739,11 +803,13 @@
 
           <div
             class={cn(
-              "rounded-lg",
               "p-3",
               "flex",
+              "border",
               "items-end",
-              "bg-surface-2 border border-border",
+              "rounded-lg",
+              "bg-surface-2",
+              "border-border",
             )}
           >
             <button
@@ -779,12 +845,15 @@
       {#if error}
         <p
           class={cn(
-            "text-xs",
             "mt-3",
             "px-3",
             "py-2",
+            "border",
+            "text-xs",
             "rounded-lg",
-            "text-danger bg-danger/10 border border-danger/20",
+            "text-danger",
+            "bg-danger/10",
+            "border-danger/20",
           )}
         >
           {error}
@@ -800,9 +869,11 @@
           "py-2",
           "flex",
           "shrink-0",
+          "border-b",
           "items-center",
+          "bg-black/15",
+          "border-border",
           "justify-between",
-          "border-b border-border bg-black/15",
         )}
       >
         <span class={cn("text-xs", "font-mono", "text-muted")}>
@@ -815,34 +886,38 @@
             class={cn(
               "py-1",
               "px-2.5",
+              "border",
               "rounded-md",
               "text-[11px]",
+              "text-muted",
               "font-medium",
               "transition-all",
               "cursor-pointer",
               "hover:bg-white/5",
-              "text-muted border border-border",
+              "border-border",
             )}
             onclick={scrollToHead}
           >
-            ↑ Head
+            <ArrowUp size={14} class={cn("text-muted")} /> Head
           </button>
           <button
             type="button"
             class={cn(
               "py-1",
               "px-2.5",
+              "border",
+              "text-muted",
               "rounded-md",
               "text-[11px]",
               "font-medium",
               "transition-all",
               "cursor-pointer",
               "hover:bg-white/5",
-              "text-muted border border-border",
+              "border-border",
             )}
             onclick={scrollToTail}
           >
-            ↓ Tail
+            <ArrowDown size={14} class={cn("text-muted")} /> Tail
           </button>
         </div>
       </div>
@@ -857,13 +932,16 @@
             "block",
             "w-full",
             "h-full",
+            "border",
             "text-xs",
+            "text-fg",
             "font-mono",
             "rounded-lg",
             "resize-none",
+            "bg-surface",
             "outline-none",
             "overflow-auto",
-            "bg-surface border border-border text-fg",
+            "border-border",
           )}
           value={logText}
         ></textarea>

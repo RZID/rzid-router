@@ -2,7 +2,20 @@
   import { onMount, onDestroy } from "svelte";
   import { slide } from "svelte/transition";
   import { batchCall } from "../api/ubus";
-  import { Clock, Zap, Globe, HardDrive, ArrowUpDown } from "@lucide/svelte";
+  import {
+    Clock,
+    Zap,
+    Globe,
+    HardDrive,
+    ArrowUpDown,
+    Settings,
+    Hexagon,
+    Network,
+    Radio,
+    PlusSquare,
+    ChevronRight,
+    ArrowUp,
+  } from "@lucide/svelte";
   import StatCard from "../components/StatCard.svelte";
   import BandwidthChart from "../components/BandwidthChart.svelte";
   import { cn } from "../helpers/classname";
@@ -232,7 +245,7 @@
     <StatCard
       label="Bandwidth"
       value={bwRate.rxRate}
-      sub={`↑ ${bwRate.txRate}`}
+      sub={`TX ${bwRate.txRate}`}
       icon={ArrowUpDown}
       color="var(--accent)"
     />
@@ -251,14 +264,14 @@
             "tracking-wider",
           )}
         >
-          ⚙ System
+          <Settings size={14} class={cn("text-muted")} /> System
         </span>
         <span class={cn("flex-1")}></span>
         <span
           class={cn("text-xs", "font-mono", "transition-transform")}
           style="color: var(--text-muted); transform: rotate({hidden.sys
             ? 0
-            : 90}deg)">▶</span
+            : 90}deg)"><ChevronRight size={14} class={cn("text-muted")} /></span
         >
       </button>
       {#if !hidden.sys}
@@ -398,14 +411,14 @@
           "tracking-wider",
         )}
       >
-        ◫ Memory & Storage
+        <HardDrive size={14} class={cn("text-muted")} /> Memory & Storage
       </span>
       <span class={cn("flex-1")}></span>
       <span
         class={cn("text-xs", "font-mono", "transition-transform")}
         style="color: var(--text-muted); transform: rotate({hidden.mem
           ? 0
-          : 90}deg)">▶</span
+          : 90}deg)"><ChevronRight size={14} class={cn("text-muted")} /></span
       >
     </button>
     {#if !hidden.mem}
@@ -509,7 +522,7 @@
             "tracking-wider",
           )}
         >
-          ⬡ Port Status
+          <Globe size={14} class={cn("text-muted")} /> Port Status
         </span>
         <span class={cn("flex-1")}></span>
         <span
@@ -518,7 +531,7 @@
             ? 0
             : 90}deg)"
         >
-          ▶
+          <ChevronRight size={14} class={cn("text-muted")} />
         </span>
       </button>
       {#if !hidden.ports}
@@ -625,7 +638,7 @@
             "text-muted",
             "font-medium",
             "tracking-wider",
-          )}>⟁ Network</span
+          )}><Network size={14} class={cn("text-muted")} /> Network</span
         >
         <span class={cn("flex-1")}></span>
         <span
@@ -634,13 +647,13 @@
             ? 0
             : 90}deg)"
         >
-          ▶
+          <ChevronRight size={14} class={cn("text-muted")} />
         </span>
       </button>
       {#if !hidden.net}
         <div
           transition:slide|local={{ duration: 200 }}
-          class={cn("px-5", "pb-5", "border-t border-border pt-4")}
+          class={cn("px-5", "pb-5", "border-t", "border-border", "pt-4")}
         >
           <dl
             class={cn("grid", "grid-cols-2", "gap-y-3", "gap-x-8", "text-sm")}
@@ -753,7 +766,7 @@
           "tracking-wider",
         )}
       >
-        ◎ DHCP Leases
+        <Radio size={14} class={cn("text-muted")} /> DHCP Leases
       </span>
       <span class={cn("flex-1")}></span>
       <span
@@ -773,7 +786,7 @@
           ? 0
           : 90}deg)"
       >
-        ▶
+        <ChevronRight size={14} class={cn("text-muted")} />
       </span>
     </button>
     {#if !hidden.dhcp}
@@ -896,7 +909,7 @@
             "text-muted",
             "font-medium",
             "tracking-wider",
-          )}>◎ Dynamic DNS</span
+          )}><Radio size={14} class={cn("text-muted")} /> Dynamic DNS</span
         >
         <span class={cn("flex-1")}></span>
         <span
@@ -905,7 +918,7 @@
             ? 0
             : 90}deg)"
         >
-          ▶
+          <ChevronRight size={14} class={cn("text-muted")} />
         </span>
       </button>
       {#if !hidden.ddns}
@@ -975,7 +988,7 @@
             "text-muted",
             "font-medium",
             "tracking-wider",
-          )}>⊞ UPnP Port Maps</span
+          )}><PlusSquare size={14} class={cn("text-muted")} /> UPnP Port Maps</span
         >
         <span class={cn("flex-1")}></span>
         <span
@@ -997,7 +1010,7 @@
             ? 0
             : 90}deg)"
         >
-          ▶
+          <ChevronRight size={14} class={cn("text-muted")} />
         </span>
       </button>
       {#if !hidden.upnp}
