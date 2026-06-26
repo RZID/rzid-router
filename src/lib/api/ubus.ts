@@ -192,6 +192,24 @@ export const getBandwidth = async () => {
   return stats;
 };
 
+export const getConntrackCount = async (): Promise<number | null> => {
+  const res = await execCommand("cat", [
+    "/proc/sys/net/netfilter/nf_conntrack_count",
+  ]);
+  if (res?.stdout) {
+    const n = parseInt(res.stdout.trim());
+    if (!isNaN(n)) return n;
+  }
+
+  const raw = await execCommand("wc", ["-l", "/proc/net/nf_conntrack"]);
+  if (raw?.stdout) {
+    const n = parseInt(raw.stdout.trim().split(/\s+/)[0]);
+    if (!isNaN(n)) return n;
+  }
+
+  return null;
+};
+
 export const getAdGuardStats = async () => {
   try {
     const res = await fetch("http://10.10.0.1:3000/control/stats", {
