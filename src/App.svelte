@@ -11,6 +11,7 @@
   import Realtime from "./lib/views/Realtime.svelte";
   import System from "./lib/views/System.svelte";
   import Admin from "./lib/views/Admin.svelte";
+  import Software from "./lib/views/Software.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
@@ -55,7 +56,6 @@
     adguard: { title: "AdGuard Home", sub: "DNS filtering & blocklists" },
     banip: { title: "banIP", sub: "IP threat blocking" },
     upnp: { title: "UPnP", sub: "Port mapping & IGD" },
-    software: { title: "Software", sub: "Package management" },
     startup: { title: "Startup", sub: "Init scripts & services" },
     crontab: { title: "Scheduled Tasks", sub: "Cron jobs" },
     flash: {
@@ -114,6 +114,8 @@
         <System />
       {:else if currentView === "admin"}
         <Admin />
+      {:else if currentView === "software"}
+        <Software />
       {:else if placeholders[currentView]}
         <Placeholder
           title={trans(placeholders[currentView].title)}

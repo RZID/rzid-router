@@ -392,3 +392,44 @@ export const removeFile = async (path: string) => {
 export const statFile = async (path: string) => {
   return call("file", "stat", { path });
 };
+
+const CGI_EXEC = "/cgi-bin/cgi-exec";
+
+function getSession(): string {
+  return localStorage.getItem("owrt_session") || "00000000000000000000000000000000";
+}
+
+/**
+ * Execute a command via `/cgi-bin/cgi-exec`, bypassing UBUS message size limits.
+ * Used for large command outputs (e.g. package lists, nftables rulesets).
+ * Matching LuCI's `fs.exec_direct()`.
+ */
+export const cgiExec = async (
+  command: string,
+  params: string[] = [],
+): Promise<string | null> => {
+  try {
+    let cmdstr = String(command).replace(/\\/g, "\\\\").replace(/(\s)/g, "\\$1");
+    if (Array.isArray(params)) {
+      for (const p of params) {
+        cmdstr += " " + String(p).replace(/\\/g, "\\\\").replace(/(\s)/g, "\\$1");
+      }
+    }
+    const body =
+      "sessionid=" +
+      encodeURIComponent(getSession()) +
+      "&command=" +
+      encodeURIComponent(cmdstr);
+
+    const res = await fetch(CGI_EXEC, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+    });
+
+    if (!res.ok || res.status !== 200) return null;
+    return res.text();
+  } catch {
+    return null;
+  }
+};
