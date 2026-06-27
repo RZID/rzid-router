@@ -373,6 +373,106 @@ export const getAdGuardStats = async () => {
   }
 };
 
+// ── AdGuard Home ──
+
+export type AdGuardHomeStatus = {
+  running: boolean;
+  redirect: boolean;
+};
+
+export const adguardGetStatus = async (): Promise<AdGuardHomeStatus | null> => {
+  const uci = await uciGet("AdGuardHome").catch(() => null);
+  const binpath = (uci?.values as any)?.AdGuardHome?.binpath || "/usr/bin/AdGuardHome/AdGuardHome";
+  const [runningRes, redirectRes] = await Promise.all([
+    execCommand("pgrep", ["-x", binpath]),
+    readFile("/var/run/AdGredir").catch(() => null),
+  ]);
+  return {
+    running: runningRes?.exit_code === 0,
+    redirect: redirectRes?.data?.trim() === "1",
+  };
+};
+
+export const adguardGetLog = async (pos: number) => {
+  const uci = await uciGet("AdGuardHome").catch(() => null);
+  const logfile = (uci?.values as any)?.AdGuardHome?.logfile;
+  if (!logfile) return { content: "", pos: 0 };
+  const res = await execCommand("/bin/dd", [
+    `if=${logfile}`,
+    `skip=${pos}`,
+    "bs=1",
+    "count=2048000",
+    "status=none",
+  ]).catch(() => null);
+  return {
+    content: res?.stdout || "",
+    pos: pos + (res?.stdout?.length || 0),
+  };
+};
+
+export const adguardDeleteLog = async () => {
+  const uci = await uciGet("AdGuardHome").catch(() => null);
+  const logfile = (uci?.values as any)?.AdGuardHome?.logfile;
+  if (logfile && logfile !== "syslog") {
+    await execCommand("/bin/rm", ["-f", logfile]);
+  }
+};
+
+export const adguardDoUpdate = async (force = false) => {
+  await execCommand("/usr/share/AdGuardHome/update_core.sh", force ? ["force"] : []);
+};
+
+export const adguardCheckUpdate = async (pos: number) => {
+  const res = await execCommand("/bin/dd", [
+    "if=/tmp/AdGuardHome_update.log",
+    `skip=${pos}`,
+    "bs=1",
+    "count=2048000",
+    "status=none",
+  ]).catch(() => null);
+  return {
+    content: res?.stdout || "",
+    pos: pos + (res?.stdout?.length || 0),
+  };
+};
+
+export const adguardGetTemplateConfig = async () => {
+  const res = await execCommand("/bin/cat", ["/usr/share/AdGuardHome/AdGuardHome_template.yaml"]).catch(() => null);
+  return res?.stdout || "";
+};
+
+export const adguardGetConfigContent = async () => {
+  const uci = await uciGet("AdGuardHome").catch(() => null);
+  const configpath = (uci?.values as any)?.AdGuardHome?.configpath || "/etc/AdGuardHome.yaml";
+  const res = await readFile(configpath).catch(() => null);
+  return res?.data || "";
+};
+
+export const adguardSaveConfigContent = async (content: string) => {
+  const uci = await uciGet("AdGuardHome").catch(() => null);
+  const configpath = (uci?.values as any)?.AdGuardHome?.configpath || "/etc/AdGuardHome.yaml";
+  await writeFile("/tmp/AdGuardHometmpconfig.yaml", content);
+  const binpath = (uci?.values as any)?.AdGuardHome?.binpath || "/usr/bin/AdGuardHome/AdGuardHome";
+  const checkRes = await execCommand(binpath, ["-c", "/tmp/AdGuardHometmpconfig.yaml", "--check-config"]).catch(() => null);
+  if (checkRes?.exit_code !== 0) {
+    const errRes = await readFile("/tmp/AdGuardHometest.log").catch(() => null);
+    throw new Error(errRes?.data || "Config validation failed");
+  }
+  await execCommand("/bin/mv", ["/tmp/AdGuardHometmpconfig.yaml", configpath]);
+};
+
+export const adguardReloadConfig = async () => {
+  await execCommand("/bin/rm", ["-f", "/tmp/AdGuardHometmpconfig.yaml"]);
+};
+
+export const adguardGetVersion = async () => {
+  const uci = await uciGet("AdGuardHome").catch(() => null);
+  const binpath = (uci?.values as any)?.AdGuardHome?.binpath || "/usr/bin/AdGuardHome/AdGuardHome";
+  const res = await execCommand(binpath, ["-c", "/dev/null", "--check-config"]).catch(() => null);
+  const m = res?.stderr?.match(/v[\d.]+/);
+  return m ? m[0] : null;
+};
+
 export type Process = {
   PID: string;
   PPID: string;

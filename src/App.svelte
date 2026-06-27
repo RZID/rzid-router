@@ -16,6 +16,7 @@
   import Crontab from "./lib/views/Crontab.svelte";
   import Flash from "./lib/views/Flash.svelte";
   import DDNS from "./lib/views/DDNS.svelte";
+  import AdGuardHome from "./lib/views/AdGuardHome.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
@@ -57,7 +58,6 @@
     dns: { title: "DNS", sub: "DNS resolver & forwarding" },
     diagnostics: { title: "Diagnostics", sub: "Ping, traceroute, nslookup" },
 
-    adguard: { title: "AdGuard Home", sub: "DNS filtering & blocklists" },
     banip: { title: "banIP", sub: "IP threat blocking" },
     upnp: { title: "UPnP", sub: "Port mapping & IGD" },
   };
@@ -120,6 +120,8 @@
         <Flash />
       {:else if currentView === "ddns"}
         <DDNS />
+      {:else if currentView === "adguard"}
+        <AdGuardHome />
       {:else if placeholders[currentView]}
         <Placeholder
           title={trans(placeholders[currentView].title)}
