@@ -13,6 +13,7 @@
   import Admin from "./lib/views/Admin.svelte";
   import Software from "./lib/views/Software.svelte";
   import Startup from "./lib/views/Startup.svelte";
+  import Crontab from "./lib/views/Crontab.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
@@ -58,7 +59,6 @@
     banip: { title: "banIP", sub: "IP threat blocking" },
     upnp: { title: "UPnP", sub: "Port mapping & IGD" },
     flash: { title: "Backup / Flash", sub: "Backup, restore, firmware upgrade" },
-    crontab: { title: "Scheduled Tasks", sub: "Cron jobs" },
   };
 
   onMount(() => {
@@ -113,6 +113,8 @@
         <Software />
       {:else if currentView === "startup"}
         <Startup />
+      {:else if currentView === "crontab"}
+        <Crontab />
       {:else if placeholders[currentView]}
         <Placeholder
           title={trans(placeholders[currentView].title)}
