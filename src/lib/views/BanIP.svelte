@@ -127,19 +127,12 @@
   let ban_feedreset_input = $state("");
   let ban_feedcomplete_input = $state("");
   let ban_logterm_input = $state("");
-  let ban_feed_input = $state("");
-  let ban_country_input = $state("");
-  let ban_region_input = $state("");
   let ban_asn_input = $state("");
   let ban_allowurl_input = $state("");
 
   let feedsData: { default: string; custom: string; countries: string } = $state({ default: "", custom: "", countries: "" });
   let feedKeys: string[] = $state([]);
   let countryOptions: { value: string; label: string }[] = $state([]);
-
-  let regionVal = $state("");
-  let asnText = $state("");
-  let allowurlText = $state("");
 
   let pollTimer: ReturnType<typeof setInterval> | undefined;
 
@@ -252,10 +245,6 @@
     ban_autoblocksubnet = f(sec.ban_autoblocksubnet);
     ban_nftexpiry = g(sec.ban_nftexpiry);
     ban_allowlistonly = f(sec.ban_allowlistonly);
-
-    regionVal = ban_region.length ? ban_region[ban_region.length - 1] : "";
-    asnText = ban_asn.join(", ");
-    allowurlText = ban_allowurl.join(", ");
   };
 
   const loadFeeds = async () => {
@@ -405,12 +394,6 @@
 
   onDestroy(() => { clearInterval(pollTimer); });
 
-  // Helper to render DynamicList
-  const renderDynamicList = (items: string[], input: string, onadd: (v: string) => void, onremove: (i: number) => void, placeholder = "/path") => (
-    `<div class="space-y-1 mb-1">${items.map((item, i) =>
-      `<div class="flex items-center gap-1"><input readonly value="${item.replace(/"/g, '&quot;')}" class="flex-1 px-2.5 py-1 border text-xs rounded-md bg-surface-2 outline-none text-fg border-border cursor-default" /><button type="button" class="px-1.5 py-1 text-[10px] rounded text-danger hover:bg-danger/10 transition-colors cursor-pointer">${trans("Remove")}</button></div>`
-    ).join("")}</div><div class="flex items-center gap-1"><input value="" placeholder="${placeholder}" class="flex-1 px-2.5 py-1 border text-xs rounded-md bg-surface outline-none text-fg border-border focus:border-(--accent)" /><button type="button" class="px-2 py-1 text-[10px] rounded-md bg-accent text-surface font-medium cursor-pointer">+</button></div>`
-  );
 </script>
 
 <div class={cn("p-6", "flex", "flex-col", "min-h-0", "animate-fade-in", "gap-5")}>
@@ -456,11 +439,11 @@
         <RefreshCw size={14} />
       </button>
     </div>
-    <div class={cn("grid", "grid-cols-3", "gap-x-6", "gap-y-2")}>
+    <div class={cn("space-y-1")}>
       {#each infoItems as item}
-        <div>
-          <span class={cn("text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider", "block")}>{trans(item.label)}</span>
-          <span class={cn("text-xs", "font-mono", "text-accent")}>{item.val ?? "-"}</span>
+        <div class={cn("flex", "items-baseline", "gap-4", "py-0.5")}>
+          <span class={cn("text-[10px]", "text-muted", "font-semibold", "shrink-0", "w-28")}>{trans(item.label)}</span>
+          <span class={cn("text-xs", "font-mono", "text-accent", "break-all")}>{item.val ?? "-"}</span>
         </div>
       {/each}
     </div>
@@ -627,44 +610,93 @@
       {:else if tab === "feeds"}
         <div class={cn("flex", "items-center", "gap-2")}><span class={cn("text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider")}>{trans("Feed Selection")}</span></div>
         <div class={cn("h-px", "bg-border")} />
-        <p class={cn("text-[10px]", "text-muted")}>{trans("Changes on this tab needs a banIP service reload to take effect.")}</p>
+        <p class={cn("text-[10px]", "text-muted", "text-center")}>{trans("Changes on this tab needs a banIP service reload to take effect.")}</p>
         <div class={cn("h-px", "bg-border")} />
 
         <p class={cn("text-[10px]", "font-semibold", "text-fg")}>{trans("External Blocklist Feeds")}</p>
 
         {#if feedKeys.length}
-          {#each feedKeys as feed}
-            <Toggle label={feed} checked={ban_feed.includes(feed)} onchange={(v) => { ban_feed = v ? [...ban_feed, feed] : ban_feed.filter(f => f !== feed); }} />
-          {/each}
+          <div class={cn("grid", "grid-cols-2", "gap-x-4", "gap-y-1")}>
+            {#each feedKeys as feed}
+              <label class={cn("flex", "items-center", "gap-2", "cursor-pointer", "select-none", "py-0.5")}>
+                <input type="checkbox" checked={ban_feed.includes(feed)} onchange={() => { ban_feed = ban_feed.includes(feed) ? ban_feed.filter(f => f !== feed) : [...ban_feed, feed]; }} class={cn("accent-(--accent)", "w-3.5", "h-3.5", "rounded", "cursor-pointer")} />
+                <span class={cn("text-xs", "text-fg")}>{feed}</span>
+              </label>
+            {/each}
+          </div>
+        {:else}
+          <p class={cn("text-[10px]", "text-muted", "italic")}>{trans("No feeds available")}</p>
         {/if}
 
         <div class={cn("h-px", "bg-border")} />
         <p class={cn("text-[10px]", "font-semibold", "text-fg")}>{trans("Country Selection")}</p>
 
         {#if countryOptions.length}
-          {#each countryOptions as opt}
-            <Toggle label={opt.label} checked={ban_country.includes(opt.value)} onchange={(v) => { ban_country = v ? [...ban_country, opt.value] : ban_country.filter(c => c !== opt.value); }} />
-          {/each}
+          <div class={cn("grid", "grid-cols-2", "gap-x-4", "gap-y-1")}>
+            {#each countryOptions as opt}
+              <label class={cn("flex", "items-center", "gap-2", "cursor-pointer", "select-none", "py-0.5")}>
+                <input type="checkbox" checked={ban_country.includes(opt.value)} onchange={() => { ban_country = ban_country.includes(opt.value) ? ban_country.filter(c => c !== opt.value) : [...ban_country, opt.value]; }} class={cn("accent-(--accent)", "w-3.5", "h-3.5", "rounded", "cursor-pointer")} />
+                <span class={cn("text-xs", "text-fg")}>{opt.label}</span>
+              </label>
+            {/each}
+          </div>
+        {:else}
+          <p class={cn("text-[10px]", "text-muted", "italic")}>{trans("No countries available")}</p>
         {/if}
 
-        <Select label={trans("Regional Internet Registry")} bind:value={regionVal} onchange={() => { ban_region = regionVal ? [regionVal] : []; }} options={[
-          { value: "", label: trans("-- Please choose (optional) --") },
-          { value: "AFRINIC", label: "AFRINIC - Africa" },
-          { value: "APNIC", label: "APNIC - Asia Pacific" },
-          { value: "ARIN", label: "ARIN - Canada/United States" },
-          { value: "LACNIC", label: "LACNIC - Latin America" },
-          { value: "RIPE", label: "RIPE - Europe/Middle East" },
-        ]} />
-        <Toggle label={trans("Split Country Set")} bind:checked={ban_countrysplit} />
+        <div>
+          <p class={cn("text-[10px]", "font-semibold", "text-fg", "mb-1")}>{trans("Regional Internet Registry")}</p>
+          <p class={cn("text-[10px]", "text-muted", "mb-2")}>{trans("Summary of countries based on the Regional Internet Registry (RIR).")}</p>
+          <div class={cn("grid", "grid-cols-1", "gap-y-0.5")}>
+            {#each ["AFRINIC", "APNIC", "ARIN", "LACNIC", "RIPE"] as rir}
+              <label class={cn("flex", "items-center", "gap-2", "cursor-pointer", "select-none", "py-0.5")}>
+                <input type="checkbox" checked={ban_region.includes(rir)} onchange={() => { ban_region = ban_region.includes(rir) ? ban_region.filter(r => r !== rir) : [...ban_region, rir]; }} class={cn("accent-(--accent)", "w-3.5", "h-3.5", "rounded", "cursor-pointer")} />
+                <span class={cn("text-xs", "text-fg")}>{rir}</span>
+              </label>
+            {/each}
+          </div>
+        </div>
+        <Toggle label={trans("Split Country Set")} description={trans("The selected Countries are stored in separate Sets.")} bind:checked={ban_countrysplit} />
 
         <div class={cn("h-px", "bg-border")} />
         <p class={cn("text-[10px]", "font-semibold", "text-fg")}>{trans("ASN Selection")}</p>
-        <Input label={trans("ASNs")} bind:value={asnText} onchange={() => { ban_asn = asnText.split(",").map((s) => s.trim()).filter(Boolean); }} placeholder="AS1234" />
-        <Toggle label={trans("Split ASN Set")} bind:checked={ban_asnsplit} />
+        <div>
+          <p class={cn("text-[10px]", "text-muted", "mb-2")}>{trans("Collection of IP addresses based on Autonomous System Numbers.")}</p>
+          <div class={cn("space-y-1", "mb-1")}>
+            {#each ban_asn as item, i}
+              <div class={cn("flex", "items-center", "gap-1")}>
+                <input readonly value={item} class={cn("flex-1", "px-2.5", "py-1", "border", "text-xs", "rounded-md", "bg-surface-2", "outline-none", "text-fg", "border-border", "cursor-default")} />
+                <button type="button" onclick={() => { ban_asn = ban_asn.toSpliced(i, 1); }} class={cn("px-1.5", "py-1", "text-[10px]", "rounded", "text-danger", "hover:bg-danger/10", "transition-colors", "cursor-pointer")}>{trans("Remove")}</button>
+              </div>
+            {/each}
+          </div>
+          <div class={cn("flex", "items-center", "gap-1")}>
+            <input bind:value={ban_asn_input} placeholder="AS1234" class={cn("flex-1", "px-2.5", "py-1", "border", "text-xs", "rounded-md", "bg-surface", "outline-none", "text-fg", "border-border", "focus:border-(--accent)")} onkeydown={(e) => { if (e.key === "Enter" && ban_asn_input.trim()) { e.preventDefault(); ban_asn = [...ban_asn, ban_asn_input.trim()]; ban_asn_input = ""; }}} />
+            <button type="button" disabled={!ban_asn_input.trim()} onclick={() => { if (ban_asn_input.trim()) { ban_asn = [...ban_asn, ban_asn_input.trim()]; ban_asn_input = ""; }}} class={cn("px-2", "py-1", "text-[10px]", "rounded-md", "bg-accent", "text-surface", "font-medium", "disabled:opacity-40", "cursor-pointer")}>+</button>
+          </div>
+        </div>
+        <Toggle label={trans("Split ASN Set")} description={trans("The selected ASNs are stored in separate Sets.")} bind:checked={ban_asnsplit} />
 
         <div class={cn("h-px", "bg-border")} />
         <p class={cn("text-[10px]", "font-semibold", "text-fg")}>{trans("External Allowlist Feeds")}</p>
-        <Input label={trans("Allowlist Feed URLs")} bind:value={allowurlText} onchange={() => { ban_allowurl = allowurlText.split(",").map((s) => s.trim()).filter(Boolean); }} placeholder="https://..." />
+        <div>
+          {#if countryOptions.length}
+            <div class={cn("space-y-1", "mb-1")}>
+              {#each ban_allowurl as item, i}
+                <div class={cn("flex", "items-center", "gap-1")}>
+                  <input readonly value={item} class={cn("flex-1", "px-2.5", "py-1", "border", "text-xs", "rounded-md", "bg-surface-2", "outline-none", "text-fg", "border-border", "cursor-default")} />
+                  <button type="button" onclick={() => { ban_allowurl = ban_allowurl.toSpliced(i, 1); }} class={cn("px-1.5", "py-1", "text-[10px]", "rounded", "text-danger", "hover:bg-danger/10", "transition-colors", "cursor-pointer")}>{trans("Remove")}</button>
+                </div>
+              {/each}
+            </div>
+            <div class={cn("flex", "items-center", "gap-1")}>
+              <input bind:value={ban_allowurl_input} placeholder="https://..." class={cn("flex-1", "px-2.5", "py-1", "border", "text-xs", "rounded-md", "bg-surface", "outline-none", "text-fg", "border-border", "focus:border-(--accent)")} onkeydown={(e) => { if (e.key === "Enter" && ban_allowurl_input.trim()) { e.preventDefault(); ban_allowurl = [...ban_allowurl, ban_allowurl_input.trim()]; ban_allowurl_input = ""; }}} />
+              <button type="button" disabled={!ban_allowurl_input.trim()} onclick={() => { if (ban_allowurl_input.trim()) { ban_allowurl = [...ban_allowurl, ban_allowurl_input.trim()]; ban_allowurl_input = ""; }}} class={cn("px-2", "py-1", "text-[10px]", "rounded-md", "bg-accent", "text-surface", "font-medium", "disabled:opacity-40", "cursor-pointer")}>+</button>
+            </div>
+          {:else}
+            <p class={cn("text-[10px]", "text-muted", "italic")}>{trans("No countries data loaded")}</p>
+          {/if}
+        </div>
 
         <div class={cn("h-px", "bg-border")} />
         <p class={cn("text-[10px]", "font-semibold", "text-fg")}>{trans("Local Feed Settings")}</p>
