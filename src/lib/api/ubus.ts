@@ -359,3 +359,36 @@ export const getProcessList = async (): Promise<Process[] | null> => {
 export const killProcess = async (pid: string, signal: number) => {
   return execCommand("/bin/kill", [`-${signal}`, pid]);
 };
+
+export const setPassword = async (
+  username = "root",
+  password: string,
+  oldpassword = "",
+  rpcd = false,
+) => {
+  return call<{ result: number | boolean }>("luci", "setPassword", {
+    username, password, oldpassword, rpcd,
+  });
+};
+
+export const readFile = async (path: string) => {
+  return call<{ data: string }>("file", "read", { path });
+};
+
+export const writeFile = async (path: string, data: string, mode?: number) => {
+  const params: Record<string, any> = { path, data };
+  if (mode !== undefined) params.mode = mode;
+  return call("file", "write", params);
+};
+
+export const listDir = async (path: string) => {
+  return call<{ entries: { name: string; type: string }[] }>("file", "list", { path });
+};
+
+export const removeFile = async (path: string) => {
+  return call("file", "remove", { path });
+};
+
+export const statFile = async (path: string) => {
+  return call("file", "stat", { path });
+};
