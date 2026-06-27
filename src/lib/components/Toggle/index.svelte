@@ -6,7 +6,8 @@
     description,
     checked = $bindable(false),
     class: className = "",
-  }: { label?: string; description?: string; checked: boolean; class?: string } = $props();
+    onchange,
+  }: { label?: string; description?: string; checked: boolean; class?: string; onchange?: (v: boolean) => void } = $props();
 </script>
 
 <div class={cn("flex", "items-center", "gap-2", className)}>
@@ -14,6 +15,7 @@
     type="checkbox"
     id={"toggle-" + label}
     bind:checked
+    onchange={() => onchange?.(checked)}
     class={cn(
       "accent-(--accent)",
       "w-3.5",

@@ -457,7 +457,7 @@
       </button>
     </div>
     <div class={cn("grid", "grid-cols-3", "gap-x-6", "gap-y-2")}>
-      {#each infoItems}
+      {#each infoItems as item}
         <div>
           <span class={cn("text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider", "block")}>{trans(item.label)}</span>
           <span class={cn("text-xs", "font-mono", "text-accent")}>{item.val ?? "-"}</span>
@@ -634,7 +634,7 @@
 
         {#if feedKeys.length}
           {#each feedKeys as feed}
-            <Toggle label={feed} checked={ban_feed.includes(feed)} onchange={() => { ban_feed = ban_feed.includes(feed) ? ban_feed.filter(f => f !== feed) : [...ban_feed, feed]; }} />
+            <Toggle label={feed} checked={ban_feed.includes(feed)} onchange={(v) => { ban_feed = v ? [...ban_feed, feed] : ban_feed.filter(f => f !== feed); }} />
           {/each}
         {/if}
 
@@ -643,7 +643,7 @@
 
         {#if countryOptions.length}
           {#each countryOptions as opt}
-            <Toggle label={opt.label} checked={ban_country.includes(opt.value)} onchange={() => { ban_country = ban_country.includes(opt.value) ? ban_country.filter(c => c !== opt.value) : [...ban_country, opt.value]; }} />
+            <Toggle label={opt.label} checked={ban_country.includes(opt.value)} onchange={(v) => { ban_country = v ? [...ban_country, opt.value] : ban_country.filter(c => c !== opt.value); }} />
           {/each}
         {/if}
 
