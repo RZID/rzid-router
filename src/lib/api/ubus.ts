@@ -395,7 +395,7 @@ export const statFile = async (path: string) => {
 
 const CGI_EXEC = "/cgi-bin/cgi-exec";
 
-function getSession(): string {
+export function getSession(): string {
   return localStorage.getItem("owrt_session") || "00000000000000000000000000000000";
 }
 
