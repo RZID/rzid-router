@@ -15,6 +15,7 @@
   import Startup from "./lib/views/Startup.svelte";
   import Crontab from "./lib/views/Crontab.svelte";
   import Flash from "./lib/views/Flash.svelte";
+  import DDNS from "./lib/views/DDNS.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
@@ -55,7 +56,7 @@
     dhcp: { title: "DHCP", sub: "DHCP server & lease configuration" },
     dns: { title: "DNS", sub: "DNS resolver & forwarding" },
     diagnostics: { title: "Diagnostics", sub: "Ping, traceroute, nslookup" },
-    ddns: { title: "Dynamic DNS", sub: "DDNS service configuration" },
+
     adguard: { title: "AdGuard Home", sub: "DNS filtering & blocklists" },
     banip: { title: "banIP", sub: "IP threat blocking" },
     upnp: { title: "UPnP", sub: "Port mapping & IGD" },
@@ -117,6 +118,8 @@
         <Crontab />
       {:else if currentView === "flash"}
         <Flash />
+      {:else if currentView === "ddns"}
+        <DDNS />
       {:else if placeholders[currentView]}
         <Placeholder
           title={trans(placeholders[currentView].title)}
