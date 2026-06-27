@@ -58,21 +58,16 @@
     upnp: { title: "UPnP", sub: "Port mapping & IGD" },
     startup: { title: "Startup", sub: "Init scripts & services" },
     crontab: { title: "Scheduled Tasks", sub: "Cron jobs" },
-    flash: {
-      title: "Backup / Flash",
-      sub: "Backup, restore, firmware upgrade",
-    },
+    flash: { title: "Backup / Flash", sub: "Backup, restore, firmware upgrade" },
   };
 
   onMount(() => {
-    const { view, sub, redirect } = parsePath(window.location.pathname);
-    if (redirect) history.replaceState({ view, sub }, "", redirect);
+    const { view, sub } = parsePath(window.location.pathname);
     currentView = view;
     currentSub = sub;
 
     const onPop = () => {
-      const { view, sub, redirect } = parsePath(window.location.pathname);
-      if (redirect) history.replaceState({ view, sub }, "", redirect);
+      const { view, sub } = parsePath(window.location.pathname);
       currentView = view;
       currentSub = sub;
     };

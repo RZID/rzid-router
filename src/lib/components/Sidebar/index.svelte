@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { slide } from "svelte/transition";
   import { logout } from "../../api/ubus";
   import { cn } from "../../helpers/classname";
   import { LogOut, ChevronRight, Router } from "@lucide/svelte";
@@ -19,6 +20,18 @@
   let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
   $effect(() => onLocaleChange(() => { locale = getLocale(); }));
   let expanded = $state<Record<string, boolean>>({ Status: true });
+
+  $effect(() => {
+    for (const cat of nav) {
+      if (cat.children.some(c => c.id === active)) {
+        if (!expanded[cat.label]) {
+          expanded = { ...expanded, [cat.label]: true };
+        }
+        break;
+      }
+    }
+  });
+
   const handleLogout = () => {
     logout();
     onlogout?.();
@@ -99,7 +112,7 @@
           </span>
         </button>
         {#if expanded[cat.label]}
-          <div class={cn("ml-4 mt-0.5 space-y-0.5")}>
+          <div transition:slide={{ duration: 150 }} class={cn("ml-4 mt-0.5 space-y-0.5 overflow-hidden")}>
             {#each cat.children as item}
               <button
                 class={cn(
