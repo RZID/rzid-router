@@ -191,11 +191,11 @@
 
   <!-- Sub-tabs -->
   <div class={cn("shrink-0", "flex", "gap-1", "p-0.5", "w-fit", "border", "rounded-lg", "bg-surface-2", "border-border")}>
-    {#each [
+    {#each ([
       { id: "general", label: trans("General Settings") },
       { id: "jail", label: trans("File System Access") },
-      { id: "advanced", label: trans("Advanced Settings") },
-    ] as t}
+      ...(advanced_settings ? [{ id: "advanced" as const, label: trans("Advanced Settings") }] : []),
+    ]) as t}
       <button
         class={cn(
           "px-3", "py-1.5", "text-xs", "rounded-md", "font-medium",
@@ -279,7 +279,7 @@
           <div class={cn("h-px", "bg-border")} />
 
           <label class={cn("flex", "items-center", "gap-2", "cursor-pointer", "select-none")}>
-            <input type="checkbox" bind:checked={advanced_settings} class={cn("accent-(--accent)", "w-3.5", "h-3.5", "rounded", "cursor-pointer")} />
+            <input type="checkbox" bind:checked={advanced_settings} onchange={() => { if (!advanced_settings && tab === "advanced") tab = "general"; }} class={cn("accent-(--accent)", "w-3.5", "h-3.5", "rounded", "cursor-pointer")} />
             <span class={cn("text-xs", "text-fg")}>{trans("Advanced Settings")}</span>
           </label>
         </div>
