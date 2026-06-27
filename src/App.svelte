@@ -17,6 +17,7 @@
   import Flash from "./lib/views/Flash.svelte";
   import DDNS from "./lib/views/DDNS.svelte";
   import AdGuardHome from "./lib/views/AdGuardHome.svelte";
+  import BanIP from "./lib/views/BanIP.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
@@ -58,7 +59,6 @@
     dns: { title: "DNS", sub: "DNS resolver & forwarding" },
     diagnostics: { title: "Diagnostics", sub: "Ping, traceroute, nslookup" },
 
-    banip: { title: "banIP", sub: "IP threat blocking" },
     upnp: { title: "UPnP", sub: "Port mapping & IGD" },
   };
 
@@ -122,6 +122,8 @@
         <DDNS />
       {:else if currentView === "adguard"}
         <AdGuardHome />
+      {:else if currentView === "banip"}
+        <BanIP />
       {:else if placeholders[currentView]}
         <Placeholder
           title={trans(placeholders[currentView].title)}
