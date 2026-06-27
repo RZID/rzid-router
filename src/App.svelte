@@ -24,7 +24,7 @@
   let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
   $effect(() => onLocaleChange(() => { locale = getLocale(); }));
 
-  let authenticated = $state(!!localStorage.getItem("owrt_session"));
+  let authenticated = $state(Boolean(localStorage.getItem("owrt_session")));
   let currentView = $state("dashboard");
   let currentSub = $state<string | undefined>(undefined);
 

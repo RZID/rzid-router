@@ -3,7 +3,7 @@
   import {
     KeyRound, Terminal, Shield, Globe, RotateCw, Plus, Trash2,
     CheckCircle2, XCircle, Save, Lock, Upload, Wifi, Network,
-    Server, Edit3, AlertTriangle,
+    Server, PenLine, AlertTriangle,
   } from "@lucide/svelte";
   import Input from "../components/Input/index.svelte";
   import Toggle from "../components/Toggle/index.svelte";
@@ -457,7 +457,7 @@
         loadUhttpdConfig(),
         loadRepoKeys(),
       ]);
-      hasUhttpd = !!uhttpdStat;
+      hasUhttpd = Boolean(uhttpdStat);
       if (passwd?.stdout) {
         knownUsers = passwd.stdout.split("\n")
           .map(l => l.split(":")[0])

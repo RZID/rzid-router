@@ -45,7 +45,7 @@
     feedback = { ...feedback, [name]: "" };
     const ok = await serviceRestart(name);
     restarting = { ...restarting, [name]: false };
-    feedback = { ...feedback, [name]: ok !== null ? "Restarted" : "Failed" };
+    feedback = { ...feedback, [name]: ok !== null ? "restarted" : "failed" };
     setTimeout(() => {
       feedback = { ...feedback, [name]: "" };
     }, 3000);
@@ -94,7 +94,7 @@
         <div class={cn("flex", "items-center", "gap-3")}>
           {#if restarting[svc.name]}
             <span class={cn("text-xs", "font-mono", "text-muted")}>
-              Restarting…
+              {trans("Restarting…")}
             </span>
           {/if}
           {#if feedback[svc.name]}
@@ -102,10 +102,10 @@
               class={cn(
                 "text-xs",
                 "font-mono",
-                feedback[svc.name] === "Restarted"
+                feedback[svc.name] === "restarted"
                   ? "text-accent"
                   : "text-danger",
-              )}>{feedback[svc.name]}</span
+              )}>{trans(feedback[svc.name] === "restarted" ? "Restarted" : "Failed")}</span
             >
           {/if}
           <button
@@ -134,7 +134,7 @@
                   ),
             )}
           >
-            {restarting[svc.name] ? "Restarting…" : "Restart"}
+            {restarting[svc.name] ? trans("Restarting…") : trans("Restart")}
           </button>
         </div>
       </div>

@@ -296,7 +296,7 @@
                       {@const SigIcon = sig.icon}
                       <button
                         onclick={() => handleKill(p.PID, sig.sig, sig.label)}
-                        disabled={!!killing[p.PID]}
+                        disabled={Boolean(killing[p.PID])}
                         title={`${sig.label} (${p.PID})`}
                         class={cn(
                           "p-1.5",
