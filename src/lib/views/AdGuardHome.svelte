@@ -1,472 +1,403 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import {
-    Play, Square, RefreshCw, ExternalLink, Download, Trash2, ChevronDown, Globe, FileText,
-  } from "@lucide/svelte";
-  import { flip } from "svelte/animate";
   import { cn } from "../helpers/classname";
   import { t as _t, getLocale, onLocaleChange } from "../i18n";
   import {
-    uciGet, uciSet, uciCommit, execCommand, readFile, writeFile,
-    adguardGetStatus, adguardGetLog, adguardDeleteLog, adguardDoUpdate,
-    adguardCheckUpdate, adguardGetTemplateConfig, adguardGetConfigContent,
-    adguardSaveConfigContent, adguardReloadConfig, adguardGetVersion,
+    uciGet, uciSet, uciCommit, call, execCommand,
   } from "../api/ubus";
-  import Input from "../components/Input/index.svelte";
-  import Select from "../components/Select/index.svelte";
-  import Toggle from "../components/Toggle/index.svelte";
-  import TabBar from "../components/TabBar/index.svelte";
 
   let locale = $state(getLocale());
   let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
   $effect(() => onLocaleChange(() => { locale = getLocale(); }));
 
-  let tab = $state<"base" | "log" | "manual">("base");
+  const DEFAULT_CONFIG_FILE = "/etc/adguardhome/adguardhome.yaml";
+  const DEFAULT_WORK_DIR = "/var/lib/adguardhome";
+  const DEFAULT_USER = "adguardhome";
+  const DEFAULT_GROUP = "adguardhome";
 
-  // ── Status ──
+  let version = $state("");
   let running = $state(false);
-  let redirect = $state(false);
-  let statusInterval: ReturnType<typeof setInterval> | undefined;
+  let tab = $state<"general" | "jail" | "advanced">("general");
 
-  // ── UCI Data ──
-  let uciConfig: any = $state(null);
-  let loading = $state(true);
+  // ── UCI form state ──
+  let config_file = $state("");
+  let work_dir = $state("");
+  let user = $state("");
+  let group = $state("");
+  let verbose = $state(false);
+  let advanced_settings = $state(false);
+  let jail_mount: string[] = $state([]);
+  let jail_mount_rw: string[] = $state([]);
+  let gc = $state("");
+  let maxprocs = $state("");
+  let memlimit = $state("");
+
+  // errors
+  let config_file_err = $state("");
+  let work_dir_err = $state("");
+
+  // Dynamic list helpers (new item input)
+  let jail_mount_input = $state("");
+  let jail_mount_rw_input = $state("");
+
   let saving = $state(false);
   let feedback = $state("");
 
-  // Form fields from UCI
-  let enabled = $state(false);
-  let httpport = $state("3000");
-  let redirectMode = $state("none");
-  let binpath = $state("/usr/bin/AdGuardHome/AdGuardHome");
-  let upxflag = $state("");
-  let configpath = $state("/etc/AdGuardHome.yaml");
-  let workdir = $state("/usr/bin/AdGuardHome");
-  let logfile = $state("");
-  let verbose = $state(false);
-  let gfwupstream = $state("tcp://208.67.220.220:5353");
-  let hashpass = $state("");
-  let upprotect: string[] = $state([]);
-  let waitonboot = $state(true);
-  let backupfile: string[] = $state([]);
-  let backupwdpath = $state("/usr/bin/AdGuardHome");
-  let crontab: string[] = $state([]);
-  let downloadlinks = $state("");
-  let version = $state("");
+  let pollTimer: ReturnType<typeof setInterval> | undefined;
 
-  // ── Log ──
-  let logContent = $state("");
-  let logReverse = $state(true);
-  let logLocalTime = $state(true);
-  let logPos = $state(0);
-  let logInterval: ReturnType<typeof setInterval> | undefined;
-
-  // ── Manual ──
-  let yamlContent = $state("");
-  let yamlOriginal = $state("");
-  let yamlValidation = $state("");
-
-  // ── Update ──
-  let updating = $state(false);
-  let updateLog = $state("");
-  let updatePos = $state(0);
-  let updateInterval: ReturnType<typeof setInterval> | undefined;
-
-  const load = async () => {
-    loading = true;
-    const uci = await uciGet("AdGuardHome").catch(() => null);
-    if (uci) {
-      uciConfig = uci;
-      const sec = (Object.values(uci.values || {}) as any[]).find((s: any) => s[".type"] === "AdGuardHome") || (uci.values?.AdGuardHome || {});
-      enabled = sec.enabled === "1";
-      httpport = sec.httpport || "3000";
-      redirectMode = sec.redirect || "none";
-      binpath = sec.binpath || "/usr/bin/AdGuardHome/AdGuardHome";
-      upxflag = sec.upxflag || "";
-      configpath = sec.configpath || "/etc/AdGuardHome.yaml";
-      workdir = sec.workdir || "/usr/bin/AdGuardHome";
-      logfile = sec.logfile || "";
-      verbose = sec.verbose === "1";
-      gfwupstream = sec.gfwupstream || "tcp://208.67.220.220:5353";
-      hashpass = sec.hashpass || "";
-      upprotect = sec.upprotect ? (Array.isArray(sec.upprotect) ? sec.upprotect : [sec.upprotect]) : [];
-      waitonboot = sec.waitonboot !== "0";
-      backupfile = sec.backupfile ? (Array.isArray(sec.backupfile) ? sec.backupfile : [sec.backupfile]) : [];
-      backupwdpath = sec.backupwdpath || "/usr/bin/AdGuardHome";
-      crontab = sec.crontab ? (Array.isArray(sec.crontab) ? sec.crontab : [sec.crontab]) : [];
-    }
-    const v = await adguardGetVersion().catch(() => null);
-    if (v) version = v;
-    loading = false;
+  const getStatus = async () => {
+    try {
+      const res = await call<any>("service", "list", { name: "adguardhome" });
+      running = res?.adguardhome?.instances?.adguardhome?.running ?? false;
+    } catch { running = false; }
   };
 
-  const loadLinks = async () => {
-    const res = await readFile("/usr/share/AdGuardHome/links.txt").catch(() => null);
-    if (res) downloadlinks = res.data;
+  const getVersion = async () => {
+    const res = await execCommand("/usr/bin/AdGuardHome", ["--version"]).catch(() => null);
+    if (res?.stdout) {
+      const m = res.stdout.match(/version\s+(.*)/);
+      version = m ? m[1] : res.stdout.trim();
+    } else {
+      version = "unknown version";
+    }
+  };
+
+  const validateConfigFile = (v: string): string => {
+    if (!v) return "";
+    if (!v.startsWith("/")) return "Path must be absolute.";
+    if (v.endsWith("/")) return "Path must not end with a slash.";
+    if (/^\/etc(\/[^\/]+)?\/?$/.test(v)) return "Configuration file must be stored in its own directory, and not in '/etc'.";
+    return "";
+  };
+
+  const validateWorkDir = (v: string): string => {
+    if (!v) return "";
+    if (!v.startsWith("/")) return "Path must be absolute.";
+    return "";
+  };
+
+  const load = async () => {
+    const [uci] = await Promise.all([
+      uciGet("adguardhome").catch(() => null),
+    ]);
+    if (uci) {
+      const sec = (Object.values(uci.values || {}) as any[]).find((s: any) => s[".type"] === "adguardhome") || {};
+      config_file = sec.config_file || "";
+      work_dir = sec.work_dir || "";
+      user = sec.user || "";
+      group = sec.group || "";
+      verbose = sec.verbose === "1";
+      gc = sec.gc || "";
+      maxprocs = sec.maxprocs || "";
+      memlimit = sec.memlimit || "";
+      jail_mount = Array.isArray(sec.jail_mount) ? sec.jail_mount : (sec.jail_mount ? [sec.jail_mount] : []);
+      jail_mount_rw = Array.isArray(sec.jail_mount_rw) ? sec.jail_mount_rw : (sec.jail_mount_rw ? [sec.jail_mount_rw] : []);
+    }
   };
 
   const save = async () => {
+    config_file_err = validateConfigFile(config_file);
+    work_dir_err = validateWorkDir(work_dir);
+    if (config_file_err || work_dir_err) return;
+
     saving = true;
     feedback = "";
-    const vals: Record<string, any> = {
-      enabled: enabled ? "1" : "0",
-      httpport,
-      redirect: redirectMode,
-      binpath,
-      configpath,
-      workdir,
-      logfile,
-      verbose: verbose ? "1" : "0",
-      gfwupstream,
-      waitonboot: waitonboot ? "1" : "0",
-      backupwdpath,
-      upxflag: upxflag || undefined,
-    };
-    if (hashpass) vals.hashpass = hashpass;
-    if (upprotect.length) vals.upprotect = upprotect;
-    if (backupfile.length) vals.backupfile = backupfile;
-    if (crontab.length) vals.crontab = crontab;
     try {
-      await uciSet("AdGuardHome", "AdGuardHome", vals);
-      await uciCommit("AdGuardHome");
-      if (downloadlinks) {
-        await writeFile("/usr/share/AdGuardHome/links.txt", downloadlinks);
-      }
+      await uciSet("adguardhome", "adguardhome", {
+        config_file: config_file || undefined,
+        work_dir: work_dir || undefined,
+        user: user || undefined,
+        group: group || undefined,
+        verbose: verbose ? "1" : "0",
+        gc: gc || undefined,
+        maxprocs: maxprocs || undefined,
+        memlimit: memlimit || undefined,
+        jail_mount: jail_mount.length ? jail_mount : undefined,
+        jail_mount_rw: jail_mount_rw.length ? jail_mount_rw : undefined,
+      });
+      await uciCommit("adguardhome");
       await execCommand("/etc/init.d/AdGuardHome", ["reload"]).catch(() => {});
-      feedback = "Saved";
+      feedback = "Configuration saved.";
     } catch {
-      feedback = "Save failed";
+      feedback = "Save failed.";
     }
     saving = false;
   };
 
-  // Status polling
-  const pollStatus = async () => {
-    const st = await adguardGetStatus();
-    if (st) {
-      running = st.running;
-      redirect = st.redirect;
-    }
-  };
-
-  // Log polling
-  const pollLog = async () => {
-    const res = await adguardGetLog(logPos);
-    if (res.content) {
-      logPos = res.pos;
-      let text = res.content;
-      if (logLocalTime) {
-        text = text.split("\n").map((line: string) => {
-          const m = line.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})\.?\d*Z?(.*)/);
-          if (m) {
-            const d = new Date(m[1] + "Z");
-            if (!isNaN(d.getTime())) {
-              const pad = (n: number) => String(n).padStart(2, "0");
-              return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}${m[2]}`;
-            }
-          }
-          return line;
-        }).join("\n");
-      }
-      if (logReverse) {
-        logContent = text.split("\n").reverse().join("\n") + logContent;
-      } else {
-        logContent += text;
-      }
-    }
-  };
-
-  // Update polling
-  const pollUpdate = async () => {
-    const res = await adguardCheckUpdate(updatePos);
-    if (res.content) {
-      updatePos = res.pos;
-      const nullChar = res.content.indexOf("\0");
-      if (nullChar >= 0) {
-        updateLog += res.content.substring(0, nullChar);
-        updating = false;
-        clearInterval(updateInterval);
-        updateInterval = undefined;
-      } else {
-        updateLog += res.content;
-      }
-    }
-  };
-
-  const startUpdate = async (force = false) => {
-    updating = true;
-    updateLog = "";
-    updatePos = 0;
-    await adguardDoUpdate(force);
-    updateInterval = setInterval(pollUpdate, 3000);
-  };
-
-  let tabs = $derived([
-    { id: "base", label: trans("Base Setting") },
-    { id: "log", label: trans("Log") },
-    { id: "manual", label: trans("Manual Config") },
-  ]);
-
-  const openWebUI = () => {
-    window.open(`http://${window.location.hostname}:${httpport}/`, "_blank");
-  };
-
-  const downloadLog = () => {
-    const blob = new Blob([logContent], { type: "text/plain" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    const dt = new Date();
-    a.download = `AdGuardHome_${dt.getMonth() + 1}-${dt.getDate()}-${dt.getHours()}_${dt.getMinutes()}.log`;
-    a.click();
-    URL.revokeObjectURL(blob);
-  };
-
-  const delLog = async () => {
-    await adguardDeleteLog();
-    logContent = "";
-    logPos = 0;
-  };
-
-  const loadYaml = async () => {
-    yamlContent = await adguardGetConfigContent();
-    yamlOriginal = yamlContent;
-    yamlValidation = "";
-  };
-
-  const useTemplate = async () => {
-    const tpl = await adguardGetTemplateConfig();
-    if (tpl) yamlContent = tpl;
-  };
-
-  const saveYaml = async () => {
-    try {
-      await adguardSaveConfigContent(yamlContent);
-      yamlOriginal = yamlContent;
-      yamlValidation = trans("Config saved");
-    } catch (e: any) {
-      yamlValidation = e.message || trans("Validation failed");
-    }
-  };
-
   onMount(async () => {
-    await load();
-    await loadLinks();
-    await pollStatus();
-    statusInterval = setInterval(pollStatus, 3000);
+    await Promise.all([load(), getStatus(), getVersion()]);
+    pollTimer = setInterval(getStatus, 5000);
   });
 
   onDestroy(() => {
-    clearInterval(statusInterval);
-    clearInterval(logInterval);
-    clearInterval(updateInterval);
+    clearInterval(pollTimer);
   });
 </script>
 
 <div class={cn("space-y-6")}>
-  <TabBar {tabs} active={tab} onchange={(id: string) => {
-    tab = id as typeof tab;
-    if (id === "log") {
-      logPos = 0;
-      logContent = "";
-      pollLog();
-      logInterval = setInterval(pollLog, 3000);
-    } else {
-      clearInterval(logInterval);
-      logInterval = undefined;
-    }
-    if (id === "manual") loadYaml();
-  }} />
+  <!-- Version & Status -->
+  <div class={cn("flex", "items-center", "gap-8", "px-5", "py-3", "rounded-xl", "bg-surface-2", "border", "border-border")}>
+    <div class={cn("flex", "items-center", "gap-2")}>
+      <span class={cn("text-xs", "text-muted", "font-medium")}>{trans("Version")}</span>
+      <span class={cn("text-xs", "font-mono", "text-fg")}>{version}</span>
+    </div>
+    <div class={cn("flex", "items-center", "gap-2")}>
+      <span class={cn("text-xs", "text-muted", "font-medium")}>{trans("Service Status")}</span>
+      <span class={cn("text-xs", "font-semibold", running ? "text-green-400" : "text-red-400")}>
+        {running ? trans("Running") : trans("Not running")}
+      </span>
+    </div>
+  </div>
 
-  {#if tab === "base"}
-    <!-- Status bar -->
-    <div class={cn("flex", "items-center", "gap-3", "px-5", "py-3", "rounded-xl", "bg-surface-2", "border", "border-border")}>
-      <span class={cn("w-2", "h-2", "rounded-full", running ? "bg-green-400" : "bg-red-400")} />
-      <span class={cn("text-xs", "font-semibold")}>
-        {running ? trans("Running") : trans("Not Running")}
-      </span>
-      <span class={cn("w-px", "h-4", "bg-border")} />
-      <span class={cn("w-2", "h-2", "rounded-full", redirect ? "bg-green-400" : "bg-red-400")} />
-      <span class={cn("text-xs")}>
-        {redirect ? trans("Redirected") : trans("Not redirect")}
-      </span>
-      {#if version}
-        <span class={cn("ml-auto", "text-[10px]", "font-mono", "text-muted")}>{version}</span>
-      {/if}
-      <button
-        onclick={pollStatus}
-        class={cn("p-1", "rounded-md", "hover:bg-white/5", "transition-colors", "text-muted", "hover:text-fg")}
-      >
-        <RefreshCw size={14} />
-      </button>
+  <form onsubmit={(e) => { e.preventDefault(); save(); }}>
+    <!-- Sub-tabs -->
+    <div class={cn("flex", "gap-1", "p-0.5", "mb-5", "border", "rounded-lg", "bg-surface-2", "border-border", "w-fit")}>
+      {#each ([
+        { id: "general", label: trans("General Settings") },
+        { id: "jail", label: trans("File System Access") },
+        { id: "advanced", label: trans("Advanced Settings") },
+      ] as const) as t}
+        <button
+          type="button"
+          class={cn("px-3", "py-1", "text-xs", "rounded-md", "font-medium", "transition-all", tab === t.id ? "bg-accent text-surface" : "bg-transparent text-muted")}
+          onclick={() => tab = t.id}
+        >{t.label}</button>
+      {/each}
     </div>
 
-    <form
-      onsubmit={(e) => { e.preventDefault(); save(); }}
-      class={cn("space-y-4")}
-    >
-      <!-- Service Config -->
-      <div class={cn("p-5", "rounded-xl", "bg-surface", "border", "border-border", "space-y-4")}>
-        <div class={cn("flex", "items-center", "gap-2", "mb-3")}>
-          <Play size={14} class={cn("text-accent")} />
-          <span class={cn("text-xs", "uppercase", "font-semibold", "tracking-wider", "text-muted")}>
-            {trans("Service Config")}
-          </span>
+    {#if tab === "general"}
+      <div class={cn("p-5", "rounded-xl", "bg-surface", "border", "border-border", "space-y-5")}>
+        <!-- config_file -->
+        <div>
+          <label class={cn("block", "text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider", "mb-1.5")}>
+            {trans("Configuration file")}
+          </label>
+          <input
+            bind:value={config_file}
+            placeholder={DEFAULT_CONFIG_FILE}
+            class={cn("w-full", "px-2.5", "py-1.5", "border", "text-xs", "rounded-md", "bg-surface", "outline-none", "text-fg", config_file_err ? "border-red-400" : "border-border", "focus:border-(--accent)")}
+            oninput={() => { config_file_err = validateConfigFile(config_file); }}
+          />
+          {#if config_file_err}
+            <p class={cn("text-[10px]", "text-red-400", "mt-1")}>{config_file_err}</p>
+          {:else}
+            <p class={cn("text-[10px]", "text-muted", "mt-1")}>
+              {trans("Configuration file must be stored in its own directory, and not in '/etc'.")}<br />
+              {trans("Parent directory will be owned by the service user.")}<br />
+              {trans("If empty, defaults to")} '{DEFAULT_CONFIG_FILE}'.
+            </p>
+          {/if}
         </div>
-        <div class={cn("grid", "grid-cols-2", "gap-4")}>
-          <Toggle label={trans("Enable")} bind:checked={enabled} />
-          <div></div>
+
+        <!-- work_dir -->
+        <div>
+          <label class={cn("block", "text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider", "mb-1.5")}>
+            {trans("Working directory")}
+          </label>
+          <input
+            bind:value={work_dir}
+            placeholder={DEFAULT_WORK_DIR}
+            class={cn("w-full", "px-2.5", "py-1.5", "border", "text-xs", "rounded-md", "bg-surface", "outline-none", "text-fg", work_dir_err ? "border-red-400" : "border-border", "focus:border-(--accent)")}
+            oninput={() => { work_dir_err = validateWorkDir(work_dir); }}
+          />
+          {#if work_dir_err}
+            <p class={cn("text-[10px]", "text-red-400", "mt-1")}>{work_dir_err}</p>
+          {:else}
+            <p class={cn("text-[10px]", "text-muted", "mt-1")}>
+              {trans("Directory where filters, logs, and statistics are stored.")}<br />
+              {trans("Will be owned by the service user.")}<br />
+              {trans("If empty, defaults to")} '{DEFAULT_WORK_DIR}'.
+            </p>
+          {/if}
         </div>
+
+        <!-- user -->
+        <div>
+          <label class={cn("block", "text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider", "mb-1.5")}>
+            {trans("Service user")}
+          </label>
+          <input
+            bind:value={user}
+            placeholder={DEFAULT_USER}
+            class={cn("w-full", "px-2.5", "py-1.5", "border", "text-xs", "rounded-md", "bg-surface", "outline-none", "text-fg", "border-border", "focus:border-(--accent)")}
+          />
+          <p class={cn("text-[10px]", "text-muted", "mt-1")}>
+            {trans("User the service runs under.")} {trans("If empty, defaults to")} '{DEFAULT_USER}'.
+          </p>
+        </div>
+
+        <!-- group -->
+        <div>
+          <label class={cn("block", "text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider", "mb-1.5")}>
+            {trans("Service group")}
+          </label>
+          <input
+            bind:value={group}
+            placeholder={DEFAULT_GROUP}
+            class={cn("w-full", "px-2.5", "py-1.5", "border", "text-xs", "rounded-md", "bg-surface", "outline-none", "text-fg", "border-border", "focus:border-(--accent)")}
+          />
+          <p class={cn("text-[10px]", "text-muted", "mt-1")}>
+            {trans("Group the service runs under.")} {trans("If empty, defaults to")} '{DEFAULT_GROUP}'.
+          </p>
+        </div>
+
+        <!-- verbose -->
+        <label class={cn("flex", "items-center", "gap-2", "cursor-pointer")}>
+          <input type="checkbox" bind:checked={verbose} class={cn("accent-(--accent)", "w-3.5", "h-3.5", "rounded", "cursor-pointer")} />
+          <span class={cn("text-xs", "text-fg", "select-none")}>{trans("Verbose logging")}</span>
+        </label>
+
+        <!-- advanced_settings -->
+        <label class={cn("flex", "items-center", "gap-2", "cursor-pointer")}>
+          <input type="checkbox" bind:checked={advanced_settings} class={cn("accent-(--accent)", "w-3.5", "h-3.5", "rounded", "cursor-pointer")} />
+          <span class={cn("text-xs", "text-fg", "select-none")}>{trans("Advanced Settings")}</span>
+        </label>
       </div>
 
-      <!-- Web Interface -->
-      <div class={cn("p-5", "rounded-xl", "bg-surface", "border", "border-border", "space-y-4")}>
-        <div class={cn("flex", "items-center", "gap-2", "mb-3")}>
-          <Globe size={14} class={cn("text-accent")} />
-          <span class={cn("text-xs", "uppercase", "font-semibold", "tracking-wider", "text-muted")}>
-            {trans("Web Interface")}
-          </span>
-        </div>
-        <div class={cn("grid", "grid-cols-2", "gap-4")}>
-          <Input label={trans("Browser management port")} bind:value={httpport} placeholder="3000" type="number" />
-          <div class={cn("flex", "items-end", "pb-1")}>
+    {:else if tab === "jail"}
+      <div class={cn("p-5", "rounded-xl", "bg-surface", "border", "border-border", "space-y-5")}>
+        <p class={cn("text-[10px]", "text-muted")}>
+          {trans("Files and directories that AdGuard Home should have read-only or read-write access to.")}
+        </p>
+
+        <!-- jail_mount -->
+        <div>
+          <label class={cn("block", "text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider", "mb-1.5")}>
+            {trans("Read-only access")}
+          </label>
+          <div class={cn("space-y-1")}>
+            {#each jail_mount as item, i}
+              <div class={cn("flex", "items-center", "gap-1")}>
+                <input
+                  readonly
+                  value={item}
+                  class={cn("flex-1", "px-2.5", "py-1", "border", "text-xs", "rounded-md", "bg-surface-2", "outline-none", "text-fg", "border-border", "cursor-default")}
+                />
+                <button
+                  type="button"
+                  onclick={() => { jail_mount = jail_mount.toSpliced(i, 1); }}
+                  class={cn("px-1.5", "py-1", "text-[10px]", "rounded", "text-red-400", "hover:bg-red-500/10", "transition-colors")}
+                >{trans("Remove")}</button>
+              </div>
+            {/each}
+          </div>
+          <div class={cn("flex", "items-center", "gap-1", "mt-1")}>
+            <input
+              bind:value={jail_mount_input}
+              placeholder="/path/to/dir"
+              class={cn("flex-1", "px-2.5", "py-1", "border", "text-xs", "rounded-md", "bg-surface", "outline-none", "text-fg", "border-border", "focus:border-(--accent)")}
+              onkeydown={(e) => { if (e.key === "Enter" && jail_mount_input.trim()) { e.preventDefault(); jail_mount = [...jail_mount, jail_mount_input.trim()]; jail_mount_input = ""; }}}
+            />
             <button
               type="button"
-              onclick={openWebUI}
-              class={cn("flex", "items-center", "gap-1.5", "px-3", "py-1.5", "text-xs", "rounded-md", "border", "border-accent/30", "text-accent", "hover:bg-accent/10", "transition-colors")}
-            >
-              <ExternalLink size={14} />
-              {trans("Open Web UI")}
-            </button>
+              disabled={!jail_mount_input.trim()}
+              onclick={() => { if (jail_mount_input.trim()) { jail_mount = [...jail_mount, jail_mount_input.trim()]; jail_mount_input = ""; }}}
+              class={cn("px-2", "py-1", "text-[10px]", "rounded-md", "bg-accent", "text-surface", "font-medium", "disabled:opacity-40")}
+            >+</button>
+          </div>
+        </div>
+
+        <!-- jail_mount_rw -->
+        <div>
+          <label class={cn("block", "text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider", "mb-1.5")}>
+            {trans("Read-write access")}
+          </label>
+          <div class={cn("space-y-1")}>
+            {#each jail_mount_rw as item, i}
+              <div class={cn("flex", "items-center", "gap-1")}>
+                <input
+                  readonly
+                  value={item}
+                  class={cn("flex-1", "px-2.5", "py-1", "border", "text-xs", "rounded-md", "bg-surface-2", "outline-none", "text-fg", "border-border", "cursor-default")}
+                />
+                <button
+                  type="button"
+                  onclick={() => { jail_mount_rw = jail_mount_rw.toSpliced(i, 1); }}
+                  class={cn("px-1.5", "py-1", "text-[10px]", "rounded", "text-red-400", "hover:bg-red-500/10", "transition-colors")}
+                >{trans("Remove")}</button>
+              </div>
+            {/each}
+          </div>
+          <div class={cn("flex", "items-center", "gap-1", "mt-1")}>
+            <input
+              bind:value={jail_mount_rw_input}
+              placeholder="/path/to/dir"
+              class={cn("flex-1", "px-2.5", "py-1", "border", "text-xs", "rounded-md", "bg-surface", "outline-none", "text-fg", "border-border", "focus:border-(--accent)")}
+              onkeydown={(e) => { if (e.key === "Enter" && jail_mount_rw_input.trim()) { e.preventDefault(); jail_mount_rw = [...jail_mount_rw, jail_mount_rw_input.trim()]; jail_mount_rw_input = ""; }}}
+            />
+            <button
+              type="button"
+              disabled={!jail_mount_rw_input.trim()}
+              onclick={() => { if (jail_mount_rw_input.trim()) { jail_mount_rw = [...jail_mount_rw, jail_mount_rw_input.trim()]; jail_mount_rw_input = ""; }}}
+              class={cn("px-2", "py-1", "text-[10px]", "rounded-md", "bg-accent", "text-surface", "font-medium", "disabled:opacity-40")}
+            >+</button>
           </div>
         </div>
       </div>
 
-      <!-- Redirect -->
-      <div class={cn("p-5", "rounded-xl", "bg-surface", "border", "border-border", "space-y-4")}>
-        <div class={cn("flex", "items-center", "gap-2", "mb-3")}>
-          <ChevronDown size={14} class={cn("text-accent")} />
-          <span class={cn("text-xs", "uppercase", "font-semibold", "tracking-wider", "text-muted")}>
-            {trans("Redirect")}
-          </span>
-        </div>
-        <div class={cn("grid", "grid-cols-2", "gap-4")}>
-          <Select
-            label={trans("AdGuardHome redirect mode")}
-            bind:value={redirectMode}
-            options={[
-              { value: "none", label: trans("none") },
-              { value: "dnsmasq-upstream", label: trans("Run as dnsmasq upstream server") },
-              { value: "redirect", label: trans("Redirect 53 port to AdGuardHome") },
-              { value: "exchange", label: trans("Use port 53 replace dnsmasq") },
-            ]}
+    {:else if tab === "advanced"}
+      <div class={cn("p-5", "rounded-xl", "bg-surface", "border", "border-border", "space-y-5")}>
+        <p class={cn("text-[10px]", "text-muted")}>
+          {trans("Go environment variables that tune garbage collector and memory management.")}
+          {trans("Modify at your own risk.")}
+        </p>
+
+        <!-- GOGC -->
+        <div>
+          <label class={cn("block", "text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider", "mb-1.5")}>GOGC</label>
+          <input
+            bind:value={gc}
+            placeholder="0"
+            class={cn("w-full", "px-2.5", "py-1.5", "border", "text-xs", "rounded-md", "bg-surface", "outline-none", "text-fg", "border-border", "focus:border-(--accent)")}
           />
-          <div></div>
+          <p class={cn("text-[10px]", "text-muted", "mt-1")}>
+            {trans("Tunes the garbage collector's aggressiveness by setting the percentage of heap growth allowed before the next collection cycle triggers.")}<br />
+            {trans("If empty, defaults to")} {trans("unset and 100")}.<br />
+            <a href="https://go.dev/doc/gc-guide#GOGC" target="_blank" class={cn("text-accent", "hover:underline")}>https://go.dev/doc/gc-guide#GOGC</a>
+          </p>
         </div>
-      </div>
 
-      <!-- Paths -->
-      <div class={cn("p-5", "rounded-xl", "bg-surface", "border", "border-border", "space-y-4")}>
-        <div class={cn("flex", "items-center", "gap-2", "mb-3")}>
-          <FileText size={14} class={cn("text-accent")} />
-          <span class={cn("text-xs", "uppercase", "font-semibold", "tracking-wider", "text-muted")}>
-            {trans("Paths")}
-          </span>
-        </div>
-        <div class={cn("grid", "grid-cols-2", "gap-4")}>
-          <Input label={trans("Bin Path")} bind:value={binpath} placeholder="/usr/bin/AdGuardHome/AdGuardHome" />
-          <Input label={trans("Config Path")} bind:value={configpath} placeholder="/etc/AdGuardHome.yaml" />
-          <Input label={trans("Work dir")} bind:value={workdir} placeholder="/usr/bin/AdGuardHome" />
-          <Input label={trans("Runtime log file")} bind:value={logfile} placeholder="/var/log/AdGuardHome.log" />
-        </div>
-      </div>
-
-      <!-- Advanced -->
-      <div class={cn("p-5", "rounded-xl", "bg-surface", "border", "border-border", "space-y-4")}>
-        <div class={cn("flex", "items-center", "gap-2", "mb-3")}>
-          <ChevronDown size={14} class={cn("text-accent")} />
-          <span class={cn("text-xs", "uppercase", "font-semibold", "tracking-wider", "text-muted")}>
-            {trans("Advanced")}
-          </span>
-        </div>
-        <div class={cn("grid", "grid-cols-2", "gap-4")}>
-          <Select
-            label={trans("use upx to compress bin after download")}
-            bind:value={upxflag}
-            options={[
-              { value: "", label: trans("none") },
-              { value: "-1", label: trans("compress faster") },
-              { value: "-9", label: trans("compress better") },
-              { value: "--best", label: trans("compress best") },
-              { value: "--brute", label: trans("try all available methods") },
-              { value: "--ultra-brute", label: trans("try even more variants") },
-            ]}
+        <!-- GOMAXPROCS -->
+        <div>
+          <label class={cn("block", "text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider", "mb-1.5")}>GOMAXPROCS</label>
+          <input
+            bind:value={maxprocs}
+            placeholder="0"
+            class={cn("w-full", "px-2.5", "py-1.5", "border", "text-xs", "rounded-md", "bg-surface", "outline-none", "text-fg", "border-border", "focus:border-(--accent)")}
           />
-          <Toggle label={trans("Verbose log")} bind:checked={verbose} />
-          <Input label={trans("Gfwlist upstream dns server")} bind:value={gfwupstream} placeholder="tcp://208.67.220.220:5353" />
-          <Toggle label={trans("On boot when network ok restart")} bind:checked={waitonboot} />
+          <p class={cn("text-[10px]", "text-muted", "mt-1")}>
+            {trans("The maximum number of operating system threads that can execute user-level Go code simultaneously.")}<br />
+            {trans("If empty, defaults to")} {trans("unset and matching the number of CPUs")}.
+          </p>
         </div>
-      </div>
 
-      <!-- Update Core -->
-      <div class={cn("p-5", "rounded-xl", "bg-surface", "border", "border-border", "space-y-4")}>
-        <div class={cn("flex", "items-center", "gap-2", "mb-3")}>
-          <RefreshCw size={14} class={cn("text-accent")} />
-          <span class={cn("text-xs", "uppercase", "font-semibold", "tracking-wider", "text-muted")}>
-            {trans("Update Core")}
-          </span>
-        </div>
-        <div class={cn("flex", "flex-wrap", "gap-2", "items-center")}>
-          <button
-            type="button"
-            disabled={updating}
-            onclick={() => startUpdate(false)}
-            class={cn("flex", "items-center", "gap-1.5", "px-3", "py-1.5", "text-xs", "rounded-md", "border", "border-accent/30", "text-accent", "hover:bg-accent/10", "transition-colors", "disabled:opacity-40")}
-          >
-            <RefreshCw size={14} />
-            {trans("Update core version")}
-          </button>
-          <button
-            type="button"
-            disabled={updating}
-            onclick={() => startUpdate(true)}
-            class={cn("flex", "items-center", "gap-1.5", "px-3", "py-1.5", "text-xs", "rounded-md", "border", "border-border", "text-muted", "hover:bg-white/5", "transition-colors", "disabled:opacity-40")}
-          >
-            {trans("Force update")}
-          </button>
-        </div>
-        {#if updateLog}
-          <textarea
-            readonly
-            class={cn("w-full", "px-2.5", "py-1.5", "text-xs", "font-mono", "rounded-md", "bg-surface-2", "border", "border-border", "text-fg", "resize-y")}
-            rows="5"
-            bind:value={updateLog}
+        <!-- GOMEMLIMIT -->
+        <div>
+          <label class={cn("block", "text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider", "mb-1.5")}>GOMEMLIMIT</label>
+          <input
+            bind:value={memlimit}
+            placeholder="0"
+            class={cn("w-full", "px-2.5", "py-1.5", "border", "text-xs", "rounded-md", "bg-surface", "outline-none", "text-fg", "border-border", "focus:border-(--accent)")}
           />
-        {/if}
-      </div>
-
-      <!-- Download Links -->
-      <div class={cn("p-5", "rounded-xl", "bg-surface", "border", "border-border", "space-y-4")}>
-        <div class={cn("flex", "items-center", "gap-2", "mb-3")}>
-          <Download size={14} class={cn("text-accent")} />
-          <span class={cn("text-xs", "uppercase", "font-semibold", "tracking-wider", "text-muted")}>
-            {trans("Download links for update")}
-          </span>
+          <p class={cn("text-[10px]", "text-muted", "mt-1")}>
+            {trans("A soft memory cap for the Go runtime, allowing the garbage collector to run more frequently as usage approaches the limit to prevent Out-of-Memory (OOM) kills.")}<br />
+            {trans("If empty, defaults to")} {trans("unset")}.
+          </p>
         </div>
-        <textarea
-          class={cn("w-full", "px-2.5", "py-1.5", "text-xs", "font-mono", "rounded-md", "bg-surface", "border", "border-border", "text-fg", "resize-y")}
-          rows="4"
-          bind:value={downloadlinks}
-        />
       </div>
+    {/if}
 
-      <!-- Save -->
-      {#if feedback}
-        <div
-          class={cn("px-4", "py-2", "text-xs", "rounded-lg", feedback === "Saved" ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20")}
-        >
-          {feedback}
-        </div>
-      {/if}
+    <!-- Feedback -->
+    {#if feedback}
+      <div
+        class={cn("mt-4", "px-4", "py-2", "text-xs", "rounded-lg", feedback === "Configuration saved." ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20")}
+      >
+        {feedback}
+      </div>
+    {/if}
+
+    <!-- Save & Apply -->
+    <div class={cn("mt-4", "flex", "items-center", "gap-2")}>
       <button
         type="submit"
         disabled={saving}
@@ -474,84 +405,13 @@
       >
         {saving ? trans("Saving...") : trans("Save & Apply")}
       </button>
-    </form>
-
-  {:else if tab === "log"}
-    <!-- Log Viewer -->
-    <div class={cn("p-5", "rounded-xl", "bg-surface", "border", "border-border", "space-y-3")}>
-      <div class={cn("flex", "items-center", "gap-4", "flex-wrap")}>
-        <label class={cn("flex", "items-center", "gap-1.5", "text-xs", "text-muted", "cursor-pointer")}>
-          <input type="checkbox" bind:checked={logReverse} class={cn("accent-(--accent)", "w-3", "h-3")} />
-          {trans("reverse")}
-        </label>
-        <label class={cn("flex", "items-center", "gap-1.5", "text-xs", "text-muted", "cursor-pointer")}>
-          <input type="checkbox" bind:checked={logLocalTime} class={cn("accent-(--accent)", "w-3", "h-3")} />
-          {trans("localtime")}
-        </label>
-        <div class={cn("flex-1")} />
-        <button
-          type="button"
-          onclick={downloadLog}
-          class={cn("flex", "items-center", "gap-1", "px-2", "py-1", "text-xs", "rounded-md", "border", "border-border", "text-muted", "hover:bg-white/5", "transition-colors")}
-        >
-          <Download size={14} />
-          {trans("download log")}
-        </button>
-        <button
-          type="button"
-          onclick={delLog}
-          class={cn("flex", "items-center", "gap-1", "px-2", "py-1", "text-xs", "rounded-md", "border", "border-border", "text-red-400", "hover:bg-red-500/10", "transition-colors")}
-        >
-          <Trash2 size={14} />
-          {trans("dellog")}
-        </button>
-      </div>
-      <textarea
-        readonly
-        class={cn("w-full", "px-2.5", "py-1.5", "text-xs", "font-mono", "rounded-md", "bg-surface-2", "border", "border-border", "text-fg", "resize-y")}
-        rows="32"
-        bind:value={logContent}
-      />
+      <button
+        type="button"
+        onclick={async () => { await load(); feedback = ""; }}
+        class={cn("px-4", "py-2", "text-xs", "rounded-lg", "border", "border-border", "text-muted", "hover:bg-white/5", "transition-colors")}
+      >
+        {trans("Reset")}
+      </button>
     </div>
-
-  {:else if tab === "manual"}
-    <!-- Manual YAML Config -->
-    <form
-      onsubmit={(e) => { e.preventDefault(); saveYaml(); }}
-      class={cn("space-y-4")}
-    >
-      {#if yamlValidation}
-        <div
-          class={cn("px-4", "py-2", "text-xs", "rounded-lg", yamlValidation === "Config saved" ? "bg-green-500/10 text-green-400 border border-green-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20")}
-        >
-          {yamlValidation}
-        </div>
-      {/if}
-      <div class={cn("p-5", "rounded-xl", "bg-surface", "border", "border-border", "space-y-3")}>
-        <div class={cn("flex", "items-center", "gap-2", "flex-wrap")}>
-          <button
-            type="button"
-            onclick={useTemplate}
-            class={cn("flex", "items-center", "gap-1", "px-3", "py-1.5", "text-xs", "rounded-md", "border", "border-accent/30", "text-accent", "hover:bg-accent/10", "transition-colors")}
-          >
-            <FileText size={14} />
-            {trans("Use template")}
-          </button>
-          <div class={cn("flex-1")} />
-          <button
-            type="submit"
-            class={cn("flex", "items-center", "gap-1", "px-3", "py-1.5", "text-xs", "rounded-md", "bg-accent", "text-surface", "font-semibold", "hover:opacity-90", "transition-opacity")}
-          >
-            {trans("Save & Apply")}
-          </button>
-        </div>
-        <textarea
-          class={cn("w-full", "px-2.5", "py-1.5", "text-xs", "font-mono", "rounded-md", "bg-surface-2", "border", "border-border", "text-fg", "resize-y")}
-          rows="40"
-          wrap="off"
-          bind:value={yamlContent}
-        />
-      </div>
-    </form>
-  {/if}
+  </form>
 </div>
