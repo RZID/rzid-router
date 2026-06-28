@@ -10,6 +10,7 @@
     disabled = false,
     mono = false,
     class: className = "",
+    description = "",
     oninput,
     onchange,
   }: {
@@ -21,6 +22,7 @@
     disabled?: boolean;
     mono?: boolean;
     class?: string;
+    description?: string;
     oninput?: () => void;
     onchange?: () => void;
   } = $props();
@@ -65,6 +67,9 @@
     >
       {label}
     </label>
+  {/if}
+  {#if description}
+    <p class={cn("text-[10px]", "text-muted", "-mt-1", "mb-1.5")}>{description}</p>
   {/if}
 
   <input

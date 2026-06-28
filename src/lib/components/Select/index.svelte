@@ -6,6 +6,7 @@
 
   let {
     label = "",
+    description = "",
     options = [] as { value: string; label: string }[],
     value = $bindable(""),
     placeholder,
@@ -13,6 +14,7 @@
     onchange,
   }: {
     label?: string;
+    description?: string;
     options: { value: string; label: string }[];
     value?: string;
     placeholder?: string;
@@ -113,6 +115,9 @@
     >
       {label}
     </span>
+  {/if}
+  {#if description}
+    <p class={cn("text-[10px]", "text-muted", "mb-1.5", "leading-relaxed")}>{description}</p>
   {/if}
 
   <button

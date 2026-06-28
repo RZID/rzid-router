@@ -23,6 +23,8 @@
   import Network from "./lib/views/Network.svelte";
   import NetworkRoutes from "./lib/views/NetworkRoutes.svelte";
   import DHCP from "./lib/views/DHCP.svelte";
+  import DNS from "./lib/views/DNS.svelte";
+  import Diagnostics from "./lib/views/Diagnostics.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
@@ -58,8 +60,6 @@
   };
 
   const placeholders: Record<string, { title: string; sub: string }> = {
-    dns: { title: "DNS", sub: "DNS resolver & forwarding" },
-    diagnostics: { title: "Diagnostics", sub: "Ping, traceroute, nslookup" },
   };
 
   onMount(() => {
@@ -134,6 +134,10 @@
         <NetworkRoutes />
       {:else if currentView === "dhcp"}
         <DHCP />
+      {:else if currentView === "dns"}
+        <DNS />
+      {:else if currentView === "diagnostics"}
+        <Diagnostics />
       {:else if placeholders[currentView]}
         <Placeholder
           title={trans(placeholders[currentView].title)}
