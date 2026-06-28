@@ -33,6 +33,7 @@
         "rounded-md",
         "font-medium",
         "transition-all",
+        "cursor-pointer",
         active === t.id
           ? cn("bg-accent", "text-surface")
           : cn("bg-transparent", "text-muted"),
