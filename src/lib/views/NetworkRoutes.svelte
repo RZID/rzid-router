@@ -52,7 +52,7 @@
       { object: "file", method: "exec", params: { command: "cat", params: ["/etc/iproute2/rt_tables"] } },
       { object: "network.interface", method: "dump" },
     ]);
-    uciNetwork = uciRes || {};
+    uciNetwork = uciRes?.values || {};
     rtTables = (rtRes?.stdout || "")
       .split("\n")
       .map((l: string) => {

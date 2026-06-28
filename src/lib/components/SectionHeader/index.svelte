@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Snippet } from "svelte";
   import { ChevronRight } from "@lucide/svelte";
   import { cn } from "../../helpers/classname";
 
@@ -7,11 +8,13 @@
     open = true,
     ontoggle,
     badge,
+    children,
   }: {
     title: string;
     open?: boolean;
     ontoggle?: () => void;
     badge?: string;
+    children?: Snippet;
   } = $props();
 </script>
 
@@ -64,3 +67,7 @@
     <ChevronRight size={14} class={cn("text-muted")} />
   </span>
 </button>
+
+{#if open && children}
+  {@render children()}
+{/if}
