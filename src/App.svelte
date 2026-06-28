@@ -19,6 +19,7 @@
   import AdGuardHome from "./lib/views/AdGuardHome.svelte";
   import BanIP from "./lib/views/BanIP.svelte";
   import TTYD from "./lib/views/TTYD.svelte";
+  import UPnP from "./lib/views/UPnP.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
@@ -59,8 +60,6 @@
     dhcp: { title: "DHCP", sub: "DHCP server & lease configuration" },
     dns: { title: "DNS", sub: "DNS resolver & forwarding" },
     diagnostics: { title: "Diagnostics", sub: "Ping, traceroute, nslookup" },
-
-    upnp: { title: "UPnP", sub: "Port mapping & IGD" },
   };
 
   onMount(() => {
@@ -127,6 +126,8 @@
         <BanIP />
       {:else if currentView === "ttyd"}
         <TTYD />
+      {:else if currentView === "upnp"}
+        <UPnP />
       {:else if placeholders[currentView]}
         <Placeholder
           title={trans(placeholders[currentView].title)}
