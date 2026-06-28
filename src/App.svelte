@@ -20,6 +20,7 @@
   import BanIP from "./lib/views/BanIP.svelte";
   import TTYD from "./lib/views/TTYD.svelte";
   import UPnP from "./lib/views/UPnP.svelte";
+  import Network from "./lib/views/Network.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
@@ -55,7 +56,6 @@
   };
 
   const placeholders: Record<string, { title: string; sub: string }> = {
-    network: { title: "Interfaces", sub: "Network interface configuration" },
     "network-routes": { title: "Routing", sub: "Static routes & rules" },
     dhcp: { title: "DHCP", sub: "DHCP server & lease configuration" },
     dns: { title: "DNS", sub: "DNS resolver & forwarding" },
@@ -128,6 +128,8 @@
         <TTYD />
       {:else if currentView === "upnp"}
         <UPnP />
+      {:else if currentView === "network"}
+        <Network />
       {:else if placeholders[currentView]}
         <Placeholder
           title={trans(placeholders[currentView].title)}
