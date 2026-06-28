@@ -48,6 +48,7 @@ export const nav: {
       { id: "ddns", label: "Dynamic DNS" },
       { id: "adguard", label: "AdGuard Home" },
       { id: "banip", label: "banIP" },
+      { id: "ttyd", label: "Terminal" },
       { id: "upnp", label: "UPnP" },
     ],
   },

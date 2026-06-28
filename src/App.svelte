@@ -18,6 +18,7 @@
   import DDNS from "./lib/views/DDNS.svelte";
   import AdGuardHome from "./lib/views/AdGuardHome.svelte";
   import BanIP from "./lib/views/BanIP.svelte";
+  import TTYD from "./lib/views/TTYD.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
@@ -89,7 +90,7 @@
     <main
       class={cn(
         "flex-1", "min-h-0", "bg-surface",
-        currentView === "syslog" ? "overflow-hidden" : "overflow-y-auto",
+        currentView === "syslog" || currentView === "ttyd" ? "overflow-hidden" : "overflow-y-auto",
       )}
     >
       {#if currentView === "dashboard"}
@@ -124,6 +125,8 @@
         <AdGuardHome />
       {:else if currentView === "banip"}
         <BanIP />
+      {:else if currentView === "ttyd"}
+        <TTYD />
       {:else if placeholders[currentView]}
         <Placeholder
           title={trans(placeholders[currentView].title)}
