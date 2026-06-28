@@ -21,6 +21,7 @@
   import TTYD from "./lib/views/TTYD.svelte";
   import UPnP from "./lib/views/UPnP.svelte";
   import Network from "./lib/views/Network.svelte";
+  import NetworkRoutes from "./lib/views/NetworkRoutes.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
@@ -56,7 +57,6 @@
   };
 
   const placeholders: Record<string, { title: string; sub: string }> = {
-    "network-routes": { title: "Routing", sub: "Static routes & rules" },
     dhcp: { title: "DHCP", sub: "DHCP server & lease configuration" },
     dns: { title: "DNS", sub: "DNS resolver & forwarding" },
     diagnostics: { title: "Diagnostics", sub: "Ping, traceroute, nslookup" },
@@ -130,6 +130,8 @@
         <UPnP />
       {:else if currentView === "network"}
         <Network />
+      {:else if currentView === "network-routes"}
+        <NetworkRoutes />
       {:else if placeholders[currentView]}
         <Placeholder
           title={trans(placeholders[currentView].title)}
