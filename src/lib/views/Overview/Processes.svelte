@@ -12,6 +12,18 @@
   } from "@lucide/svelte";
   import { getProcessList, killProcess, type Process } from "../../api/ubus";
   import { cn } from "../../helpers/classname";
+  import { t as _t, getLocale, onLocaleChange } from "../../i18n";
+
+  let locale = $state(getLocale());
+  let trans = $derived.by(() => {
+    locale;
+    return (k: string) => _t(k);
+  });
+  $effect(() =>
+    onLocaleChange(() => {
+      locale = getLocale();
+    }),
+  );
 
   let processes = $state<Process[]>([]);
   let loading = $state(true);
@@ -105,7 +117,7 @@
     error = "";
     const list = await getProcessList();
     if (!list) {
-      error = "Unable to retrieve process list";
+      error = trans("Unable to retrieve process list");
       return;
     }
     processes = list;
@@ -135,8 +147,8 @@
     class={cn("flex", "items-start", "justify-between", "gap-4", "shrink-0")}
   >
     <div>
-      <h1 class={cn("text-lg", "font-semibold", "text-white")}>Processes</h1>
-      <p class={cn("text-sm", "mt-0.5", "text-muted")}>Running processes</p>
+      <h1 class={cn("text-lg", "font-semibold", "text-white")}>{trans("Processes")}</h1>
+      <p class={cn("text-sm", "mt-0.5", "text-muted")}>{trans("Running processes")}</p>
     </div>
     <div class={cn("flex", "items-center", "gap-2", "shrink-0")}>
       <div
@@ -166,7 +178,7 @@
             "focus:border-(--accent)",
           )}
           bind:value={filterText}
-          placeholder="Filter…"
+          placeholder={trans("Filter...")}
         />
       </div>
       <button
@@ -195,7 +207,7 @@
           size={14}
           class={cn(loading && "animate-spin", "inline-block", "mr-1")}
         />
-        Refresh
+        {trans("Refresh")}
       </button>
     </div>
   </div>
@@ -232,7 +244,7 @@
     <div
       class={cn("flex", "items-center", "justify-between", "mb-3", "shrink-0")}
     >
-      <h3 class={cn("text-sm", "font-semibold", "text-white")}>Process List</h3>
+      <h3 class={cn("text-sm", "font-semibold", "text-white")}>{trans("Process List")}</h3>
       {#if loading}
         <span
           class={cn(
@@ -252,12 +264,12 @@
               "animate-pulse",
             )}
           ></span>
-          Refreshing…
+          {trans("Refreshing...")}
         </span>
       {:else}
         <span class={cn("text-xs", "font-mono", "text-muted")}>
           {sorted.length}
-          {sorted.length === 1 ? "process" : "processes"}
+          {sorted.length === 1 ? trans("process") : trans("processes")}
         </span>
       {/if}
     </div>
@@ -286,7 +298,7 @@
                   {col.label}
                 </th>
               {/each}
-              <th class={cn(th, "w-28")}>Actions</th>
+              <th class={cn(th, "w-28")}>{trans("Actions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -340,7 +352,7 @@
                     {/each}
                     {#if killing[p.PID] === "error"}
                       <span class={cn("text-[10px]", "text-danger")}>
-                        Failed
+                        {trans("Failed")}
                       </span>
                     {/if}
                   </div>
@@ -353,10 +365,10 @@
     {:else}
       <p class={cn("text-xs", "text-center", "py-4", "text-muted")}>
         {filterText
-          ? "No processes match filter"
+          ? trans("No processes match filter")
           : loading
-            ? "Loading processes…"
-            : "No processes found"}
+            ? trans("Loading processes...")
+            : trans("No processes found")}
       </p>
     {/if}
   </div>

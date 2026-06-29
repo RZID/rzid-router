@@ -303,7 +303,7 @@
                 </td>
                 <td class={cn("p-3", "text-right")}>
                   <div class={cn("inline-flex", "items-center", "gap-1")}>
-                    {#each [{ action: "start", icon: Play, label: "Start", color: "accent" as const }, { action: "stop", icon: Square, label: "Stop", color: "danger" as const }, { action: "restart", icon: RotateCw, label: "Restart", color: "accent" as const }] as btn}
+                    {#each [{ action: "start", icon: Play, label: trans("Start"), color: "accent" as const }, { action: "stop", icon: Square, label: trans("Stop"), color: "danger" as const }, { action: "restart", icon: RotateCw, label: trans("Restart"), color: "accent" as const }] as btn}
                       <button
                         onclick={(e) => doAction(s.name, btn.action, e)}
                         disabled={actionFeedback[s.name] !== undefined &&

@@ -209,12 +209,12 @@
   class={cn("p-6", "flex", "flex-col", "h-screen", "gap-4", "animate-fade-in")}
 >
   <div class={cn("shrink-0")}>
-    <h1 class={cn("text-lg", "font-semibold", "text-white")}>
-      Realtime Graphs
-    </h1>
-    <p class={cn("text-sm", "mt-0.5", "text-muted")}>
-      Bandwidth, load, connections
-    </p>
+      <h1 class={cn("text-lg", "font-semibold", "text-white")}>
+        {trans("Realtime Graphs")}
+      </h1>
+      <p class={cn("text-sm", "mt-0.5", "text-muted")}>
+        {trans("Bandwidth, load, connections")}
+      </p>
   </div>
 
   <div
@@ -230,7 +230,7 @@
       "border-border",
     )}
   >
-    {#each [{ id: "bandwidth" as const, label: "Bandwidth", icon: Globe }, { id: "load" as const, label: "Load", icon: Zap }, { id: "connections" as const, label: "Connections", icon: Radio }] as t}
+    {#each [{ id: "bandwidth" as const, label: trans("Bandwidth"), icon: Globe }, { id: "load" as const, label: trans("Load"), icon: Zap }, { id: "connections" as const, label: trans("Connections"), icon: Radio }] as t}
       {@const TabIcon = t.icon}
       <button
         class={cn(
@@ -379,14 +379,14 @@
               )}
             >
               <h3 class={cn("text-sm", "font-semibold", "text-white")}>
-                Active Connections
+                {trans("Active Connections")}
                 <span class={cn("text-muted", "font-normal", "ml-1")}>
                   ({ctList.length})
                 </span>
               </h3>
               <Input
                 bind:value={ctSearch}
-                placeholder="Filter connections…"
+                placeholder={trans("Filter connections...")}
                 class={cn("w-48")}
               />
             </div>
@@ -403,11 +403,11 @@
                         "tracking-wider",
                       )}
                     >
-                      <th class={cn("text-left", "p-1.5")}>Network</th>
-                      <th class={cn("text-left", "p-1.5")}>Protocol</th>
-                      <th class={cn("text-left", "p-1.5")}>Source</th>
-                      <th class={cn("text-left", "p-1.5")}>Destination</th>
-                      <th class={cn("text-right", "p-1.5")}>Transfer</th>
+                      <th class={cn("text-left", "p-1.5")}>{trans("Network")}</th>
+                      <th class={cn("text-left", "p-1.5")}>{trans("Protocol")}</th>
+                      <th class={cn("text-left", "p-1.5")}>{trans("Source")}</th>
+                      <th class={cn("text-left", "p-1.5")}>{trans("Destination")}</th>
+                      <th class={cn("text-right", "p-1.5")}>{trans("Transfer")}</th>
                     </tr>
                   </thead>
                   <tbody>

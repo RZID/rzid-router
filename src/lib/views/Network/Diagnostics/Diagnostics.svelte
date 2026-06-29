@@ -241,7 +241,7 @@
           "hover:text-text",
           "transition-colors",
           "cursor-pointer",
-        )}>Clear</button
+        )}>{trans("Clear")}</button
       >
     </div>
     <textarea
