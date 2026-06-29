@@ -64,19 +64,6 @@
     "TXT",
     "URI",
   ];
-  const mainTabs: { id: DnsTab; label: string }[] = [
-    { id: "general", label: "General" },
-    { id: "cache", label: "Cache" },
-    { id: "devices", label: "Devices & Ports" },
-    { id: "dnsrecords", label: "DNS Records" },
-    { id: "dnssecopt", label: "DNSSEC" },
-    { id: "filteropts", label: "Filter" },
-    { id: "forward", label: "Forwards" },
-    { id: "limits", label: "Limits" },
-    { id: "logging", label: "Log" },
-    { id: "files", label: "Resolv & Hosts Files" },
-    { id: "ipsets", label: "IP Sets" },
-  ];
 
   let locale = $state(getLocale()),
     loading = $state(true),
@@ -102,6 +89,19 @@
     locale;
     return (k: string) => _t(k);
   });
+  let mainTabs: { id: DnsTab; label: string }[] = $derived([
+    { id: "general", label: trans("General") },
+    { id: "cache", label: trans("Cache") },
+    { id: "devices", label: trans("Devices & Ports") },
+    { id: "dnsrecords", label: trans("DNS Records") },
+    { id: "dnssecopt", label: trans("DNSSEC") },
+    { id: "filteropts", label: trans("Filter") },
+    { id: "forward", label: trans("Forwards") },
+    { id: "limits", label: trans("Limits") },
+    { id: "logging", label: trans("Log") },
+    { id: "files", label: trans("Resolv & Hosts Files") },
+    { id: "ipsets", label: trans("IP Sets") },
+  ]);
   let dnsmasqSec = $derived(
     (Object.entries(uciDhcp).find(
       ([, v]: [string, any]) => v[".type"] === "dnsmasq",

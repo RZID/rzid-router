@@ -155,7 +155,7 @@
   <Input
     label={trans("Device")}
     bind:value={form.device}
-    placeholder="Select device..."
+    placeholder={trans("Select device...")}
     mono
   />
   <div class={cn("space-y-2")}>

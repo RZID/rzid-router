@@ -337,7 +337,7 @@
         <Shield size={16} class={cn("text-accent")} />
       </div>
       <div>
-        <h1 class={cn("text-lg", "font-semibold", "text-white")}>banIP</h1>
+        <h1 class={cn("text-lg", "font-semibold", "text-white")}>{trans("banIP")}</h1>
         <p class={cn("text-sm", "mt-0.5", "text-muted")}>
           {trans("Configuration of the banIP package to ban incoming and outgoing IPs via named nftables Sets.")}
           <a href="https://github.com/openwrt/packages/blob/master/net/banip/files/README.md" target="_blank" rel="noreferrer noopener" class={cn("text-accent", "hover:underline", "ml-1")}>{trans("online documentation")}</a>

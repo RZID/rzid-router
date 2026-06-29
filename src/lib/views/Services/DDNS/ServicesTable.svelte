@@ -324,15 +324,15 @@
                 <td class={cn("p-3", "text-muted")}>
                   <div class={cn("space-y-0.5")}>
                     <span class={cn("block", "text-[10px]")}
-                      ><span class={cn("text-muted/60")}>U:</span>
+                      ><span class={cn("text-muted/60")}>{trans("U:")}</span>
                       {svc.last_update || trans("Never")}</span
                     >
                     <span class={cn("block", "text-[10px]")}
-                      ><span class={cn("text-muted/60")}>V:</span>
+                      ><span class={cn("text-muted/60")}>{trans("V:")}</span>
                       {svc.next_check || trans("—")}</span
                     >
                     <span class={cn("block", "text-[10px]")}
-                      ><span class={cn("text-muted/60")}>N:</span>
+                      ><span class={cn("text-muted/60")}>{trans("N:")}</span>
                       {nextUpdateLabels[svc.next_update as string] ||
                         svc.next_update ||
                         trans("—")}</span

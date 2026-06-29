@@ -104,7 +104,7 @@
           "bg-accent/10",
         )}
       >
-        <span class={cn("text-xs", "font-bold", "text-accent")}>DD</span>
+        <span class={cn("text-xs", "font-bold", "text-accent")}>{trans("DD")}</span>
       </div>
       <div>
         <p

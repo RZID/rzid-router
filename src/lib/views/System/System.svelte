@@ -22,18 +22,6 @@
   let locale = $state(getLocale());
   let theme = $state(getTheme());
   let tablefilters = $state(false);
-  let langOptions = $state([
-    { value: "id", label: "Indonesian" },
-    { value: "en", label: "English" },
-    { value: "jaksel", label: "Jaksel" },
-    { value: "bogorian", label: "Bogorian" },
-  ]);
-  let themeOptions = $state([
-    { value: "", label: "Default" },
-    { value: "/luci-static/bootstrap", label: "Bootstrap" },
-    { value: "/luci-static/material", label: "Material" },
-    { value: "/luci-static/openwrt2020", label: "OpenWrt 2020" },
-  ]);
   const defaultNTPServers = [
     "0.openwrt.pool.ntp.org",
     "1.openwrt.pool.ntp.org",
@@ -81,6 +69,18 @@
     locale;
     return (key: string) => _t(key);
   });
+  let langOptions = $derived([
+    { value: "id", label: trans("Indonesian") },
+    { value: "en", label: trans("English") },
+    { value: "jaksel", label: trans("Jaksel") },
+    { value: "bogorian", label: trans("Bogorian") },
+  ]);
+  let themeOptions = $derived([
+    { value: "", label: trans("Default") },
+    { value: "/luci-static/bootstrap", label: trans("Bootstrap") },
+    { value: "/luci-static/material", label: trans("Material") },
+    { value: "/luci-static/openwrt2020", label: trans("OpenWrt 2020") },
+  ]);
 
   const formatLocaltime = (epoch: number) => {
     if (!epoch || isNaN(epoch)) return "Loading…";

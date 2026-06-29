@@ -107,7 +107,7 @@
                 <td class={cn("py-1.5", "pr-2")}>
                   <input
                     bind:value={editForm.comment}
-                    placeholder="Description"
+                    placeholder={trans("Description")}
                     class={cn(
                       "w-full",
                       "px-2",

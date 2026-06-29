@@ -215,7 +215,7 @@
       )}
       onload={handleLoad}
       onerror={handleError}
-      title="ttyd terminal"
+      title={trans("ttyd terminal")}
       allow="clipboard-read; clipboard-write"
     ></iframe>
   </div>
