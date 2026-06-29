@@ -98,15 +98,13 @@ export const nextUpdateLabels: Record<string, string> = {
 };
 
 let locale = $state(getLocale());
+onLocaleChange(() => {
+  locale = getLocale();
+});
 export function trans(k: string) {
   locale;
   return _t(k);
 }
-$effect(() =>
-  onLocaleChange(() => {
-    locale = getLocale();
-  }),
-);
 
 const loadProviderServices = async () => {
   const [def, cust, listData] = await Promise.all([
