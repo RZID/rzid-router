@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Plus, Pencil, Trash2 } from "@lucide/svelte";
   import { cn } from "../../../helpers/classname";
+  import type { UciSection } from "../../../types";
 
   let {
     sections,
@@ -12,7 +13,7 @@
     ondelete,
     trans,
   }: {
-    sections: [string, any][];
+    sections: [string, UciSection][];
     isRule: boolean;
     tableName: (t: string | number) => string;
     busy: Record<string, string>;

@@ -232,9 +232,9 @@
           {/if}
         </div>
         {#if tab === "syslog"}
-          <SyslogFilters filters={sysFilters} {applyFilters} {trans} />
+          <SyslogFilters filters={sysFilters} onapply={applyFilters} {trans} />
         {:else}
-          <DmesgFilterPanel filters={dmesgFilters} {applyFilters} {trans} />
+          <DmesgFilterPanel filters={dmesgFilters} onapply={applyFilters} {trans} />
         {/if}
         {#if error}
           <p

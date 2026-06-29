@@ -1,9 +1,10 @@
 <script lang="ts">
   import { RefreshCw, Trash2 } from "@lucide/svelte";
   import { cn } from "../../helpers/classname";
+  import type { ActivePortMap } from "./types";
 
   let { activeRules, onrefresh, ondelete, formatExpires, trans }: {
-    activeRules: any[];
+    activeRules: ActivePortMap[];
     onrefresh: () => void;
     ondelete: (num: number) => void;
     formatExpires: (secs: number | undefined) => string;

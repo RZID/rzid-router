@@ -5,12 +5,12 @@
   let {
     trans,
     open = $bindable(false),
-    uciDhcp = {} as Record<string, any>,
+    uciDhcp = {} as import("../../../types").UciSection,
     oncreate,
   }: {
     trans: (k: string) => string;
     open: boolean;
-    uciDhcp?: Record<string, any>;
+    uciDhcp?: import("../../../types").UciSection;
     oncreate?: (name: string) => void;
   } = $props();
 

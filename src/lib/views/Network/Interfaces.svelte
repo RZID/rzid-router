@@ -2,6 +2,7 @@
   import { onMount, onDestroy } from "svelte";
   import { Globe, RefreshCw } from "@lucide/svelte";
   import { cn } from "../../helpers/classname";
+  import type { UciSection, UciConfig } from "../../types";
   import { t as _t, getLocale, onLocaleChange } from "../../i18n";
   import { call, batchCall, uciCommit } from "../../api/ubus";
   import TabBar from "../../components/TabBar/TabBar.svelte";
@@ -37,6 +38,8 @@
     initDeviceEditForm,
   } from "./Interfaces/business";
 
+  type UciDeviceSection = UciSection & { name: string };
+
   let locale = $state(getLocale());
   let trans = $derived.by(() => {
     locale;
@@ -51,17 +54,17 @@
   let mainTab = $state("interfaces");
   let interfaces = $state<Iface[]>([]);
   let devices = $state<Record<string, DeviceStatus>>({});
-  let firewalls = $state<Record<string, any>>({});
-  let dhcpConfig = $state<Record<string, any>>({});
-  let uciNetwork = $state<Record<string, any>>({});
-  let deviceUciSections = $state<any[]>([]);
+  let firewalls = $state<Record<string, UciSection>>({});
+  let dhcpConfig = $state<Record<string, UciSection>>({});
+  let uciNetwork = $state<Record<string, UciSection>>({});
+  let deviceUciSections = $state<UciDeviceSection[]>([]);
   let loading = $state(true);
   let pollTimer: ReturnType<typeof setInterval> | undefined;
 
   let editingIface = $state<string | null>(null);
   let editTab = $state("general");
-  let editForm = $state<Record<string, any>>({});
-  let globalForm = $state<Record<string, any>>({});
+  let editForm = $state<Record<string, string | boolean | string[] | undefined>>({});
+  let globalForm = $state<Record<string, string | boolean>>({});
   let globalSaving = $state(false);
   let editSaved = $state(false);
   let btnBusy = $state<Record<string, "restart" | "stop">>({});
@@ -76,12 +79,12 @@
   let newIfaceDevice = $state("");
 
   let editingDevice = $state<string | null>(null);
-  let deviceEditForm = $state<Record<string, any>>({});
+  let deviceEditForm = $state<Record<string, string>>({});
 
   const getFirewallZones = () => {
     const zones: { value: string; label: string }[] = [];
     for (const [, s] of Object.entries(firewalls)) {
-      const sec = s as any;
+      const sec = s as UciSection;
       if (sec[".type"] === "zone" && sec[".name"]) {
         zones.push({ value: sec[".name"], label: sec.name || sec[".name"] });
       }
@@ -92,12 +95,17 @@
   const zoneOptions = $derived(getFirewallZones());
 
   const fetchData = async () => {
-    const [net, fw, dhcp, uci] = await batchCall<any>([
+    type NetRes = { interface?: Iface[] };
+    const results = await batchCall<Record<string, unknown>>([
       { object: "network.interface", method: "dump" },
       { object: "uci", method: "get", params: { config: "firewall" } },
       { object: "uci", method: "get", params: { config: "dhcp" } },
       { object: "uci", method: "get", params: { config: "network" } },
     ]);
+    const net = results[0] as NetRes | null;
+    const fw = results[1] as UciConfig | null;
+    const dhcp = results[2] as UciConfig | null;
+    const uci = results[3] as UciConfig | null;
 
     const ifaces: Iface[] = (net?.interface || []).filter(
       (i: Iface) => i.interface !== "loopback",
@@ -109,9 +117,9 @@
     if (uci?.values) {
       uciNetwork = uci.values;
       const globalsSec = Object.entries(uci.values).find(
-        ([, v]: [string, any]) => v[".type"] === "globals",
+        ([, v]: [string, UciSection]) => v[".type"] === "globals",
       );
-      const g = (globalsSec?.[1] || {}) as Record<string, any>;
+      const g = globalsSec?.[1] || ({} as UciSection);
       globalForm = {
         ula_prefix: g.ula_prefix || "",
         dhcp_default_duid: g.dhcp_default_duid || "",

@@ -3,6 +3,7 @@
   import { cn } from "../../../helpers/classname";
   import Input from "../../../components/Input/Input.svelte";
   import Select from "../../../components/Select/Select.svelte";
+  import Textarea from "../../../components/Textarea/Textarea.svelte";
 
   let {
     editing,
@@ -14,7 +15,7 @@
     trans,
   }: {
     editing: { id: string; type: string } | null;
-    edForm: Record<string, any>;
+    edForm: Record<string, string | boolean | string[]>;
     hostIpMap: Record<string, string>;
     labelCls: string;
     onclose: () => void;
@@ -183,59 +184,21 @@
             placeholder="svc.example.com."
             bind:value={edForm._svc_target}
           />
-          <div>
-            <!-- svelte-ignore a11y_label_has_associated_control -->
-            <label class={labelCls}>{trans("Svc Parameters")}</label>
-            <textarea
-              rows={4}
-              bind:value={edForm._svc_params}
-              placeholder="alpn=h2,h3&#10;ipv4hint=192.0.2.1,192.0.2.2&#10;ipv6hint=2001:db8::1,2001:db8::2&#10;port=8000"
-              class={cn(
-                "border",
-                "w-full",
-                "px-2.5",
-                "py-1.5",
-                "text-xs",
-                "text-fg",
-                "resize-y",
-                "min-h-15",
-                "font-mono",
-                "rounded-md",
-                "bg-surface",
-                "outline-none",
-                "transition-all",
-                "border-border",
-                "focus:border-(--accent)",
-              )}
-            ></textarea>
-          </div>
+          <Textarea
+            label={trans("Svc Parameters")}
+            rows={4}
+            bind:value={edForm._svc_params}
+            placeholder="alpn=h2,h3&#10;ipv4hint=192.0.2.1,192.0.2.2&#10;ipv6hint=2001:db8::1,2001:db8::2&#10;port=8000"
+            class={cn("min-h-15", "font-mono")}
+          />
         {:else}
-          <div>
-            <!-- svelte-ignore a11y_label_has_associated_control -->
-            <label class={labelCls}>{trans("Raw Data")}</label>
-            <textarea
-              rows={4}
-              bind:value={edForm._hexdata}
-              placeholder="free-form string"
-              class={cn(
-                "w-full",
-                "px-2.5",
-                "py-1.5",
-                "border",
-                "text-xs",
-                "text-fg",
-                "min-h-15",
-                "resize-y",
-                "font-mono",
-                "rounded-md",
-                "bg-surface",
-                "outline-none",
-                "transition-all",
-                "border-border",
-                "focus:border-(--accent)",
-              )}
-            ></textarea>
-          </div>
+          <Textarea
+            label={trans("Raw Data")}
+            rows={4}
+            bind:value={edForm._hexdata}
+            placeholder="free-form string"
+            class={cn("min-h-15", "font-mono")}
+          />
         {/if}
       {/if}
     </div>

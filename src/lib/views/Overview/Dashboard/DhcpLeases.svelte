@@ -1,12 +1,13 @@
 <script lang="ts">
   import { cn } from "../../../helpers/classname";
   import { fmtUptime } from "../../../helpers/format";
+  import type { DhcpLeasesData } from "./types";
 
   let {
     dhcpLeases,
     trans,
   }: {
-    dhcpLeases: any;
+    dhcpLeases: DhcpLeasesData;
     trans: (k: string) => string;
   } = $props();
 </script>
@@ -49,7 +50,7 @@
               >{l.macaddr}</td
             >
             <td class={cn("py-2", "pr-3", "font-mono")}
-              >{fmtUptime(l.leasetime || l.expires)}</td
+              >{fmtUptime((l.leasetime || l.expires)!)}</td
             >
           </tr>
         {/each}
@@ -99,7 +100,7 @@
               >{l.duid || "—"}</td
             >
             <td class={cn("py-2", "pr-3", "font-mono")}
-              >{fmtUptime(l.leasetime || l.expires)}</td
+              >{fmtUptime((l.leasetime || l.expires)!)}</td
             >
           </tr>
         {/each}

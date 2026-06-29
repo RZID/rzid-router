@@ -1,10 +1,11 @@
 import { call } from "./session";
 import { execCommand } from "./exec";
+import type { JsonValue } from "../types";
 
 export const getSystemInfo = async () => call("system", "info", {});
 export const getNetworkInterfaces = async () => call("network.interface", "dump", {});
 export const getDHCPLeases = async () => call("dhcp", "ipv4leases", {});
-export const rcList = async (name: string) => call<Record<string, any>>("rc", "list", { name });
+export const rcList = async (name: string) => call<Record<string, JsonValue>>("rc", "list", { name });
 export const rcInit = async (name: string, action: string) => call("rc", "init", { name, action });
 
 export const getTimezones = async () => {
@@ -19,7 +20,7 @@ export const getUnixtime = async () => {
   return res?.result ?? null;
 };
 
-export const getSystemFeatures = async () => call<Record<string, any>>("luci", "getFeatures", {});
+export const getSystemFeatures = async () => call<Record<string, JsonValue>>("luci", "getFeatures", {});
 export const serviceRestart = async (name: string) => call("file", "exec", { command: `/etc/init.d/${name}`, params: ["restart"] });
 
 export const getBandwidth = async () => {
@@ -43,8 +44,10 @@ export const getRealtimeStats = async (mode: "interface" | "load" | "conntrack" 
   return res?.result ?? null;
 };
 
-export const getConntrackList = async (): Promise<any[] | null> => {
-  const res = await call<{ result: any[] }>("luci", "getConntrackList", {});
+export type ConntrackEntry = { layer4: string };
+
+export const getConntrackList = async (): Promise<ConntrackEntry[] | null> => {
+  const res = await call<{ result: ConntrackEntry[] }>("luci", "getConntrackList", {});
   return res?.result ?? null;
 };
 
@@ -58,8 +61,8 @@ export const fetchConntrackMetrics = async (): Promise<ConntrackMetrics | null> 
   }
   const list = await getConntrackList();
   if (list) {
-    const udp = list.filter((c: any) => c.layer4 === "udp").length;
-    const tcp = list.filter((c: any) => c.layer4 === "tcp").length;
+    const udp = list.filter((c: ConntrackEntry) => c.layer4 === "udp").length;
+    const tcp = list.filter((c: ConntrackEntry) => c.layer4 === "tcp").length;
     return { udp, tcp, other: list.length - udp - tcp };
   }
   for (const cmd of [

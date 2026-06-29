@@ -1,11 +1,12 @@
 <script lang="ts">
   import { Download, Trash2 } from "@lucide/svelte";
   import { cn } from "../../helpers/classname";
+  import Select from "../../components/Select/Select.svelte";
 
   let {
     hasSysupgrade,
     mtdblocks,
-    selectedMtd,
+    selectedMtd = $bindable(),
     hostname,
     restoreErr,
     restoreLoading,
@@ -136,16 +137,13 @@
         )}
       </p>
       <div class={cn("flex", "items-center", "gap-3")}>
-        <select
+        <Select
+          options={mtdblocks.map((b) => ({
+            value: b.id,
+            label: `${b.name} (mtd${b.id})`,
+          }))}
           bind:value={selectedMtd}
-          class={cn(
-            "px-2.5 py-1.5 border text-xs rounded-lg bg-surface text-fg border-border outline-none transition-all duration-150 focus:border-(--accent) focus:shadow-[0_0_0_1px_var(--accent)]",
-          )}
-        >
-          {#each mtdblocks as b}<option value={b.id}
-              >{b.name} (mtd{b.id})</option
-            >{/each}
-        </select>
+        />
         <span class={cn("text-xs", "text-fg")}
           >{trans("Download mtdblock")}</span
         >

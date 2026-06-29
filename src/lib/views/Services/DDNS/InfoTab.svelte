@@ -2,6 +2,8 @@
   import { RefreshCw } from "@lucide/svelte";
   import { cn } from "../../../helpers/classname";
 
+  import type { DdnsState, DdnsEnv } from "../../../api/ubus";
+
   let {
     status,
     env,
@@ -10,8 +12,8 @@
     onRestartDdns,
     onRefreshServicesList,
   }: {
-    status: any;
-    env: any;
+    status: DdnsState | null;
+    env: DdnsEnv | null;
     trans: (k: string) => string;
     onToggleDdns: () => void;
     onRestartDdns: () => void;

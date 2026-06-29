@@ -1,4 +1,4 @@
-# CLAUDE.md — rzidnet (OpenWrt Dashboard)
+# AGENTS.md — rzidnet (OpenWrt Dashboard)
 
 ## Stack
 
@@ -21,13 +21,7 @@ bunx svelte-check # type-check
 - Icons: **`@lucide/svelte` only** — no unicode, no inline SVG, no emoji. `size={14}` inline / `size={16}` standalone
 - Classes: **always `cn()`** from `src/lib/helpers/classname` — never string concat or ternaries
 - Colors: `style` with `var(--surface|--accent|--text|--border|--text-muted)` — defined in `app.css`
-
-## File size limits
-
-- Target: ≤500 lines per file
-- Hard limit: 1000 lines — never exceed this
-- If a file exceeds 500 lines, split into sub-components or extract logic to a co-located `.svelte.ts` store
-- Pattern: `ViewName.svelte` (orchestrator, imports only) + `ViewName/SubPart.svelte` (chunks) + `ViewName/view-store.svelte.ts` (logic)
+- Max ~150 lines per component — split large views into sub-components in same-name subfolder
 
 ## Routing
 
@@ -113,3 +107,10 @@ Components import `store` + actions. Do NOT use Svelte stores (`writable`, etc).
 ## Polling
 
 Dashboard 5s · Routes 10s · Firewall 15s. Always `clearInterval` in `onDestroy`.
+
+## File size limits
+
+- Target: ≤500 lines per file
+- Hard limit: 1000 lines — never exceed this
+- If a file exceeds 500 lines, split into sub-components or extract logic to a co-located `.svelte.ts` store
+- Pattern: `ViewName.svelte` (orchestrator, imports only) + `ViewName/SubPart.svelte` (chunks) + `ViewName/view-store.svelte.ts` (logic)

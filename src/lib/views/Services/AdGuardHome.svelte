@@ -117,8 +117,8 @@
         gc: gc || undefined,
         maxprocs: maxprocs || undefined,
         memlimit: memlimit || undefined,
-        jail_mount: jail_mount.length ? jail_mount : undefined,
-        jail_mount_rw: jail_mount_rw.length ? jail_mount_rw : undefined,
+        jail_mount: jail_mount.length ? jail_mount.join(" ") : undefined,
+        jail_mount_rw: jail_mount_rw.length ? jail_mount_rw.join(" ") : undefined,
       });
       await uciCommit("adguardhome");
       await execCommand("/etc/init.d/AdGuardHome", ["reload"]).catch(() => {});

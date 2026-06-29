@@ -23,9 +23,15 @@ export const readDmesg = async () => execCommand("/bin/dmesg", ["-r"]);
 
 export const readFile = async (path: string) => call<{ data: string }>("file", "read", { path });
 
-export const writeFile = async (path: string, data: string, mode?: number) => {
-  const params: Record<string, any> = { path, data };
-  if (mode !== undefined) params.mode = mode;
+export const writeFile = async (path: string, data: string, encodingOrMode?: "text" | "base64" | number) => {
+  const params: Record<string, string | number> = { path, data };
+  if (encodingOrMode !== undefined) {
+    if (typeof encodingOrMode === "number") {
+      params.mode = encodingOrMode;
+    } else {
+      params.encoding = encodingOrMode;
+    }
+  }
   return call("file", "write", params);
 };
 

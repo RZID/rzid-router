@@ -1,40 +1,41 @@
 // nftables expression parsing — shared between Firewall view and potential future nft pages
 
-export const isActionExpr = (e: any): boolean =>
-  [
-    "accept",
-    "drop",
-    "reject",
-    "jump",
-    "goto",
-    "snat",
-    "dnat",
-    "masquerade",
-    "redirect",
-    "return",
-    "continue",
-    "log",
-    "flow",
-    "notrack",
-    "mangle",
-  ].some((k) => e && e[k] !== undefined);
+export const isActionExpr = (e: unknown): boolean => {
+  const o = e as Record<string, unknown> | null | undefined;
+  return [
+    "accept", "drop", "reject", "jump", "goto",
+    "snat", "dnat", "masquerade", "redirect", "return",
+    "continue", "log", "flow", "notrack", "mangle",
+  ].some((k) => o?.[k] !== undefined);
+};
 
 // Translate expression value to human-readable string
-export const exprVal = (v: any): string => {
+export const exprVal = (v: unknown): string => {
   if (v === null || v === undefined) return "";
   if (typeof v === "number") return String(v);
   if (typeof v === "string") return v;
-  if (Array.isArray(v.set)) return `{ ${v.set.map(exprVal).join(", ")} }`;
-  if (Array.isArray(v.range))
-    return `${exprVal(v.range[0])}-${exprVal(v.range[1])}`;
-  if (Array.isArray(v.concat)) return v.concat.map(exprVal).join(" + ");
-  if (Array.isArray(v["|"]))
-    return `${exprVal(v["|"][0])} | ${exprVal(v["|"][1])}`;
-  if (Array.isArray(v["&"]))
-    return `${exprVal(v["&"][0])} & ${exprVal(v["&"][1])}`;
-  if (v.prefix) return `${v.prefix.addr}/${v.prefix.len}`;
-  if (v.meta) {
-    const mk = typeof v.meta === "object" ? v.meta.key : v.meta;
+  const o = v as Record<string, unknown>;
+  const setVal = o.set;
+  if (Array.isArray(setVal)) return `{ ${setVal.map(exprVal).join(", ")} }`;
+  const rangeVal = o.range;
+  if (Array.isArray(rangeVal))
+    return `${exprVal(rangeVal[0])}-${exprVal(rangeVal[1])}`;
+  const concatVal = o.concat;
+  if (Array.isArray(concatVal)) return concatVal.map(exprVal).join(" + ");
+  const pipeVal = o["|"];
+  if (Array.isArray(pipeVal))
+    return `${exprVal(pipeVal[0])} | ${exprVal(pipeVal[1])}`;
+  const ampVal = o["&"];
+  if (Array.isArray(ampVal))
+    return `${exprVal(ampVal[0])} & ${exprVal(ampVal[1])}`;
+  const prefixVal = o.prefix;
+  if (prefixVal) {
+    const p = prefixVal as Record<string, unknown>;
+    return `${p.addr}/${p.len}`;
+  }
+  const metaVal = o.meta;
+  if (metaVal) {
+    const mk = typeof metaVal === "object" ? (metaVal as Record<string, unknown>).key : metaVal;
     const tl: Record<string, string> = {
       iifname: "Ingress device name",
       oifname: "Egress device name",
@@ -47,10 +48,11 @@ export const exprVal = (v: any): string => {
       protocol: "Ethernet protocol",
       priority: "Priority",
     };
-    return tl[mk] || `meta.${mk}`;
+    return tl[String(mk)] || `meta.${String(mk)}`;
   }
-  if (v.ct) {
-    const ck = typeof v.ct === "object" ? v.ct.key : v.ct;
+  const ctVal = o.ct;
+  if (ctVal) {
+    const ck = typeof ctVal === "object" ? (ctVal as Record<string, unknown>).key : ctVal;
     const tl: Record<string, string> = {
       state: "Conntrack state",
       status: "Conntrack status",
@@ -58,15 +60,21 @@ export const exprVal = (v: any): string => {
       mark: "Conntrack mark",
       helper: "Conntrack helper",
     };
-    return tl[ck] || `ct.${ck}`;
+    return tl[String(ck)] || `ct.${String(ck)}`;
   }
-  if (v.rt) {
-    const rk = typeof v.rt === "object" ? v.rt.key : v.rt;
-    return rk === "mtu" ? "Effective route MTU" : `rt.${rk}`;
+  const rtVal = o.rt;
+  if (rtVal) {
+    const rk = typeof rtVal === "object" ? (rtVal as Record<string, unknown>).key : rtVal;
+    return rk === "mtu" ? "Effective route MTU" : `rt.${String(rk)}`;
   }
-  if (v.tcp_option) return `TCP ${v.tcp_option.name} ${v.tcp_option.field}`;
-  if (v.payload) {
-    const p = v.payload;
+  const tcpOpt = o.tcp_option;
+  if (tcpOpt) {
+    const t = tcpOpt as Record<string, unknown>;
+    return `TCP ${t.name} ${t.field}`;
+  }
+  const payloadVal = o.payload;
+  if (payloadVal) {
+    const p = payloadVal as Record<string, unknown>;
     const pl: Record<string, string> = {
       th_sport: "TCP source port",
       th_dport: "TCP destination port",
@@ -85,10 +93,14 @@ export const exprVal = (v: any): string => {
       return pl[`${p.protocol}_${p.field}`] || `${p.protocol}.${p.field}`;
     return `payload ${p.base} +${p.offset}-${p.len}`;
   }
-  if (v.vmap) {
-    const k = exprVal(v.vmap.key);
-    const keys = (v.vmap.data?.set || v.vmap.data || []).map(([mk]: any) =>
-      exprVal(mk),
+  const vmapVal = o.vmap;
+  if (vmapVal) {
+    const vm = vmapVal as Record<string, unknown>;
+    const k = exprVal(vm.key);
+    const data = vm.data as Record<string, unknown> | undefined;
+    const items = ((data?.set as unknown[]) || (vm.data as unknown[]) || []);
+    const keys = items.map((mk: unknown) =>
+      exprVal(Array.isArray(mk) ? (mk as unknown[])[0] : mk),
     );
     return `Verdict map: ${k} is ${keys.join(" or ")}`;
   }
@@ -96,60 +108,102 @@ export const exprVal = (v: any): string => {
 };
 
 // Translate full expression (match or action) to human-readable string
-export const exprStr = (e: any): string => {
+export const exprStr = (e: unknown): string => {
   if (!e) return "";
   if (typeof e === "string") return e;
-  if (e.match) {
-    const { left, right, op } = e.match;
-    const l = exprVal(left),
-      r = exprVal(right);
+  const o = e as Record<string, unknown>;
+  const matchVal = o.match;
+  if (matchVal) {
+    const m = matchVal as Record<string, unknown>;
+    const left = m.left, right = m.right, op = m.op;
+    const l = exprVal(left), r = exprVal(right);
     if (op === "==") return `${l} is ${r}`;
     if (op === "!=") return `${l} not ${r}`;
     if (op === "in") return `${l} is one of ${r}`;
-    return `${l} ${op} ${r}`;
+    return `${l} ${String(op)} ${r}`;
   }
-  if (e.counter) return ""; // handled separately
-  if (e.payload) {
-    const p = e.payload;
+  if (o.counter) return "";
+  const payloadVal = o.payload;
+  if (payloadVal) {
+    const p = payloadVal as Record<string, unknown>;
     return p.protocol && p.field
       ? `${p.protocol} ${p.field}`
       : `payload ${p.base} +${p.offset}`;
   }
-  if (e.meta) return exprVal({ meta: e.meta });
-  if (e.ct) return exprVal({ ct: e.ct });
-  if (e.rt) return exprVal({ rt: e.rt });
-  if (e.limit)
-    return `limit ${e.limit.rate}/${e.limit.per || "s"}${e.limit.burst ? ` burst ${e.limit.burst}` : ""}`;
-  if (Array.isArray(e.concat)) return e.concat.map(exprStr).join(" + ");
-  if (e.prefix) return `${e.prefix.addr}/${e.prefix.len}`;
-  if (Array.isArray(e.range))
-    return `${exprVal(e.range[0])}-${exprVal(e.range[1])}`;
-  if (Array.isArray(e.set)) return e.set.map(exprVal).join(", ");
+  if (o.meta) return exprVal({ meta: o.meta });
+  if (o.ct) return exprVal({ ct: o.ct });
+  if (o.rt) return exprVal({ rt: o.rt });
+  const limitVal = o.limit;
+  if (limitVal) {
+    const lm = limitVal as Record<string, unknown>;
+    return `limit ${lm.rate}/${lm.per || "s"}${lm.burst ? ` burst ${lm.burst}` : ""}`;
+  }
+  const concatVal = o.concat;
+  if (Array.isArray(concatVal)) return concatVal.map(exprStr).join(" + ");
+  const prefixVal = o.prefix;
+  if (prefixVal) {
+    const pr = prefixVal as Record<string, unknown>;
+    return `${pr.addr}/${pr.len}`;
+  }
+  const rangeVal = o.range;
+  if (Array.isArray(rangeVal))
+    return `${exprVal(rangeVal[0])}-${exprVal(rangeVal[1])}`;
+  const setVal = o.set;
+  if (Array.isArray(setVal)) return setVal.map(exprVal).join(", ");
   // actions
-  if (e.accept !== undefined) return "Accept packet";
-  if (e.drop !== undefined) return "Drop packet";
-  if (e.jump) return `Continue in ${e.jump.target}`;
-  if (e.goto) return `Goto chain ${e.goto.target}`;
-  if (e.return !== undefined) return "Continue in calling chain";
-  if (e.continue !== undefined) return "Continue in calling chain";
-  if (e.reject)
-    return typeof e.reject === "object"
-      ? `Reject with ${e.reject.type || "icmp"}`
+  if (o.accept !== undefined) return "Accept packet";
+  if (o.drop !== undefined) return "Drop packet";
+  const jumpVal = o.jump;
+  if (jumpVal) {
+    const j = jumpVal as Record<string, unknown>;
+    return `Continue in ${j.target}`;
+  }
+  const gotoVal = o.goto;
+  if (gotoVal) {
+    const g = gotoVal as Record<string, unknown>;
+    return `Goto chain ${g.target}`;
+  }
+  if (o.return !== undefined) return "Continue in calling chain";
+  if (o.continue !== undefined) return "Continue in calling chain";
+  const rejectVal = o.reject;
+  if (rejectVal)
+    return typeof rejectVal === "object"
+      ? `Reject with ${(rejectVal as Record<string, unknown>).type || "icmp"}`
       : "Reject";
-  if (e.snat)
-    return `SNAT ${e.snat.addr || ""}${e.snat.port ? ":" + e.snat.port : ""}`;
-  if (e.dnat)
-    return `DNAT ${e.dnat.addr || ""}${e.dnat.port ? ":" + e.dnat.port : ""}`;
-  if (e.masquerade !== undefined) return "Rewrite to egress device address";
-  if (e.redirect)
-    return `Redirect${e.redirect.port ? ` to :${e.redirect.port}` : ""}`;
-  if (e.log) return e.log.prefix ? `Log "${e.log.prefix}"` : "Log";
-  if (e.mangle)
-    return `Set ${exprVal(e.mangle.key)} to ${exprVal(e.mangle.value)}`;
-  if (e.notrack) return "Do not track";
-  if (e.flow) return `Flow ${e.flow.op || ""} @${e.flow.flowtable || ""}`;
-  if (e.vmap) return exprVal({ vmap: e.vmap });
-  return Object.keys(e)[0] || String(e);
+  const snatVal = o.snat;
+  if (snatVal) {
+    const s = snatVal as Record<string, unknown>;
+    return `SNAT ${s.addr || ""}${s.port ? ":" + s.port : ""}`;
+  }
+  const dnatVal = o.dnat;
+  if (dnatVal) {
+    const d = dnatVal as Record<string, unknown>;
+    return `DNAT ${d.addr || ""}${d.port ? ":" + d.port : ""}`;
+  }
+  if (o.masquerade !== undefined) return "Rewrite to egress device address";
+  const redirectVal = o.redirect;
+  if (redirectVal) {
+    const rd = redirectVal as Record<string, unknown>;
+    return `Redirect${rd.port ? ` to :${rd.port}` : ""}`;
+  }
+  const logVal = o.log;
+  if (logVal) {
+    const lg = logVal as Record<string, unknown>;
+    return lg.prefix ? `Log "${lg.prefix}"` : "Log";
+  }
+  const mangleVal = o.mangle;
+  if (mangleVal) {
+    const mg = mangleVal as Record<string, unknown>;
+    return `Set ${exprVal(mg.key)} to ${exprVal(mg.value)}`;
+  }
+  if (o.notrack) return "Do not track";
+  const flowVal = o.flow;
+  if (flowVal) {
+    const f = flowVal as Record<string, unknown>;
+    return `Flow ${f.op || ""} @${f.flowtable || ""}`;
+  }
+  if (o.vmap) return exprVal({ vmap: o.vmap });
+  return Object.keys(o)[0] || String(e);
 };
 
 export const familyLabel: Record<string, string> = {

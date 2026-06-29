@@ -29,5 +29,5 @@ export interface DeviceStatus {
     tx_errors: number;
   };
   ports?: string[];
-  pse?: any;
+  pse?: string;
 }

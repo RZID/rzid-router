@@ -7,12 +7,12 @@
   let {
     trans,
     editingTag = $bindable<{ section: string; type: string } | null>(null),
-    tagForm = $bindable<Record<string, any>>({}),
+    tagForm = $bindable<Record<string, string | boolean>>({}),
     onsave,
   }: {
     trans: (k: string) => string;
     editingTag: { section: string; type: string } | null;
-    tagForm: Record<string, any>;
+    tagForm: Record<string, string | boolean>;
     onsave?: () => void;
   } = $props();
 

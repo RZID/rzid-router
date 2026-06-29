@@ -1,6 +1,6 @@
 export interface Props {
   label?: string;
-  value?: any;
+  value?: string;
   placeholder?: string;
   type?: string;
   readonly?: boolean;

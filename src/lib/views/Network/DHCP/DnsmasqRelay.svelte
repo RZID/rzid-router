@@ -4,13 +4,13 @@
 
   let {
     trans,
-    relaySections = [] as [string, any][],
+    relaySections = [] as [string, import("../../../types").UciSection][],
     busy = {} as Record<string, string>,
     onopen,
     ondelete,
   }: {
     trans: (k: string) => string;
-    relaySections?: [string, any][];
+    relaySections?: [string, import("../../../types").UciSection][];
     busy?: Record<string, string>;
     onopen?: (section?: string) => void;
     ondelete?: (section: string) => void;

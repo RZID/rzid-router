@@ -5,10 +5,10 @@
 
   let {
     trans,
-    odhcpdForm = $bindable<Record<string, any>>({}),
+    odhcpdForm = $bindable<Record<string, string | boolean>>({}),
   }: {
     trans: (k: string) => string;
-    odhcpdForm: Record<string, any>;
+    odhcpdForm: Record<string, string | boolean>;
   } = $props();
 </script>
 

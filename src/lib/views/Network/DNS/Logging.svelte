@@ -5,10 +5,11 @@
 
   // Components
   import Toggle from "../../../components/Toggle/Toggle.svelte";
+  import Select from "../../../components/Select/Select.svelte";
 
   // Props
   let { dnsForm, labelCls } = $props<{
-    dnsForm: Record<string, any>;
+    dnsForm: Record<string, string | boolean | string[]>;
     labelCls: string;
   }>();
 
@@ -37,31 +38,14 @@
   bind:checked={dnsForm.logqueries}
 />
 <div>
-  <!-- svelte-ignore a11y_label_has_associated_control -->
-  <label class={labelCls}>{trans("Log facility")}</label>
-  <p class={cn("text-xs", "text-muted", "mb-1")}>
-    {trans("Set log class/facility for syslog entries.")}
-  </p>
-  <select
+  <Select
+    label={trans("Log facility")}
+    description={trans("Set log class/facility for syslog entries.")}
     bind:value={dnsForm.logfacility}
-    class={cn(
-      "w-full",
-      "px-2.5",
-      "py-1.5",
-      "border",
-      "text-xs",
-      "text-fg",
-      "rounded-md",
-      "bg-surface",
-      "outline-none",
-      "border-border",
-      "focus:border-(--accent)",
-    )}
-  >
-    <option value="">{trans("Select...")}</option>
-    {#each ["KERN", "USER", "MAIL", "DAEMON", "AUTH", "LPR", "NEWS", "UUCP", "CRON", "LOCAL0", "LOCAL1", "LOCAL2", "LOCAL3", "LOCAL4", "LOCAL5", "LOCAL6", "LOCAL7"] as f}
-      <option value={f}>{f}</option>
-    {/each}
-    <option value="-">stderr</option>
-  </select>
+    placeholder={trans("Select...")}
+    options={[
+      ...["KERN", "USER", "MAIL", "DAEMON", "AUTH", "LPR", "NEWS", "UUCP", "CRON", "LOCAL0", "LOCAL1", "LOCAL2", "LOCAL3", "LOCAL4", "LOCAL5", "LOCAL6", "LOCAL7"].map((f) => ({ value: f, label: f })),
+      { value: "-", label: "stderr" },
+    ]}
+  />
 </div>

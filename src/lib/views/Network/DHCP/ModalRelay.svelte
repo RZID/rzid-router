@@ -6,12 +6,12 @@
   let {
     trans,
     editingRelay = $bindable<string | null>(null),
-    relayForm = $bindable<Record<string, any>>({}),
+    relayForm = $bindable<Record<string, string>>({}),
     onsave,
   }: {
     trans: (k: string) => string;
     editingRelay: string | null;
-    relayForm: Record<string, any>;
+    relayForm: Record<string, string>;
     onsave?: () => void;
   } = $props();
 

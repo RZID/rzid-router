@@ -291,7 +291,7 @@
   {:else}
     {#each tables as t (t.table.family + t.table.name)}
       <NftTable
-        {table}
+        table={t}
         {chains}
         {rules}
         {items}

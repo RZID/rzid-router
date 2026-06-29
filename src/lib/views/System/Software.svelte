@@ -646,7 +646,7 @@
 
     (async () => {
       try {
-        const partials: any[] = await listDir(baseDir);
+        const partials = (await listDir(baseDir))?.entries || [];
         const files: string[] = [];
 
         if (isApk) {
@@ -669,7 +669,7 @@
         const conf: Record<string, string> = {};
         for (const f of files) {
           try {
-            conf[f] = (await readFile(f)) || "";
+            conf[f] = (await readFile(f))?.data || "";
           } catch {}
         }
 
@@ -1184,7 +1184,6 @@
     "overflow-hidden",
   )}
 >
-  <!-- Header -->
   <div class={cn("shrink-0", "space-y-2")}>
     <div class={cn("flex", "items-center", "gap-3")}>
       <div
@@ -1217,7 +1216,6 @@
       </div>
     </div>
 
-    <!-- Warning -->
     <div
       class={cn(
         "flex",
@@ -1264,7 +1262,6 @@
     }}
   />
 
-  <!-- Tab bar -->
   <div
     class={cn(
       "shrink-0",

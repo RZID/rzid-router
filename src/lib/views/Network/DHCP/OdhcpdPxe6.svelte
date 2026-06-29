@@ -4,12 +4,12 @@
 
   let {
     trans,
-    boot6Sections = [] as [string, any][],
+    boot6Sections = [] as [string, import("../../../types").UciSection][],
     onopen,
     ondelete,
   }: {
     trans: (k: string) => string;
-    boot6Sections?: [string, any][];
+    boot6Sections?: [string, import("../../../types").UciSection][];
     onopen?: (section?: string) => void;
     ondelete?: (section: string) => void;
   } = $props();

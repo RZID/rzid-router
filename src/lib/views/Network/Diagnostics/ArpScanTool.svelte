@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Search, Network as NetworkIcon } from "@lucide/svelte";
   import { cn } from "../../../helpers/classname";
+  import Select from "../../../components/Select/Select.svelte";
 
   let {
     value,
@@ -17,30 +18,7 @@
 
 <div class={cn("flex", "items-center", "gap-3")}>
   <div class={cn("flex-1")}>
-    <select
-      bind:value
-      class={cn(
-        "w-full",
-        "bg-surface",
-        "border",
-        "border-border",
-        "rounded-lg",
-        "px-3",
-        "py-2",
-        "text-sm",
-        "text-text",
-        "focus:outline-none",
-        "focus:border-accent",
-        "focus:ring-1",
-        "focus:ring-accent",
-        "transition-colors",
-        "cursor-pointer",
-      )}
-    >
-      {#each options as opt}
-        <option value={opt}>{opt}</option>
-      {/each}
-    </select>
+    <Select options={options.map((opt) => ({ value: opt, label: opt }))} bind:value />
   </div>
   <button
     onclick={onrun}

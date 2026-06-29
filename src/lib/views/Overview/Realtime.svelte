@@ -217,7 +217,6 @@
     </p>
   </div>
 
-  <!-- Tab bar -->
   <div
     class={cn(
       "flex",
@@ -266,7 +265,6 @@
     {/each}
   </div>
 
-  <!-- Content -->
   {#key tab}
     <div
       class={cn(
@@ -275,7 +273,6 @@
         tabDir === "left" ? "animate-slide-left" : "animate-slide-right",
       )}
     >
-      <!-- Bandwidth -->
       {#if tab === "bandwidth"}
         <div class={cn("flex", "flex-col", "h-full", "gap-4")}>
           <div class={cn("flex", "flex-wrap", "gap-1", "items-center")}>
@@ -334,7 +331,6 @@
         </div>
       {/if}
 
-      <!-- Load -->
       {#if tab === "load"}
         <RealtimeGraph
           series={[
@@ -348,7 +344,6 @@
         />
       {/if}
 
-      <!-- Connections -->
       {#if tab === "connections"}
         <div class={cn("flex", "flex-col", "h-full", "gap-4")}>
           <RealtimeGraph
@@ -363,7 +358,6 @@
             noDataMsg="Connection tracking unavailable"
           />
 
-          <!-- Connections table -->
           <div
             class={cn(
               "glass",

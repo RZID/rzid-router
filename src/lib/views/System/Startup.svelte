@@ -99,7 +99,6 @@
 </script>
 
 <div class={cn("p-6", "flex", "flex-col", "h-dvh", "gap-4", "animate-fade-in")}>
-  <!-- Header -->
   <div class={cn("shrink-0", "flex", "items-center", "gap-3")}>
     <div
       class={cn(
@@ -129,7 +128,6 @@
     </div>
   </div>
 
-  <!-- Controls -->
   <div class={cn("shrink-0", "glass", "p-4", "rounded-xl")}>
     <div class={cn("relative", "max-w-xs")}>
       <Search
@@ -157,7 +155,6 @@
     </div>
   </div>
 
-  <!-- Script list -->
   {#if loading}
     <div class={cn("flex-1", "flex", "items-center", "justify-center")}>
       <div class={cn("flex", "flex-col", "items-center", "gap-3")}>

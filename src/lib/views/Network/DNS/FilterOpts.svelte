@@ -36,7 +36,7 @@
     toggleMV,
     recordTypes,
   } = $props<{
-    dnsForm: Record<string, any>;
+    dnsForm: Record<string, string | boolean | string[]>;
     labelCls: string;
     rmList: (key: string, index: number) => void;
     updateList: (key: string, index: number, value: string) => void;

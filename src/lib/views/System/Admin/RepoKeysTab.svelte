@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Lock, RotateCw, Plus, Trash2 } from "@lucide/svelte";
   import { cn } from "../../../helpers/classname";
+  import Textarea from "../../../components/Textarea/Textarea.svelte";
   import {
     readFile,
     writeFile,
@@ -246,17 +247,12 @@
           )}
         </p>
         <div class={cn("flex", "items-start", "gap-2")}>
-          <textarea
+          <Textarea
             bind:value={newRepoKeyInput}
             rows={3}
             placeholder={trans("Paste key content or URL…")}
-            class={cn(
-              "flex-1 px-2.5 py-1.5 border text-xs rounded-md resize-vertical",
-              "bg-surface outline-none transition-all duration-150 font-mono",
-              "border-border text-fg",
-              "focus:border-(--accent) focus:shadow-[0_0_0_1px_var(--accent)]",
-            )}
-          ></textarea>
+            class={cn("flex-1", "font-mono")}
+          />
           <button
             onclick={addRepoKey}
             disabled={saving || !newRepoKeyInput.trim()}

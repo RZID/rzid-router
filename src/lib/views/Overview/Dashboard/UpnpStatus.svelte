@@ -1,11 +1,12 @@
 <script lang="ts">
   import { cn } from "../../../helpers/classname";
+  import type { UpnpStatusData } from "./types";
 
   let {
     upnpStatus,
     trans,
   }: {
-    upnpStatus: any;
+    upnpStatus: UpnpStatusData;
     trans: (k: string) => string;
   } = $props();
 </script>

@@ -65,7 +65,6 @@
 </script>
 
 <div class={cn("p-6", "flex", "flex-col", "h-dvh", "gap-4", "animate-fade-in")}>
-  <!-- Header -->
   <div class={cn("shrink-0", "flex", "items-center", "gap-3")}>
     <div
       class={cn(
@@ -97,7 +96,6 @@
     </div>
   </div>
 
-  <!-- Editor -->
   <div class={cn("flex-1", "min-h-0", "rounded-xl", "overflow-hidden")}>
     <div class={cn("glass", "rounded-xl", "h-full", "flex", "flex-col")}>
       <div
@@ -181,7 +179,6 @@
     </div>
   </div>
 
-  <!-- Actions -->
   <div
     class={cn(
       "shrink-0",

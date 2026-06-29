@@ -1,6 +1,8 @@
 const BASE = import.meta.env.DEV ? "http://10.10.0.1" : "";
 const UBUS_URL = BASE + "/ubus";
 
+import type { JsonValue } from "../types";
+
 let sessionId = "00000000000000000000000000000000";
 
 export const login = async (password: string): Promise<boolean> => {
@@ -31,10 +33,10 @@ export const logout = () => {
   localStorage.removeItem("owrt_session");
 };
 
-export const call = async <T = any>(
+export const call = async <T = JsonValue>(
   object: string,
   method: string,
-  params: Record<string, any> = {},
+  params: Record<string, JsonValue> = {},
 ): Promise<T | null> => {
   try {
     const res = await fetch(UBUS_URL, {
@@ -56,10 +58,10 @@ export const getSession = (): string => {
   return localStorage.getItem("owrt_session") || "00000000000000000000000000000000";
 };
 
-type BatchItem = { object: string; method: string; params?: Record<string, any> };
+type BatchItem = { object: string; method: string; params?: Record<string, JsonValue> };
 type BatchResult<T> = T | null;
 
-export const batchCall = async <T = any>(
+export const batchCall = async <T = JsonValue>(
   calls: BatchItem[],
 ): Promise<BatchResult<T>[]> => {
   try {
@@ -73,7 +75,7 @@ export const batchCall = async <T = any>(
     });
     const results = await res.json();
     if (!Array.isArray(results)) return calls.map(() => null);
-    if (results.some((r: any) => r.error?.code === -32002)) { logout(); location.href = "/"; return calls.map(() => null); }
-    return results.map((r: any) => (r.result?.[0] === 0 ? r.result[1] : null));
+    if (results.some((r: { error?: { code?: number } }) => r.error?.code === -32002)) { logout(); location.href = "/"; return calls.map(() => null); }
+    return results.map((r: { result?: [number, T] }) => (r.result?.[0] === 0 ? r.result[1] : null));
   } catch { return calls.map(() => null); }
 };

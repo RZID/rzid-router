@@ -3,10 +3,10 @@
   import { cn } from "../../../helpers/classname";
 
   let {
-    jail_mount,
-    jail_mount_input,
-    jail_mount_rw,
-    jail_mount_rw_input,
+    jail_mount = $bindable([]),
+    jail_mount_input = $bindable(""),
+    jail_mount_rw = $bindable([]),
+    jail_mount_rw_input = $bindable(""),
     trans,
   }: {
     jail_mount: string[];

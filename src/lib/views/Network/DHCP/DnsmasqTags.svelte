@@ -6,19 +6,19 @@
   let {
     trans,
     tagsTab = $bindable("matchtags"),
-    tagSections = [] as [string, any][],
-    matchSections = [] as [string, any][],
-    vcSections = [] as [string, any][],
-    ucSections = [] as [string, any][],
+    tagSections = [] as [string, import("../../../types").UciSection][],
+    matchSections = [] as [string, import("../../../types").UciSection][],
+    vcSections = [] as [string, import("../../../types").UciSection][],
+    ucSections = [] as [string, import("../../../types").UciSection][],
     onopentag,
     ondelete,
   }: {
     trans: (k: string) => string;
     tagsTab: string;
-    tagSections?: [string, any][];
-    matchSections?: [string, any][];
-    vcSections?: [string, any][];
-    ucSections?: [string, any][];
+    tagSections?: [string, import("../../../types").UciSection][];
+    matchSections?: [string, import("../../../types").UciSection][];
+    vcSections?: [string, import("../../../types").UciSection][];
+    ucSections?: [string, import("../../../types").UciSection][];
     onopentag?: (type: string, section?: string) => void;
     ondelete?: (section: string) => void;
   } = $props();

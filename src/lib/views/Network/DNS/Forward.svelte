@@ -13,7 +13,7 @@
 
   // Props
   let { dnsForm, labelCls, rmList, updateList, addList, newItems } = $props<{
-    dnsForm: Record<string, any>;
+    dnsForm: Record<string, string | boolean | string[]>;
     labelCls: string;
     rmList: (key: string, index: number) => void;
     updateList: (key: string, index: number, value: string) => void;

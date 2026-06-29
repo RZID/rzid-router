@@ -1,14 +1,15 @@
 <script lang="ts">
   import { cn } from "../../../helpers/classname";
   import { fmtBytes, fmtPkts, cidr } from "../../../helpers/format";
+  import type { NetworkDevices, NetworkInterface } from "./types";
 
   let {
     devices,
     interfaces,
     trans,
   }: {
-    devices: Record<string, any>;
-    interfaces: any[];
+    devices: NetworkDevices;
+    interfaces: NetworkInterface[];
     trans: (k: string) => string;
   } = $props();
 </script>

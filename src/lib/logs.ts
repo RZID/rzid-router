@@ -204,18 +204,22 @@ export const filterDmesgLines = (entries: DmesgLine[], filters: DmesgFilters) =>
   return out;
 };
 
-export const parseSystemClockPrefs = (uci: any): SystemClockPrefs => {
+export const parseSystemClockPrefs = (uci: unknown): SystemClockPrefs => {
   let system: Record<string, string> = {};
-  const values = uci?.values;
+  const raw = uci as Record<string, unknown> | undefined;
+  const values = raw?.values as Record<string, unknown> | undefined;
 
   if (values?.system) {
     if (Array.isArray(values.system)) {
-      system =
-        values.system.find((s: any) => s[".type"] === "system") ?? values.system[0] ?? {};
-    } else if (values.system["@system[0]"]) {
-      system = values.system["@system[0]"];
+      const list = values.system as Record<string, string>[];
+      system = list.find((s) => s[".type"] === "system") ?? list[0] ?? {};
     } else {
-      system = values.system;
+      const obj = values.system as Record<string, Record<string, string>>;
+      if (obj["@system[0]"]) {
+        system = obj["@system[0]"];
+      } else {
+        system = obj as Record<string, string>;
+      }
     }
   }
 

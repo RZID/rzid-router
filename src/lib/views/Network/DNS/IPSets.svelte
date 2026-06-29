@@ -11,7 +11,7 @@
     openIpset: (id?: string) => void;
     deleteSection: (id: string) => void;
     ltoA: (val: string | string[]) => string[];
-    getSections: (type: string) => [string, Record<string, any>][];
+    getSections: (type: string) => [string, import("../../../types").UciSection][];
     th: string;
     td: string;
   }>();

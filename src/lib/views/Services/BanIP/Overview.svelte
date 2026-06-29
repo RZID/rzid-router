@@ -4,6 +4,7 @@
   import { getLocale, onLocaleChange, t } from "../../../i18n";
   import { banipGetActual, banipGetFeeds, banipGetRuntime, banipInitAction, uciCommit, uciGet, uciSet, type BanipRuntime } from "../../../api/ubus";
   import { cn } from "../../../helpers/classname";
+  import type { UciConfig } from "../../../types";
   import TabBar from "../../../components/TabBar/TabBar.svelte";
   import GeneralTab from "./Overview/GeneralTab.svelte";
   import AdvancedTab from "./Overview/AdvancedTab.svelte";
@@ -18,7 +19,7 @@
   $effect(() => onLocaleChange(() => { locale = getLocale(); }));
 
   let tab = $state<"general"|"advanced"|"adv_chain"|"adv_set"|"adv_log"|"adv_email"|"feeds">("general");
-  let info: BanipRuntime | null = $state(null);
+  let info = $state<BanipRuntime | null>(null);
   let infoParseErr = $state(0);
 
   let uciLoaded = $state(false);
@@ -91,17 +92,17 @@
   ]);
 
   const loadUci = async () => {
-    const uci = await uciGet("banip").catch(() => null);
-    if (!uci) return;
+    const uci: UciConfig | null = await uciGet("banip").catch(() => null);
+    if (!uci?.values) return;
     uciLoaded = true;
-    const sec =
-      (Object.values(uci.values || {}) as any[]).find(
-        (s: any) => s[".type"] === "banip" || s[".type"] === "global",
-      ) || {};
-    const g = (v: any, def = "") => (v != null ? String(v) : def);
-    const f = (v: any) => v === "1";
-    const arr = (v: any): string[] =>
-      v ? (Array.isArray(v) ? v.map(String) : [String(v)]) : [];
+    const entries = Object.values(uci.values);
+    const sec: Record<string, unknown> = entries.find(
+      (s) => s[".type"] === "banip" || s[".type"] === "global",
+    ) ?? {};
+    const g = (v: unknown, def = "") => (v != null ? String(v) : def);
+    const f = (v: unknown) => v === "1";
+    const arr = (v: unknown): string[] =>
+      v ? (Array.isArray(v) ? (v as unknown[]).map(String) : [String(v)]) : [];
 
     ban_enabled = f(sec.ban_enabled);
     ban_debug = f(sec.ban_debug);
@@ -185,12 +186,12 @@
   const loadFeeds = async () => {
     const data = await banipGetFeeds();
     feedsData = data;
-    let feeds: any = null;
+    let feeds: Record<string, unknown> | null = null;
     if (data.custom?.trim()) {
-      try { feeds = JSON.parse(data.custom); } catch {}
+      try { feeds = JSON.parse(data.custom) as Record<string, unknown>; } catch {}
     }
     if (!feeds && data.default?.trim()) {
-      try { feeds = JSON.parse(data.default); } catch {}
+      try { feeds = JSON.parse(data.default) as Record<string, unknown>; } catch {}
     }
     feedKeys = feeds ? Object.keys(feeds) : [];
     countryOptions = [];
@@ -291,7 +292,7 @@
     saving = true;
     saveFeedback = "";
     try {
-      await uciSet("banip", "global", collectUciValues());
+      await uciSet("banip", "global", collectUciValues() as unknown as Record<string, string | undefined>);
       await uciCommit("banip");
       saveFeedback = "Saved";
     } catch { saveFeedback = "Save failed"; }

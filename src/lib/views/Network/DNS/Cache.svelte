@@ -5,7 +5,7 @@
 
   // Props
   let { dnsForm, labelCls, recordTypes, toggleMV } = $props<{
-    dnsForm: Record<string, any>;
+    dnsForm: Record<string, string | boolean | string[]>;
     labelCls?: string;
     recordTypes: string[];
     toggleMV: (key: string, value: string) => void;

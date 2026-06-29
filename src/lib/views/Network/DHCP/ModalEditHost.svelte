@@ -8,13 +8,13 @@
   let {
     trans,
     editing = $bindable<{ section: string; type: string } | null>(null),
-    form = $bindable<Record<string, any>>({}),
+    form = $bindable<Record<string, string | boolean>>({}),
     busy = {} as Record<string, string>,
     onsave,
   }: {
     trans: (k: string) => string;
     editing: { section: string; type: string } | null;
-    form: Record<string, any>;
+    form: Record<string, string | boolean>;
     busy?: Record<string, string>;
     onsave?: () => void;
   } = $props();

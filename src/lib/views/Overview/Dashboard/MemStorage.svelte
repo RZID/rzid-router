@@ -1,6 +1,7 @@
 <script lang="ts">
   import { cn } from "../../../helpers/classname";
   import { fmtBytes } from "../../../helpers/format";
+  import type { SystemInfoData } from "./types";
 
   let {
     sysInfo,
@@ -11,7 +12,7 @@
     memCached,
     trans,
   }: {
-    sysInfo: any;
+    sysInfo: SystemInfoData;
     memTotal: number;
     memUsed: number;
     memPct: number;

@@ -10,6 +10,7 @@
     call,
   } from "../../api/ubus";
   import { cn } from "../../helpers/classname";
+  import type { UciSection, UciConfig } from "../../types";
   import { t as _t, getLocale, onLocaleChange } from "../../i18n";
   import TabBar from "../../components/TabBar/TabBar.svelte";
   import RouteTable from "./Routes/RouteTable.svelte";
@@ -34,18 +35,18 @@
     { id: "ipv6-rules", label: "IPv6 Rules" },
   ];
   let mainTab = $state<TabId>("ipv4-routes");
-  let uciNetwork = $state<Record<string, any>>({});
+  let uciNetwork = $state<Record<string, UciSection>>({});
   let rtTables = $state<[number, string][]>([]);
   let interfaces = $state<string[]>([]);
   let loading = $state(true);
   let editing: { section: string; type: string } | null = $state(null);
   let editSubTab = $state("general");
-  let form = $state<Record<string, any>>({});
+  let form = $state<Record<string, string>>({});
   let busy = $state<Record<string, string>>({});
 
   const getSections = (type: string) =>
     Object.entries(uciNetwork).filter(
-      ([, v]: [string, any]) => v[".type"] === type,
+      ([, v]: [string, UciSection]) => v[".type"] === type,
     );
   const getType = () => {
     if (mainTab === "ipv4-routes") return "route";
@@ -58,7 +59,7 @@
 
   const fetchData = async () => {
     loading = true;
-    const [uciRes, rtRes, devRes] = await batchCall<any>([
+    const results = await batchCall<Record<string, unknown>>([
       { object: "uci", method: "get", params: { config: "network" } },
       {
         object: "file",
@@ -67,6 +68,9 @@
       },
       { object: "network.interface", method: "dump" },
     ]);
+    const uciRes = results[0] as UciConfig | null;
+    const rtRes = results[1] as { stdout?: string } | null;
+    const devRes = results[2] as { interface?: { interface: string }[] } | null;
     uciNetwork = uciRes?.values || {};
     rtTables = (rtRes?.stdout || "")
       .split("\n")
@@ -74,14 +78,14 @@
         const m = l.trim().match(/^(\d+)\s+(\S+)$/);
         return m ? ([parseInt(m[1]), m[2]] as [number, string]) : null;
       })
-      .filter((e: any) => e && e[0] > 0);
-    interfaces = (devRes?.interface || []).map((i: any) => i.interface);
+      .filter((e: [number, string] | null): e is [number, string] => e !== null && e[0] > 0);
+    interfaces = (devRes?.interface || []).map((i: { interface: string }) => i.interface);
     loading = false;
   };
 
   const tableName = (t: string | number) => {
     const num = typeof t === "number" ? t : parseInt(t);
-    if (isNaN(num)) return t;
+    if (isNaN(num)) return String(t);
     const alias = rtTables.find(([n]) => n === num);
     return alias ? `${alias[1]} (${num})` : String(num);
   };

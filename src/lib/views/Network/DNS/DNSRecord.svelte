@@ -9,7 +9,7 @@
     recTab: string;
     openRec: (type: string, id?: string) => void;
     deleteSection: (id: string) => void;
-    getSections: (type: string) => [string, Record<string, any>][];
+    getSections: (type: string) => [string, import("../../../types").UciSection][];
     td: string;
     th: string;
   }>();

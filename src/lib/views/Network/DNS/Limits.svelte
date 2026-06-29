@@ -7,7 +7,7 @@
 
   // Props
   let { dnsForm } = $props<{
-    dnsForm: Record<string, any>;
+    dnsForm: Record<string, string | boolean | string[]>;
   }>();
 
   // States

@@ -94,7 +94,6 @@
     </div>
   </div>
 {:else}
-  <!-- Pager top -->
   <div class={cn("shrink-0", "flex", "items-center", "justify-center")}>
     <div
       class={cn(
@@ -147,7 +146,6 @@
     </div>
   </div>
 
-  <!-- Table -->
   <div class={cn("flex-1", "min-h-0", "rounded-xl", "overflow-hidden")}>
     <div class={cn("glass", "rounded-xl", "h-full", "overflow-y-auto")}>
       <table class={cn("w-full", "text-xs")}>
@@ -461,7 +459,6 @@
     </div>
   </div>
 
-  <!-- Pager bottom -->
   <div class={cn("shrink-0", "flex", "items-center", "justify-center")}>
     <div
       class={cn(

@@ -24,14 +24,24 @@
   import DhcpLeases from "./Dashboard/DhcpLeases.svelte";
   import DdnsStatus from "./Dashboard/DdnsStatus.svelte";
   import UpnpStatus from "./Dashboard/UpnpStatus.svelte";
+  import type {
+    SystemInfoData,
+    BoardInfo,
+    NetworkInterface,
+    NetworkDevices,
+    DhcpLeasesData,
+    DdnsStatusRow,
+    UpnpStatusData,
+    DashboardBatchResult,
+  } from "./Dashboard/types";
 
-  let sysInfo = $state<any>({});
-  let board = $state<any>({});
-  let interfaces = $state<any[]>([]);
-  let devices: Record<string, any> = $state({});
-  let dhcpLeases = $state<any>({});
-  let ddnsStatus = $state<any[]>([]);
-  let upnpStatus = $state<any>({});
+  let sysInfo = $state<SystemInfoData>({});
+  let board = $state<BoardInfo>({});
+  let interfaces = $state<NetworkInterface[]>([]);
+  let devices: NetworkDevices = $state({});
+  let dhcpLeases = $state<DhcpLeasesData>({});
+  let ddnsStatus = $state<DdnsStatusRow[]>([]);
+  let upnpStatus = $state<UpnpStatusData>({});
   let wanDeviceName = $state("");
   let bwRate = $state({ rxRate: "0 B/s", txRate: "0 B/s" });
   let prevRx = 0;
@@ -68,7 +78,7 @@
 
   const refresh = async () => {
     const [sys, brd, net, devs, dhcp, ddns, upnp, ddnsCfg] =
-      await batchCall<any>([
+      (await batchCall([
         { object: "system", method: "info" },
         { object: "system", method: "board" },
         { object: "network.interface", method: "dump" },
@@ -77,11 +87,11 @@
         { object: "luci.ddns", method: "get_services_status" },
         { object: "luci.upnp", method: "get_status" },
         { object: "uci", method: "get", params: { config: "ddns" } },
-      ]);
+      ])) as DashboardBatchResult;
     if (sys) {
       sysInfo = sys;
-      uptime = fmtUptime(sys.uptime);
-      localTime = new Date(sys.localtime * 1000).toLocaleString();
+      uptime = fmtUptime(sys.uptime!);
+      localTime = new Date(sys.localtime! * 1000).toLocaleString();
       const l = sys.load;
       load1 = l ? `${(l[0] / 65536).toFixed(2)}` : "—";
       load5 = l ? `${(l[1] / 65536).toFixed(2)}` : "—";
@@ -99,7 +109,7 @@
       devices = devs;
     if (net?.interface) {
       interfaces = net.interface;
-      const wan = net.interface.find((i: any) => i.interface === "wan");
+      const wan = net.interface.find((i) => i.interface === "wan");
       if (wan) {
         wanIp = wan["ipv4-address"]?.[0]?.address || "—";
         wanGw = wan.route?.[0]?.nexthop || "—";
@@ -113,7 +123,7 @@
     if (dhcp) dhcpLeases = dhcp;
     if (ddns) {
       const cfg = ddnsCfg?.values || {};
-      ddnsStatus = Object.entries(ddns).map(([k, v]: any) => {
+      ddnsStatus = Object.entries(ddns).map(([k, v]) => {
         const c = cfg[k] || {};
         const ipv =
           c.use_ipv6 === "1" || k.includes("ipv6")

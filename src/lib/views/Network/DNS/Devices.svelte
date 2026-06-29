@@ -12,7 +12,7 @@
 
   // Types
   type Props = {
-    dnsForm: Record<string, any>;
+    dnsForm: Record<string, string | boolean | string[]>;
     labelCls: string;
     updateList: (key: string, index: number, value: string) => void;
     rmList: (key: string, index: number) => void;

@@ -5,13 +5,13 @@
   import Toggle from "../../../components/Toggle/Toggle.svelte";
 
   let {
-    config_file,
+    config_file = $bindable(""),
     config_file_err,
-    work_dir,
+    work_dir = $bindable(""),
     work_dir_err,
-    user,
-    group,
-    verbose,
+    user = $bindable(""),
+    group = $bindable(""),
+    verbose = $bindable(false),
     validateConfigFile,
     validateWorkDir,
     trans,

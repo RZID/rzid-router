@@ -203,7 +203,7 @@
   onInstallService={handleInstallService}
   onSwitchService={() => editSectionId && handleSwitchService(editSectionId)}
   onReadLog={() => editSectionId && handleReadLog(editSectionId)}
-  onSetEditTab={(t: string) => (editTab = t as any)}
+  onSetEditTab={(t: string) => (editTab = t as "basic" | "advanced" | "timer" | "logview")}
 />
 
 <style>

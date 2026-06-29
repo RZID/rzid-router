@@ -4,9 +4,9 @@
   import Input from "../../../components/Input/Input.svelte";
 
   let {
-    gc,
-    maxprocs,
-    memlimit,
+    gc = $bindable(""),
+    maxprocs = $bindable(""),
+    memlimit = $bindable(""),
     advanced_settings,
     trans,
   }: {

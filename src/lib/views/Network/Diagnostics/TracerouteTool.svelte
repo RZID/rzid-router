@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Network as NetworkIcon, ChevronDown } from "@lucide/svelte";
   import { cn } from "../../../helpers/classname";
+  import Input from "../../../components/Input/Input.svelte";
 
   let {
     value,
@@ -21,28 +22,7 @@
 
 <div class={cn("flex", "items-center", "gap-3", "mb-3")}>
   <div class={cn("flex-1")}>
-    <input
-      type="text"
-      bind:value
-      {placeholder}
-      class={cn(
-        "w-full",
-        "bg-surface",
-        "border",
-        "border-border",
-        "rounded-lg",
-        "px-3",
-        "py-2",
-        "text-sm",
-        "text-text",
-        "placeholder:text-text-muted",
-        "focus:outline-none",
-        "focus:border-accent",
-        "focus:ring-1",
-        "focus:ring-accent",
-        "transition-colors",
-      )}
-    />
+    <Input bind:value {placeholder} />
   </div>
   <div class={cn("flex", "items-center", "gap-1")}>
     <button

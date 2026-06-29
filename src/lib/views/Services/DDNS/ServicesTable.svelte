@@ -9,6 +9,8 @@
     Globe,
   } from "@lucide/svelte";
   import { cn } from "../../../helpers/classname";
+  import type { DdnsServiceStatus, DdnsState } from "../../../api/ubus";
+  import type { UciConfig, UciSection } from "../../../types";
 
   let {
     serviceSections,
@@ -25,9 +27,9 @@
     onReorder,
   }: {
     serviceSections: string[];
-    servicesStatus: Record<string, any>;
-    uciConfig: any;
-    status: any;
+    servicesStatus: Record<string, DdnsServiceStatus>;
+    uciConfig: UciConfig | null;
+    status: DdnsState | null;
     trans: (k: string) => string;
     onAdd: () => void;
     onEdit: (id: string) => void;
@@ -187,9 +189,9 @@
             {#each serviceSections as sectionId, idx (sectionId)}
               {@const svc = servicesStatus[sectionId] || {}}
               {@const sectionData =
-                (Object.values(uciConfig?.values || {}) as any[]).find(
-                  (s: any) => s[".name"] === sectionId,
-                ) || {}}
+                (Object.values(uciConfig?.values || {}) as UciSection[]).find(
+                  (s: UciSection) => s[".name"] === sectionId,
+                ) || ({} as UciSection)}
               {@const enabled = sectionData.enabled === "1"}
               {@const lookupHost =
                 sectionData.lookup_host || trans("Configuration Error")}

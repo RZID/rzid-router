@@ -54,7 +54,6 @@
 </script>
 
 <div class={cn("shrink-0", "glass", "p-4", "rounded-xl", "space-y-3")}>
-  <!-- Row 1: Disk + Actions -->
   <div class={cn("flex", "flex-wrap", "items-center", "gap-4")}>
     <div class={cn("flex", "items-center", "gap-3", "flex-1", "min-w-48")}>
       <div
@@ -180,7 +179,6 @@
     </div>
   </div>
 
-  <!-- Row 2: Filter + Install -->
   <div class={cn("flex", "flex-wrap", "items-end", "gap-3")}>
     <div class={cn("flex-1", "min-w-40")}>
       <!-- svelte-ignore a11y_label_has_associated_control -->
@@ -279,7 +277,6 @@
     </div>
   </div>
 
-  <!-- Row 3: i18n filter -->
   <div>
     <label
       class={cn(

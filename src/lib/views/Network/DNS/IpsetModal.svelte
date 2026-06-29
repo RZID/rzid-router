@@ -13,7 +13,7 @@
     trans,
   }: {
     editingIpset: string | null;
-    ipForm: Record<string, any>;
+    ipForm: Record<string, string | string[]>;
     fwIpsets: string[];
     onclose: () => void;
     onsave: () => void;

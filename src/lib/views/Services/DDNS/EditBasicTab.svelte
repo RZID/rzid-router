@@ -5,6 +5,8 @@
   import Select from "../../../components/Select/Select.svelte";
   import Toggle from "../../../components/Toggle/Toggle.svelte";
   import FileUpload from "../../../components/FileUpload/FileUpload.svelte";
+  import type { ServiceForm } from "./types";
+  import type { DdnsEnv } from "../../../api/ubus";
 
   let {
     editForm,
@@ -22,8 +24,8 @@
     onInstallService,
     onSwitchService,
   }: {
-    editForm: any;
-    env: any;
+    editForm: ServiceForm;
+    env: DdnsEnv | null;
     providerServices: Record<string, boolean>;
     originalServiceName: string;
     originalUseIpv6: string;

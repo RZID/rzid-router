@@ -4,10 +4,10 @@
 
   let {
     trans,
-    leases4 = [] as any[],
-    leases6 = [] as any[],
-    hosts = {} as Record<string, any>,
-    uciDhcp = {} as Record<string, any>,
+    leases4 = [] as Record<string, unknown>[],
+    leases6 = [] as Record<string, unknown>[],
+    hosts = {} as Record<string, unknown>,
+    uciDhcp = {} as import("../../../types").UciSection,
     busy = {} as Record<string, string>,
     hasDhcpV6 = true,
     onadd,
@@ -15,10 +15,10 @@
     ondelete,
   }: {
     trans: (k: string) => string;
-    leases4?: any[];
-    leases6?: any[];
-    hosts?: Record<string, any>;
-    uciDhcp?: Record<string, any>;
+    leases4?: Record<string, unknown>[];
+    leases6?: Record<string, unknown>[];
+    hosts?: Record<string, unknown>;
+    uciDhcp?: import("../../../types").UciSection;
     busy?: Record<string, string>;
     hasDhcpV6?: boolean;
     onadd?: () => void;
@@ -31,10 +31,10 @@
 
   let getSections = (type: string) =>
     Object.entries(uciDhcp).filter(
-      ([, v]: [string, any]) => v[".type"] === type,
+      ([, v]: [string, import("../../../types").UciSection]) => v[".type"] === type,
     );
 
-  let fmtLeaseTime = (expires: any) => {
+  let fmtLeaseTime = (expires: number | false) => {
     if (expires === false) return trans("unlimited");
     if (expires <= 0) return trans("expired");
     const s = Math.floor(expires);
@@ -47,7 +47,7 @@
 
   let hostHint = (mac: string) => hosts[mac?.toLowerCase()];
 
-  let ltoA = (v: any): string[] => {
+  let ltoA = (v: string | string[] | undefined | null): string[] => {
     if (Array.isArray(v)) return v;
     if (v?.split) return v.split(/\s+/).filter(Boolean);
     return [];
@@ -55,7 +55,6 @@
 </script>
 
 <div class={cn("mt-4", "space-y-8")}>
-  <!-- Static Leases -->
   <section>
     <h3 class={cn("text-sm", "font-semibold", "text-white", "mb-3")}>
       {trans("Static Leases")}
@@ -171,7 +170,6 @@
     {/if}
   </section>
 
-  <!-- Active DHCPv4 Leases -->
   <section>
     <h3 class={cn("text-sm", "font-semibold", "text-white", "mb-3")}>
       {trans("Active DHCPv4 Leases")}
@@ -232,7 +230,6 @@
   </section>
 
   {#if hasDhcpV6}
-    <!-- Active DHCPv6 Leases -->
     <section>
       <h3 class={cn("text-sm", "font-semibold", "text-white", "mb-3")}>
         {trans("Active DHCPv6 Leases")}

@@ -14,8 +14,8 @@
     th,
   }: {
     type: string;
-    columns: { key: string; label: string; render?: (v: any) => string }[];
-    sections: [string, Record<string, any>][];
+    columns: { key: string; label: string; render?: (v: string) => string }[];
+    sections: [string, import("../../../types").UciSection][];
     description: string;
     openRec: (type: string, id?: string) => void;
     deleteSection: (id: string) => void;

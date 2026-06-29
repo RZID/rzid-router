@@ -1,11 +1,12 @@
 <script lang="ts">
   import { cn } from "../../../helpers/classname";
+  import type { DdnsStatusRow } from "./types";
 
   let {
     ddnsStatus,
     trans,
   }: {
-    ddnsStatus: any[];
+    ddnsStatus: DdnsStatusRow[];
     trans: (k: string) => string;
   } = $props();
 </script>

@@ -7,15 +7,15 @@
 
   let {
     trans,
-    dnsmasqForm = $bindable<Record<string, any>>({}),
-    bootSections = [] as [string, any][],
+    dnsmasqForm = $bindable<Record<string, string | boolean>>({}),
+    bootSections = [] as [string, import("../../../types").UciSection][],
     busy = {} as Record<string, string>,
     onopenboot,
     ondelete,
   }: {
     trans: (k: string) => string;
-    dnsmasqForm: Record<string, any>;
-    bootSections?: [string, any][];
+    dnsmasqForm: Record<string, string | boolean>;
+    bootSections?: [string, import("../../../types").UciSection][];
     busy?: Record<string, string>;
     onopenboot?: (section?: string) => void;
     ondelete?: (section: string) => void;

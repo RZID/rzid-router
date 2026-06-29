@@ -1,5 +1,6 @@
 <script lang="ts">
   import { cn } from "../../../helpers/classname";
+  import type { BoardInfo } from "./types";
 
   let {
     board,
@@ -8,7 +9,7 @@
     load15,
     trans,
   }: {
-    board: any;
+    board: BoardInfo;
     load1: string;
     load5: string;
     load15: string;

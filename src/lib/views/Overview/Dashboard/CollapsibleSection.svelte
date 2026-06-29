@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ChevronRight } from "@lucide/svelte";
   import { slide } from "svelte/transition";
+  import type { Component, Snippet } from "svelte";
   import { cn } from "../../../helpers/classname";
 
   let {
@@ -9,10 +10,10 @@
     badge,
     children,
   }: {
-    icon: any;
+    icon: Component;
     title: string;
     badge?: string;
-    children: any;
+    children: Snippet;
   } = $props();
 
   let open = $state(true);

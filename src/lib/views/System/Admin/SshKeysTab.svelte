@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Terminal, RotateCw, Plus, Trash2 } from "@lucide/svelte";
   import { cn } from "../../../helpers/classname";
+  import Input from "../../../components/Input/Input.svelte";
   import { readFile, writeFile } from "../../../api/ubus";
   import type { ParsedKey } from "./types";
 
@@ -248,16 +249,10 @@
       <div class={cn("border-t", "border-border", "pt-4")}>
         <div class={cn("flex", "items-center", "gap-2")}>
           <div class={cn("flex-1", "relative")}>
-            <input
-              type="text"
+            <Input
               bind:value={sshAddInput}
               placeholder={trans("Paste or drag SSH key file…")}
-              class={cn(
-                "w-full px-2.5 py-1.5 pr-8 border text-xs rounded-md",
-                "bg-surface outline-none transition-all duration-150",
-                "border-border text-fg font-mono",
-                "focus:border-(--accent) focus:shadow-[0_0_0_1px_var(--accent)]",
-              )}
+              mono
             />
           </div>
           <button

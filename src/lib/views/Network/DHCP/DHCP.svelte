@@ -6,6 +6,7 @@
   import { cn } from "../../../helpers/classname";
   import { t as _t, getLocale, onLocaleChange } from "../../../i18n";
   import TabBar from "../../../components/TabBar/TabBar.svelte";
+  import type { UciSection } from "../../../types";
 
   import LeasesPanel from "./LeasesPanel.svelte";
   import DnsmasqGeneral from "./DnsmasqGeneral.svelte";
@@ -38,43 +39,43 @@
     dnsmasqTab = $state<DnsmasqTab>("general"),
     odhcpdTab = $state<OdhcpdTab>("general"),
     tagsTab = $state<TagsTab>("matchtags"),
-    uciDhcp = $state<Record<string, any>>({}),
+    uciDhcp = $state<Record<string, UciSection>>({}),
     loading = $state(true),
-    leases4 = $state<any[]>([]),
-    leases6 = $state<any[]>([]),
-    hosts = $state<Record<string, any>>({}),
+    leases4 = $state<Record<string, unknown>[]>([]),
+    leases6 = $state<Record<string, unknown>[]>([]),
+    hosts = $state<Record<string, unknown>>({}),
     pollInterval: ReturnType<typeof setInterval>,
     editing: { section: string; type: string } | null = $state(null),
-    form = $state<Record<string, any>>({}),
+    form = $state<Record<string, string | boolean>>({}),
     addingNew = $state(false),
     busy = $state<Record<string, string>>({}),
-    dnsmasqForm = $state<Record<string, any>>({}),
-    odhcpdForm = $state<Record<string, any>>({}),
-    relayForm = $state<Record<string, any>>({}),
+    dnsmasqForm = $state<Record<string, string | boolean>>({}),
+    odhcpdForm = $state<Record<string, string | boolean>>({}),
+    relayForm = $state<Record<string, string>>({}),
     editingRelay: string | null = $state(null),
-    bootForm = $state<Record<string, any>>({}),
+    bootForm = $state<Record<string, string | boolean>>({}),
     editingBoot: string | null = $state(null),
-    tagForm = $state<Record<string, any>>({}),
+    tagForm = $state<Record<string, string | boolean>>({}),
     editingTag: { section: string; type: string } | null = $state(null),
-    boot6Form = $state<Record<string, any>>({}),
+    boot6Form = $state<Record<string, string>>({}),
     editingBoot6: string | null = $state(null);
 
   let getSections = (type: string) =>
       Object.entries(uciDhcp).filter(
-        ([, v]: [string, any]) => v[".type"] === type,
+        ([, v]: [string, UciSection]) => v[".type"] === type,
       ),
     fetchData = async () => {
       loading = true;
-      const [uciRes, leaseRes, hostRes, netRes] = await batchCall<any>([
+      const [uciRes, leaseRes, hostRes, netRes] = await batchCall<Record<string, unknown>>([
         { object: "uci", method: "get", params: { config: "dhcp" } },
         { object: "luci-rpc", method: "getDHCPLeases" },
         { object: "luci-rpc", method: "getHostHints" },
         { object: "network.interface", method: "dump" },
       ]);
-      uciDhcp = uciRes?.values || {};
-      leases4 = leaseRes?.dhcp_leases || [];
-      leases6 = leaseRes?.dhcp6_leases || [];
-      hosts = hostRes || {};
+      uciDhcp = (uciRes?.values as Record<string, UciSection>) || {};
+      leases4 = (leaseRes?.dhcp_leases as Record<string, unknown>[]) || [];
+      leases6 = (leaseRes?.dhcp6_leases as Record<string, unknown>[]) || [];
+      hosts = (hostRes as Record<string, unknown>) || {};
 
       if (dnsmasqSec[1]) {
         const s = dnsmasqSec[1];
@@ -133,7 +134,7 @@
     saveEdit = async () => {
       if (!editing) return;
       const path = editing.section;
-      const vals: Record<string, any> = {
+      const vals: Record<string, string | string[]> = {
         name: form.name || "",
         mac: ltoA(form.mac),
         ip: form.ip || "",
@@ -176,7 +177,7 @@
       if (!name) return;
       busy = { ...busy, dnsmasq: "save" };
       const f = dnsmasqForm;
-      const vals: Record<string, any> = {
+      const vals: Record<string, string> = {
         domain: f.domain || "",
         dhcpleasemax: f.dhcpleasemax || "",
         logfacility: f.logfacility || "",
@@ -209,7 +210,7 @@
       }
       busy = { ...busy, odhcpd: "save" };
       const f = odhcpdForm;
-      const vals: Record<string, any> = {
+      const vals: Record<string, string> = {
         leasefile: f.leasefile || "",
         leasetrigger: f.leasetrigger || "",
         hostsdir: f.hostsdir || "",
@@ -224,9 +225,9 @@
         Object.entries(busy).filter(([k]) => k !== "odhcpd"),
       );
     },
-    ltoA = (v: any): string[] => {
+    ltoA = (v: string | string[] | undefined | null): string[] => {
       if (Array.isArray(v)) return v;
-      if (v?.split) return v.split(/\s+/).filter(Boolean);
+      if (typeof v === "string" && v.length > 0) return v.split(/\s+/).filter(Boolean);
       return [];
     },
     openRelay = (section?: string) => {
@@ -291,7 +292,7 @@
       }
     },
     saveBoot = async () => {
-      const vals: Record<string, any> = {};
+      const vals: Record<string, string> = {};
       for (const [k, v] of Object.entries(bootForm)) {
         if (k === "force") {
           vals.force = v ? "1" : "";
@@ -345,7 +346,7 @@
       }
     },
     saveTag = async () => {
-      const vals: Record<string, any> = {};
+      const vals: Record<string, string> = {};
       for (const [k, v] of Object.entries(tagForm)) {
         if (k === "_type") continue;
         if (k === "force") {
@@ -379,7 +380,7 @@
       editingBoot6 = section || "__new__";
     },
     saveBoot6 = async () => {
-      const vals: Record<string, any> = {};
+      const vals: Record<string, string> = {};
       for (const [k, v] of Object.entries(boot6Form)) {
         if (v !== "" && v !== undefined) vals[k] = v;
       }
@@ -408,13 +409,13 @@
     }),
     dnsmasqSec = $derived(
       (Object.entries(uciDhcp).find(
-        ([, v]: [string, any]) => v[".type"] === "dnsmasq",
-      ) || [null, {}]) as [string | null, any],
+        ([, v]: [string, UciSection]) => v[".type"] === "dnsmasq",
+      ) || [null, {}]) as [string | null, UciSection],
     ),
     odhcpdSec = $derived(
       (Object.entries(uciDhcp).find(
-        ([, v]: [string, any]) => v[".type"] === "odhcpd",
-      ) || [null, {}]) as [string | null, any],
+        ([, v]: [string, UciSection]) => v[".type"] === "odhcpd",
+      ) || [null, {}]) as [string | null, UciSection],
     ),
     relaySections = $derived(getSections("relay")),
     bootSections = $derived(getSections("boot")),
@@ -449,10 +450,10 @@
   onMount(() => {
     fetchData();
     pollInterval = setInterval(async () => {
-      const leaseRes = await call<any>("luci-rpc", "getDHCPLeases");
+      const leaseRes = await call<Record<string, unknown>>("luci-rpc", "getDHCPLeases");
       if (leaseRes) {
-        leases4 = leaseRes.dhcp_leases || [];
-        leases6 = leaseRes.dhcp6_leases || [];
+        leases4 = (leaseRes.dhcp_leases as Record<string, unknown>[]) || [];
+        leases6 = (leaseRes.dhcp6_leases as Record<string, unknown>[]) || [];
       }
     }, 10000);
   });

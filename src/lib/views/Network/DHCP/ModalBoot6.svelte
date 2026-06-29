@@ -7,12 +7,12 @@
   let {
     trans,
     editingBoot6 = $bindable<string | null>(null),
-    boot6Form = $bindable<Record<string, any>>({}),
+    boot6Form = $bindable<Record<string, string>>({}),
     onsave,
   }: {
     trans: (k: string) => string;
     editingBoot6: string | null;
-    boot6Form: Record<string, any>;
+    boot6Form: Record<string, string>;
     onsave?: () => void;
   } = $props();
 

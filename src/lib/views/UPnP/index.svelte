@@ -11,7 +11,8 @@
     call,
     execCommand,
   } from "../../api/ubus";
-  import type { AclRule } from "./types";
+  import type { AclRule, ActivePortMap } from "./types";
+  import type { UciConfig } from "../../types";
   import ActivePortMaps from "./ActivePortMaps.svelte";
   import ServiceSettings from "./ServiceSettings.svelte";
   import AclRulesTable from "./AclRulesTable.svelte";
@@ -27,7 +28,7 @@
     }),
   );
 
-  let activeRules: any[] = $state([]);
+  let activeRules: ActivePortMap[] = $state([]);
   let enabled = $state(true),
     enable_upnp = $state(true),
     enable_natpmp = $state(true);
@@ -71,45 +72,47 @@
   };
 
   const loadUci = async () => {
-    const uci = await uciGet("upnpd").catch(() => null);
+    const uci: UciConfig | null = await uciGet("upnpd").catch(() => null);
     if (!uci?.values) return;
-    const sec =
-      (Object.values(uci.values) as any[]).find(
-        (s: any) => s[".type"] === "upnpd",
-      ) || {};
-    enabled = sec.enabled !== "0";
-    enable_upnp = sec.enable_upnp !== "0";
-    enable_natpmp = sec.enable_natpmp !== "0";
-    ext_allow_private_ipv4 = sec.ext_allow_private_ipv4 === "1";
-    igdv1 = sec.igdv1 !== "0";
-    download = sec.download || "";
-    upload = sec.upload || "";
-    use_stun = sec.use_stun === "1";
-    stun_host = sec.stun_host || "";
-    stun_port = sec.stun_port || "";
-    secure_mode = sec.secure_mode !== "0";
-    notify_interval = sec.notify_interval || "";
-    port = sec.port || "";
-    presentation_url = sec.presentation_url || "";
-    uuid = sec.uuid || "";
-    model_number = sec.model_number || "";
-    serial_number = sec.serial_number || "";
-    system_uptime = sec.system_uptime !== "0";
-    log_output = sec.log_output === "1";
-    upnp_lease_file = sec.upnp_lease_file || "";
-    aclRules = (Object.values(uci.values) as any[])
-      .filter((s: any) => s[".type"] === "rule")
-      .map((r: any) => ({
-        comment: r.comment || "",
-        int_addr: r.int_addr || "",
-        int_ports: r.int_ports || "",
-        ext_ports: r.ext_ports || "",
-        action: r.action || "allow",
+    const entries = Object.values(uci.values);
+    const sec: Record<string, unknown> = entries.find(
+      (s) => s[".type"] === "upnpd",
+    ) ?? {};
+    const s = (v: unknown) => (v != null ? String(v) : "");
+    enabled = s(sec.enabled) !== "0";
+    enable_upnp = s(sec.enable_upnp) !== "0";
+    enable_natpmp = s(sec.enable_natpmp) !== "0";
+    ext_allow_private_ipv4 = s(sec.ext_allow_private_ipv4) === "1";
+    igdv1 = s(sec.igdv1) !== "0";
+    download = s(sec.download);
+    upload = s(sec.upload);
+    use_stun = s(sec.use_stun) === "1";
+    stun_host = s(sec.stun_host);
+    stun_port = s(sec.stun_port);
+    secure_mode = s(sec.secure_mode) !== "0";
+    notify_interval = s(sec.notify_interval);
+    port = s(sec.port);
+    presentation_url = s(sec.presentation_url);
+    uuid = s(sec.uuid);
+    model_number = s(sec.model_number);
+    serial_number = s(sec.serial_number);
+    system_uptime = s(sec.system_uptime) !== "0";
+    log_output = s(sec.log_output) === "1";
+    upnp_lease_file = s(sec.upnp_lease_file);
+    const secAcl = (v: unknown) => (v != null ? String(v) : "");
+    aclRules = entries
+      .filter((s) => s[".type"] === "rule")
+      .map((r) => ({
+        comment: secAcl(r.comment),
+        int_addr: secAcl(r.int_addr),
+        int_ports: secAcl(r.int_ports),
+        ext_ports: secAcl(r.ext_ports),
+        action: secAcl(r.action) || "allow",
       }));
   };
 
   const getStatus = async () => {
-    const r = await call<any>("luci.upnp", "get_status", {});
+    const r = await call<{ rules?: ActivePortMap[] }>("luci.upnp", "get_status", {});
     if (r?.rules) activeRules = r.rules;
   };
 
@@ -127,12 +130,12 @@
     saving = true;
     saveFeedback = "";
     try {
-      const uci = await uciGet("upnpd");
-      const sec = (Object.values(uci?.values || {}) as any[]).find(
-        (s: any) => s[".type"] === "upnpd",
+      const uci: UciConfig | null = await uciGet("upnpd");
+      const entries = uci?.values ? Object.values(uci.values) : [];
+      const sec = entries.find(
+        (s) => s[".type"] === "upnpd",
       );
-      const name =
-        sec?.[".name"] || (await uciAdd("upnpd", "upnpd")).slice(1, -1);
+      const name = (sec?.[".name"] as string | undefined) || (await uciAdd("upnpd", "upnpd")).slice(1, -1);
       await uciSet("upnpd", name, "enabled", enabled ? "1" : "0");
       await uciSet("upnpd", name, "enable_upnp", enable_upnp ? "1" : "0");
       await uciSet("upnpd", name, "enable_natpmp", enable_natpmp ? "1" : "0");
@@ -161,7 +164,7 @@
       for (const [i, rule] of aclRules.entries()) {
         const rname =
           Object.entries(uci?.values || {}).find(
-            ([, v]: any) => v[".type"] === "rule" && v[".index"] === i,
+            ([, v]) => v[".type"] === "rule" && v[".index"] === String(i),
           )?.[0] || (await uciAdd("upnpd", "rule")).slice(1, -1);
         await uciSet("upnpd", rname, "comment", rule.comment);
         await uciSet("upnpd", rname, "int_addr", rule.int_addr);
@@ -368,7 +371,7 @@
   <ActivePortMaps
     {activeRules}
     onrefresh={getStatus}
-    {ondelete}
+    ondelete={deleteRule}
     {formatExpires}
     {trans}
   />

@@ -183,7 +183,6 @@
         tabDir === "left" ? "animate-slide-left" : "animate-slide-right",
       )}
     >
-      <!-- Neighbours -->
       <div class={cn("glass", "p-5", "animate-slide-up")}>
         <h3 class={cn("text-sm", "font-semibold", "text-white", "mb-3")}>
           {tab === "ipv4" ? trans("IPv4") : trans("IPv6")}
@@ -219,7 +218,6 @@
           </p>{/if}
       </div>
 
-      <!-- Routes -->
       <div class={cn("glass", "p-5", "animate-slide-up")}>
         <h3 class={cn("text-sm", "font-semibold", "text-white", "mb-3")}>
           {trans("Active")}
@@ -280,7 +278,6 @@
         {/if}
       </div>
 
-      <!-- Rules -->
       <div class={cn("glass", "p-5", "animate-slide-up")}>
         <h3 class={cn("text-sm", "font-semibold", "text-white", "mb-3")}>
           {trans("Active")}

@@ -7,11 +7,11 @@
   let {
     trans,
     dnsmasqTab,
-    dnsmasqForm = $bindable<Record<string, any>>({}),
+    dnsmasqForm = $bindable<Record<string, string | boolean>>({}),
   }: {
     trans: (k: string) => string;
     dnsmasqTab: string;
-    dnsmasqForm: Record<string, any>;
+    dnsmasqForm: Record<string, string | boolean>;
   } = $props();
 </script>
 

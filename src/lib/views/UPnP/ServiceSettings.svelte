@@ -9,8 +9,8 @@
     enable_natpmp,
     ext_allow_private_ipv4,
     igdv1,
-    download,
-    upload,
+    download = $bindable(""),
+    upload = $bindable(""),
     use_stun,
     stun_host,
     stun_port,
@@ -24,9 +24,32 @@
     system_uptime,
     log_output,
     upnp_lease_file,
-    settingsTab,
+    settingsTab = $bindable("setup"),
     trans,
-  }: any = $props();
+  }: {
+    enabled: boolean;
+    enable_upnp: boolean;
+    enable_natpmp: boolean;
+    ext_allow_private_ipv4: boolean;
+    igdv1: boolean;
+    download?: string;
+    upload?: string;
+    use_stun: boolean;
+    stun_host: string;
+    stun_port: string;
+    secure_mode: boolean;
+    notify_interval: string;
+    port: string;
+    presentation_url: string;
+    uuid: string;
+    model_number: string;
+    serial_number: string;
+    system_uptime: boolean;
+    log_output: boolean;
+    upnp_lease_file: string;
+    settingsTab?: "setup" | "advanced";
+    trans: (k: string) => string;
+  } = $props();
 </script>
 
 <div class={cn("glass", "rounded-xl", "p-5")}>

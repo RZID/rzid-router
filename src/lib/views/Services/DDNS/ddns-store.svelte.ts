@@ -22,14 +22,15 @@ import {
   type DdnsServiceStatus,
 } from "../../../api/ubus";
 import type { ServiceForm } from "./types";
+import type { UciConfig, UciSection } from "../../../types";
 
 export const store = $state({
   status: null as DdnsState | null,
   env: null as DdnsEnv | null,
   servicesStatus: {} as Record<string, DdnsServiceStatus>,
-  uciConfig: null as any,
+  uciConfig: null as UciConfig | null,
   providerServices: {} as Record<string, boolean>,
-  providerServicesData: {} as Record<string, any>,
+  providerServicesData: {} as Record<string, Record<string, unknown>>,
   saving: false,
   saveFeedback: "",
   logContent: "",
@@ -114,8 +115,8 @@ const loadProviderServices = async () => {
     readFile("/usr/share/ddns/list").catch(() => null),
   ]);
   const svcs: Record<string, boolean> = {};
-  const svcData: Record<string, any> = {};
-  const loadJson = async (dir: string, entries: any[]) => {
+  const svcData: Record<string, Record<string, unknown>> = {};
+  const loadJson = async (dir: string, entries: { name: string; type?: string }[]) => {
     for (const e of entries) {
       const name = e.name.replace(".json", "");
       svcs[name] = true;
@@ -148,11 +149,11 @@ export const load = async () => {
   if (ss) store.servicesStatus = ss;
   if (uci) {
     store.uciConfig = uci;
-    const sections = Object.values(uci.values || {}) as any[];
+    const sections = Object.values(uci.values || {}) as UciSection[];
     store.serviceSections = sections
-      .filter((s: any) => s[".type"] === "service")
-      .map((s: any) => s[".name"]);
-    const globalSec = sections.find((s: any) => s[".type"] === "ddns");
+      .filter((s: UciSection) => s[".type"] === "service")
+      .map((s: UciSection) => s[".name"] as string);
+    const globalSec = sections.find((s: UciSection) => s[".type"] === "ddns");
     if (globalSec) {
       store.g.upd_privateip = globalSec.upd_privateip === "1";
       store.g.ddns_dateformat = globalSec.ddns_dateformat || "%F %R";
@@ -192,7 +193,7 @@ export const handleRefreshServicesList = async () => {
   await load();
 };
 
-const getServiceData = async (service: string): Promise<any> => {
+const getServiceData = async (service: string): Promise<Record<string, unknown> | null> => {
   const [cust, def] = await Promise.all([
     readFile(`/usr/share/ddns/custom/${service}.json`).catch(() => null),
     readFile(`/usr/share/ddns/default/${service}.json`).catch(() => null),
@@ -262,8 +263,8 @@ export const handleAddService = async () => {
 
 export const openEdit = async (sectionId: string) => {
   store.editValidationErrors = [];
-  const sections = Object.values(store.uciConfig?.values || {}) as any[];
-  const sec = sections.find((s: any) => s[".name"] === sectionId) || {};
+  const sections = Object.values(store.uciConfig?.values || {}) as UciSection[];
+  const sec = sections.find((s: UciSection) => s[".name"] === sectionId) || ({} as UciSection);
   store.editForm = {
     enabled: sec.enabled === "1",
     lookup_host: sec.lookup_host || "",
@@ -371,7 +372,7 @@ export const handleSaveService = async (sectionId: string | null) => {
     let interfaceVal = store.editForm.interface;
     if (store.editForm.ip_source === "network" && !interfaceVal)
       interfaceVal = store.editForm.ip_network || "wan";
-    const vals: Record<string, any> = {
+    const vals: Record<string, string | undefined> = {
       enabled: store.editForm.enabled ? "1" : "0",
       lookup_host: store.editForm.lookup_host,
       use_ipv6: store.editForm.use_ipv6,
@@ -482,11 +483,11 @@ export const handleReorder = async (
 export const handleSaveGlobal = async () => {
   store.saving = true;
   try {
-    const globalSec: any = Object.values(store.uciConfig?.values || {}).find(
-      (s: any) => s[".type"] === "ddns",
+    const globalSec = Object.values(store.uciConfig?.values || {}).find(
+      (s: UciSection) => s[".type"] === "ddns",
     );
     if (!globalSec) return;
-    await uciSetSection("ddns", globalSec[".name"] as string, {
+    await uciSetSection("ddns", globalSec[".name"]!, {
       upd_privateip: store.g.upd_privateip ? "1" : "0",
       ddns_dateformat: store.g.ddns_dateformat,
       ddns_rundir: store.g.ddns_rundir,

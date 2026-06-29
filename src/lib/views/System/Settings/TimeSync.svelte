@@ -11,7 +11,15 @@
     ntpUseDhcp,
     ntpServers,
     trans,
-  }: any = $props();
+  }: {
+    ntpdAvailable: boolean;
+    ntpEnabled: boolean;
+    ntpEnableServer: boolean;
+    ntpInterface: string;
+    ntpUseDhcp: boolean;
+    ntpServers: string[];
+    trans: (k: string) => string;
+  } = $props();
 </script>
 
 <div class={cn("space-y-4")}>
