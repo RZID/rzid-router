@@ -2,8 +2,15 @@
   import { cn } from "../helpers/classname";
   import { t as _t, getLocale, onLocaleChange } from "../i18n";
   let locale = $state(getLocale());
-  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
-  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
+  let trans = $derived.by(() => {
+    locale;
+    return (k: string) => _t(k);
+  });
+  $effect(() =>
+    onLocaleChange(() => {
+      locale = getLocale();
+    }),
+  );
 
   let { title, sub = trans("Coming soon") } = $props<{
     title: string;

@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "bun run build && scp -r dist/* root@10.10.0.1:/www/"
+    "deploy": "bun run build && scp -r dist/* root@10.10.0.1:/www/ && ssh root@10.10.0.1 \"uci -q get uhttpd.main.error_page | grep -q index.html || (uci set uhttpd.main.error_page=/index.html && uci commit uhttpd && /etc/init.d/uhttpd reload)\""
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.1.2",

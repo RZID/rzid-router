@@ -1,0 +1,35 @@
+export interface ServiceForm {
+  enabled: boolean;
+  lookup_host: string;
+  use_ipv6: string;
+  service_name: string;
+  update_url: string;
+  update_script: string;
+  domain: string;
+  username: string;
+  password: string;
+  param_enc: string;
+  param_opt: string;
+  use_https: boolean;
+  cacert: string;
+  ip_source: string;
+  ip_network: string;
+  ip_url: string;
+  ip_interface: string;
+  ip_script: string;
+  interface: string;
+  bind_network: string;
+  force_ipversion: boolean;
+  dns_server: string;
+  force_dnstcp: boolean;
+  proxy: string;
+  use_syslog: string;
+  use_logfile: boolean;
+  check_interval: string;
+  check_unit: string;
+  force_interval: string;
+  force_unit: string;
+  retry_max_count: string;
+  retry_interval: string;
+  retry_unit: string;
+}

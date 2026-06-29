@@ -1,38 +1,45 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import Login from "./lib/components/Login/index.svelte";
-  import Sidebar from "./lib/components/Sidebar/index.svelte";
-  import Dashboard from "./lib/views/Dashboard.svelte";
-  import Services from "./lib/views/Services.svelte";
-  import Routes from "./lib/views/Routes.svelte";
-  import Firewall from "./lib/views/Firewall.svelte";
-  import Logs from "./lib/views/Logs.svelte";
-  import Processes from "./lib/views/Processes.svelte";
-  import Realtime from "./lib/views/Realtime.svelte";
-  import System from "./lib/views/System.svelte";
-  import Admin from "./lib/views/Admin.svelte";
-  import Software from "./lib/views/Software.svelte";
-  import Startup from "./lib/views/Startup.svelte";
-  import Crontab from "./lib/views/Crontab.svelte";
-  import Flash from "./lib/views/Flash.svelte";
-  import DDNS from "./lib/views/DDNS.svelte";
-  import AdGuardHome from "./lib/views/AdGuardHome.svelte";
-  import BanIP from "./lib/views/BanIP.svelte";
-  import TTYD from "./lib/views/TTYD.svelte";
-  import UPnP from "./lib/views/UPnP.svelte";
-  import Network from "./lib/views/Network.svelte";
-  import NetworkRoutes from "./lib/views/NetworkRoutes.svelte";
-  import DHCP from "./lib/views/DHCP.svelte";
-  import DNS from "./lib/views/DNS.svelte";
-  import Diagnostics from "./lib/views/Diagnostics.svelte";
+  import Login from "./lib/components/Login/Login.svelte";
+  import Sidebar from "./lib/components/Sidebar/Sidebar.svelte";
+  import Dashboard from "./lib/views/Overview/Dashboard.svelte";
+  import Services from "./lib/views/Services/Services.svelte";
+  import Routes from "./lib/views/Overview/Routes.svelte";
+  import Firewall from "./lib/views/Overview/Firewall.svelte";
+  import Logs from "./lib/views/Overview/Logs.svelte";
+  import Processes from "./lib/views/Overview/Processes.svelte";
+  import Realtime from "./lib/views/Overview/Realtime.svelte";
+  import System from "./lib/views/System/System.svelte";
+  import Admin from "./lib/views/System/Admin/index.svelte";
+  import Software from "./lib/views/System/Software.svelte";
+  import Startup from "./lib/views/System/Startup.svelte";
+  import Crontab from "./lib/views/System/Crontab.svelte";
+  import Flash from "./lib/views/System/Flash.svelte";
+  import DDNS from "./lib/views/Services/DDNS/DDNS.svelte";
+  import AdGuardHome from "./lib/views/Services/AdGuardHome.svelte";
+  import BanIP from "./lib/views/Services/BanIP/BanIP.svelte";
+  import TTYD from "./lib/views/Services/TTYD.svelte";
+  import UPnP from "./lib/views/UPnP/index.svelte";
+  import Network from "./lib/views/Network/Interfaces.svelte";
+  import NetworkRoutes from "./lib/views/Network/Routes.svelte";
+  import DHCP from "./lib/views/Network/DHCP/DHCP.svelte";
+  import DNS from "./lib/views/Network/DNS/index.svelte";
+  import Diagnostics from "./lib/views/Network/Diagnostics/Diagnostics.svelte";
   import Placeholder from "./lib/views/Placeholder.svelte";
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
   import { t as _t, getLocale, onLocaleChange } from "./lib/i18n";
 
   let locale = $state(getLocale());
-  let trans = $derived.by(() => { locale; return (k: string) => _t(k); });
-  $effect(() => onLocaleChange(() => { locale = getLocale(); }));
+  let trans = $derived.by(() => {
+    locale;
+    return (k: string) => _t(k);
+  });
+  $effect(() =>
+    onLocaleChange(() => {
+      locale = getLocale();
+    }),
+  );
 
   let authenticated = $state(Boolean(localStorage.getItem("owrt_session")));
   let currentView = $state("dashboard");
@@ -49,7 +56,9 @@
     navigate(id, undefined);
   };
 
-  const handleAuth = () => { authenticated = true; };
+  const handleAuth = () => {
+    authenticated = true;
+  };
   const handleLogout = () => {
     authenticated = false;
     navigate("dashboard");
@@ -59,8 +68,7 @@
     navigate("realtime", sub);
   };
 
-  const placeholders: Record<string, { title: string; sub: string }> = {
-  };
+  const placeholders: Record<string, { title: string; sub: string }> = {};
 
   onMount(() => {
     const { view, sub } = parsePath(window.location.pathname);
@@ -88,8 +96,12 @@
     />
     <main
       class={cn(
-        "flex-1", "min-h-0", "bg-surface",
-        currentView === "syslog" || currentView === "ttyd" ? "overflow-hidden" : "overflow-y-auto",
+        "flex-1",
+        "min-h-0",
+        "bg-surface",
+        currentView === "syslog" || currentView === "ttyd"
+          ? "overflow-hidden"
+          : "overflow-y-auto",
       )}
     >
       {#if currentView === "dashboard"}
@@ -144,7 +156,10 @@
           sub={trans(placeholders[currentView].sub)}
         />
       {:else}
-        <Placeholder title={trans("Not Found")} sub={trans("This page is not available")} />
+        <Placeholder
+          title={trans("Not Found")}
+          sub={trans("This page is not available")}
+        />
       {/if}
     </main>
   </div>
