@@ -118,9 +118,9 @@ export const killProcess = async (pid: string, signal: number) => execCommand("/
 export const setPassword = async (username = "root", password: string, oldpassword = "", rpcd = false) =>
   call<{ result: number | boolean }>("luci", "setPassword", { username, password, oldpassword, rpcd });
 
-export const getAdGuardStats = async () => {
+export const getAdGuardStats = async (host = "http://10.10.0.1:3000", username = "admin", password = "") => {
   try {
-    const res = await fetch("http://10.10.0.1:3000/control/stats", { headers: { Authorization: "Basic " + btoa("admin:") } });
+    const res = await fetch(`${host}/control/stats`, { headers: { Authorization: "Basic " + btoa(`${username}:${password}`) } });
     return res.ok ? res.json() : null;
   } catch { return null; }
 };

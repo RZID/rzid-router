@@ -3,7 +3,7 @@
   import { Shield, RefreshCw, Save } from "@lucide/svelte";
   import { cn } from "../../helpers/classname";
   import { t as _t, getLocale, onLocaleChange } from "../../i18n";
-  import { uciGet, uciSet, uciCommit, call, execCommand } from "../../api/ubus";
+  import { uciGet, uciSet, uciCommit, call, execCommand, getAdGuardStats } from "../../api/ubus";
   import GeneralTab from "./AdGuardHome/GeneralTab.svelte";
   import JailTab from "./AdGuardHome/JailTab.svelte";
   import AdvancedTab from "./AdGuardHome/AdvancedTab.svelte";
@@ -39,6 +39,7 @@
     jail_mount_rw_input = $state("");
   let saving = $state(false),
     saveFeedback = $state("");
+  let stats: Record<string, number> | null = $state(null);
   let pollTimer: ReturnType<typeof setInterval> | undefined;
 
   const getStatus = async () => {
@@ -132,8 +133,13 @@
     }, 3000);
   };
 
+  const fetchStats = async () => {
+    stats = await getAdGuardStats("http://10.10.0.1:3000", user || "admin", "");
+  };
+
   onMount(async () => {
     await Promise.all([load(), getStatus(), getVersion()]);
+    await fetchStats();
     pollTimer = setInterval(getStatus, 5000);
   });
   onDestroy(() => {
@@ -268,6 +274,27 @@
       )}><RefreshCw size={14} /></button
     >
   </div>
+
+  {#if stats}
+    <div class={cn("shrink-0", "glass", "p-4", "rounded-xl", "flex", "items-center", "gap-6")}>
+      <div class={cn("flex", "items-center", "gap-2")}>
+        <span class={cn("text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider")}>{trans("DNS Queries")}</span>
+        <span class={cn("text-xs", "font-mono", "text-fg")}>{(stats.num_dns_queries ?? 0).toLocaleString()}</span>
+      </div>
+      <div class={cn("w-px", "h-4", "bg-border")}></div>
+      <div class={cn("flex", "items-center", "gap-2")}>
+        <span class={cn("text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider")}>{trans("Blocked")}</span>
+        <span class={cn("text-xs", "font-mono", "text-danger")}>{(stats.num_blocked_filtering ?? 0).toLocaleString()}</span>
+      </div>
+      <div class={cn("w-px", "h-4", "bg-border")}></div>
+      <div class={cn("flex", "items-center", "gap-2")}>
+        <span class={cn("text-[10px]", "uppercase", "text-muted", "font-semibold", "tracking-wider")}>{trans("Blocked %")}</span>
+        <span class={cn("text-xs", "font-mono", "text-fg")}>
+          {stats.num_dns_queries > 0 ? ((stats.num_blocked_filtering / stats.num_dns_queries) * 100).toFixed(1) : "0.0"}%
+        </span>
+      </div>
+    </div>
+  {/if}
 
   <div
     class={cn(

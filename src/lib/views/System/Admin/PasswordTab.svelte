@@ -31,15 +31,15 @@
     const v = pwNew;
     if (!v) return { label: "", color: "" };
     if (/^(?=.{8,})(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])(?=.*\W).*$/.test(v))
-      return { label: "Strong", color: "var(--accent)" };
+      return { label: trans("Strong"), color: "var(--accent)" };
     if (
       /^(?=.{7,})(((?=.*[A-Z])(?=.*[a-z]))|((?=.*[A-Z])(?=.*[0-9]))|((?=.*[a-z])(?=.*[0-9]))).*$/.test(
         v,
       )
     )
-      return { label: "Medium", color: "var(--warn)" };
-    if (/(?=.{6,}).*/.test(v)) return { label: "Weak", color: "var(--danger)" };
-    return { label: "Too short", color: "var(--danger)" };
+      return { label: trans("Medium"), color: "var(--warn)" };
+    if (/(?=.{6,}).*/.test(v)) return { label: trans("Weak"), color: "var(--danger)" };
+    return { label: trans("Too short"), color: "var(--danger)" };
   });
 
   const savePassword = async () => {

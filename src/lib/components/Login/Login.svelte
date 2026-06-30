@@ -1,7 +1,7 @@
 <script lang="ts">
   import Input from "../Input/Input.svelte";
 
-  import { login } from "../../api/ubus";
+  import { login, InvalidPasswordError, SessionExpiredError, AuthError } from "../../api/ubus";
   import { cn } from "../../helpers/classname";
   import { t as _t, getLocale, onLocaleChange } from "../../i18n";
 
@@ -17,20 +17,24 @@
     }),
   );
   let password = $state(""),
-    error = $state(false),
+    errorMsg = $state(""),
     loading = $state(false);
 
   const handleLogin = async (e: Event) => {
     e.preventDefault();
     loading = true;
-    error = false;
-    const ok = await login(password);
-    loading = false;
-    if (ok) onauthenticated?.();
-    else {
-      error = true;
-      password = "";
+    errorMsg = "";
+    try {
+      const ok = await login(password);
+      if (ok) { loading = false; onauthenticated?.(); return; }
+    } catch (err) {
+      if (err instanceof InvalidPasswordError) errorMsg = "Invalid password";
+      else if (err instanceof SessionExpiredError) errorMsg = "Session expired, try again";
+      else if (err instanceof AuthError) errorMsg = err.message;
+      else errorMsg = "Login failed";
     }
+    loading = false;
+    password = "";
   };
 </script>
 
@@ -91,12 +95,12 @@
             "text-sm",
             "rounded-lg",
             "bg-surface-2",
-            error ? "border-danger" : "border-border",
+            errorMsg ? "border-danger" : "border-border",
           )}
           disabled={loading}
         />
-        {#if error}<p class={cn("text-xs", "mt-2", "text-danger")}>
-            {trans("Invalid password")}
+        {#if errorMsg}<p class={cn("text-xs", "mt-2", "text-danger")}>
+            {trans(errorMsg)}
           </p>{/if}
       </div>
 

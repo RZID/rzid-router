@@ -29,6 +29,7 @@
   import { cn } from "./lib/helpers/classname";
   import { parsePath, buildPath } from "./lib/router";
   import { t as _t, getLocale, onLocaleChange } from "./lib/i18n";
+  import { call, restoreSession, logout } from "./lib/api/ubus";
 
   let locale = $state(getLocale());
   let trans = $derived.by(() => {
@@ -71,6 +72,17 @@
   const placeholders: Record<string, { title: string; sub: string }> = {};
 
   onMount(() => {
+    (async () => {
+      restoreSession();
+      if (authenticated) {
+        const res = await call("system", "info").catch(() => null);
+        if (!res) {
+          logout();
+          authenticated = false;
+        }
+      }
+    })();
+
     const { view, sub } = parsePath(window.location.pathname);
     currentView = view;
     currentSub = sub;

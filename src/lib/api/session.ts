@@ -3,24 +3,44 @@ const UBUS_URL = BASE + "/ubus";
 
 import type { JsonValue } from "../types";
 
+export class InvalidPasswordError extends Error {
+  constructor() { super("Invalid password"); this.name = "InvalidPasswordError"; }
+}
+
+export class SessionExpiredError extends Error {
+  constructor() { super("Session expired"); this.name = "SessionExpiredError"; }
+}
+
+export class AuthError extends Error {
+  constructor(msg: string) { super(msg); this.name = "AuthError"; }
+}
+
 let sessionId = "00000000000000000000000000000000";
 
 export const login = async (password: string): Promise<boolean> => {
-  const res = await fetch(UBUS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      jsonrpc: "2.0", id: 1, method: "call",
-      params: [sessionId, "session", "login", { username: "root", password }],
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch(UBUS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0", id: 1, method: "call",
+        params: [sessionId, "session", "login", { username: "root", password }],
+      }),
+    });
+  } catch {
+    throw new AuthError("Network error: unable to reach router");
+  }
   const data = await res.json();
   if (data.result?.[0] === 0) {
     sessionId = data.result[1].ubus_rpc_session;
     localStorage.setItem("owrt_session", sessionId);
     return true;
   }
-  return false;
+  const code = data.error?.code;
+  if (code === -32000) throw new InvalidPasswordError();
+  if (code === -32002) throw new SessionExpiredError();
+  throw new AuthError(`Login failed (error ${code ?? "unknown"})`);
 };
 
 export const restoreSession = () => {
