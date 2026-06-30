@@ -19,3 +19,10 @@ export const uciAdd = async (config: string, type: string, name?: string) => {
   if (name) p.name = name;
   return call("uci", "add", p);
 };
+
+export const uciDelete = async (config: string, section: string, option?: string) => {
+  const p: Record<string, string> = { config, section };
+  if (option) p.option = option;
+  await call("uci", "delete", p);
+  return call("uci", "commit", { config });
+};

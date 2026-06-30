@@ -1,5 +1,5 @@
 export { login, restoreSession, logout, call, batchCall, getSession, InvalidPasswordError, SessionExpiredError, AuthError } from "./session";
-export { uciGet, uciSet, uciSetSection, uciCommit, uciAdd } from "./uci";
+export { uciGet, uciSet, uciSetSection, uciCommit, uciAdd, uciDelete } from "./uci";
 export { execCommand, readLogEntries, readDmesg, readFile, writeFile, listDir, removeFile, statFile, cgiExec } from "./exec";
 export type { LogEntry } from "./exec";
 export { getSystemInfo, getNetworkInterfaces, getDHCPLeases, rcList, rcInit, getTimezones, getUnixtime, getSystemFeatures, serviceRestart, getBandwidth, getRealtimeStats, getConntrackList, fetchConntrackMetrics, getConntrackCount, getProcessList, killProcess, setPassword, getAdGuardStats } from "./system";

@@ -1,10 +1,10 @@
 import { t as _t } from "../../../i18n";
 import {
   uciGet,
-  uciSet,
   uciSetSection,
   uciCommit,
   uciAdd,
+  uciDelete,
   rcInit,
 } from "../../../api/ubus";
 import type { UciConfig } from "../../../types";
@@ -44,24 +44,18 @@ export interface QueueSection {
 export const t = (k: string) => _t(k);
 
 let queues = $state<QueueSection[]>([]);
-let selectedIdx = $state(0);
+let queueTabs = $state<("basic" | "qdisc" | "linklayer")[]>([]);
 let saving = $state(false);
 let saveFeedback = $state("");
 let serviceInstalled = $state(true);
 let loading = $state(true);
-let actionBusy = $state(false);
-let viewTab = $state<"basic" | "qdisc" | "linklayer">("basic");
 
 export const getQueues = () => queues;
-export const getSelectedIdx = () => selectedIdx;
-export const setSelectedIdx = (v: number) => selectedIdx = v;
+export const getQueueTabs = () => queueTabs;
 export const getSaving = () => saving;
 export const getSaveFeedback = () => saveFeedback;
 export const getServiceInstalled = () => serviceInstalled;
 export const isLoading = () => loading;
-export const getActionBusy = () => actionBusy;
-export const getViewTab = () => viewTab;
-export const setViewTab = (v: "basic" | "qdisc" | "linklayer") => viewTab = v;
 
 const defaults: QueueSection = {
   id: "", interface: "", enabled: false,
@@ -120,25 +114,27 @@ export const load = async () => {
     if (!uci?.values || Object.keys(uci.values).length === 0) {
       serviceInstalled = false;
       queues = [];
+      queueTabs = [];
       loading = false;
       return;
     }
     serviceInstalled = true;
     const entries = Object.entries(uci.values).filter(
-      ([, s]) => (s as Record<string, unknown>)["type"] === "queue",
+      ([, s]) => (s as Record<string, unknown>)[".type"] === "queue",
     );
     queues = entries.map(([id, s]) => parseSection(s as Record<string, unknown>, id));
-    selectedIdx = queues.length > 0 ? 0 : -1;
+    queueTabs = queues.map(() => "basic" as const);
   } catch {
     serviceInstalled = false;
     queues = [];
+    queueTabs = [];
   }
   loading = false;
 };
 
 const collectValues = (q: QueueSection): Record<string, string | undefined> => ({
   interface: q.interface || undefined,
-  enabled: q.enabled ? "1" : undefined,
+  enabled: q.enabled ? "1" : "0",
   download: q.download || undefined,
   upload: q.upload || undefined,
   qdisc: q.qdisc || undefined,
@@ -167,16 +163,16 @@ const collectValues = (q: QueueSection): Record<string, string | undefined> => (
   verbosity: q.verbosity !== "5" ? q.verbosity : undefined,
 });
 
-export const saveSelected = async () => {
-  const q = queues[selectedIdx];
-  if (!q) return;
+export const saveAll = async () => {
   saving = true;
   saveFeedback = "";
   try {
-    const vals = collectValues(q);
-    await uciSetSection("sqm", q.id, vals as Record<string, string>);
+    for (const q of queues) {
+      const vals = collectValues(q);
+      await uciSetSection("sqm", q.id, vals as Record<string, string>);
+    }
     await uciCommit("sqm");
-    if (q.enabled) {
+    if (queues.some((q) => q.enabled)) {
       await rcInit("sqm", "enable");
     }
     saveFeedback = t("Saved");
@@ -195,49 +191,22 @@ export const addQueue = async () => {
     await uciCommit("sqm");
     const q: QueueSection = { ...defaults, id };
     queues = [...queues, q];
-    selectedIdx = queues.length - 1;
+    queueTabs = [...queueTabs, "basic"];
   } catch {
     // ignore
   }
 };
 
-export const removeSelected = async () => {
-  const q = queues[selectedIdx];
+export const removeQueue = async (idx: number) => {
+  const q = queues[idx];
   if (!q) return;
   saving = true;
   try {
-    await uciSet("sqm", q.id, {});
-    await uciCommit("sqm");
-    queues = queues.filter((x) => x.id !== q.id);
-    if (selectedIdx >= queues.length) selectedIdx = queues.length - 1;
+    await uciDelete("sqm", q.id);
+    queues = queues.filter((_, i) => i !== idx);
+    queueTabs = queueTabs.filter((_, i) => i !== idx);
   } catch {
     // ignore
   }
   saving = false;
-};
-
-export const handleServiceAction = async (action: "start" | "stop" | "restart") => {
-  actionBusy = true;
-  try {
-    await rcInit("sqm", action);
-  } catch {
-    // ignore
-  }
-  actionBusy = false;
-};
-
-export const handleToggleService = async () => {
-  actionBusy = true;
-  try {
-    if (queues.some((q) => q.enabled)) {
-      await rcInit("sqm", "disable");
-    } else {
-      await rcInit("sqm", "enable");
-    }
-    await new Promise((r) => setTimeout(r, 500));
-    await load();
-  } catch {
-    // ignore
-  }
-  actionBusy = false;
 };

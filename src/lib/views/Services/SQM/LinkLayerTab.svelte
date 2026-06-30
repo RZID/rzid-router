@@ -23,7 +23,7 @@
 </script>
 
 <div class={cn("flex", "flex-col", "gap-4")}>
-  <Select label={t("Link Layer")} description={t("Which link layer technology to account for")}
+  <Select label={t("Link layer")} description={t("Which link layer technology to account for")}
     options={linklayerOptions} bind:value={q.linklayer} />
 
   {#if q.linklayer !== "none"}
