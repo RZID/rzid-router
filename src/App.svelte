@@ -20,6 +20,7 @@
   import BanIP from "./lib/views/Services/BanIP/BanIP.svelte";
   import TTYD from "./lib/views/Services/TTYD.svelte";
   import UPnP from "./lib/views/UPnP/index.svelte";
+  import SQM from "./lib/views/Services/SQM/SQM.svelte";
   import Network from "./lib/views/Network/Interfaces.svelte";
   import NetworkRoutes from "./lib/views/Network/Routes.svelte";
   import DHCP from "./lib/views/Network/DHCP/DHCP.svelte";
@@ -152,6 +153,8 @@
         <TTYD />
       {:else if currentView === "upnp"}
         <UPnP />
+      {:else if currentView === "sqm"}
+        <SQM />
       {:else if currentView === "network"}
         <Network />
       {:else if currentView === "network-routes"}

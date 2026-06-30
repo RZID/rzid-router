@@ -50,6 +50,7 @@ export const nav: {
       { id: "banip", label: "banIP" },
       { id: "ttyd", label: "Terminal" },
       { id: "upnp", label: "UPnP" },
+      { id: "sqm", label: "SQM QoS" },
     ],
   },
 ];
